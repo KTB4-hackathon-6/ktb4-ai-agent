@@ -2,9 +2,10 @@ import { useEffect, useRef, useState } from 'react'
 import ChatHeader from './components/chatbot/ChatHeader'
 import ChatMessage, { type ChatMessageItem } from './components/chatbot/ChatMessage'
 import LanguageSelector from './components/chatbot/LanguageSelector'
+import ServiceMenu, { type ServiceView } from './components/chatbot/ServiceMenu'
 import './App.css'
 
-type View = 'contract' | 'work' | 'admin' | 'agencies' | null
+type View = ServiceView | null
 type UploadState = 'idle' | 'processing' | 'done'
 
 const chatScript = [
@@ -118,7 +119,7 @@ function App() {
     chatEndRef.current?.scrollIntoView({ behavior: 'smooth', block: 'end' })
   }, [view, uploadState, adminState, chatMessages, resultsShown])
 
-  const selectView = (nextView: Exclude<View, null>) => {
+  const selectView = (nextView: ServiceView) => {
     setView(nextView)
     if (nextView === 'contract') setUploadState('idle')
     if (nextView === 'admin') setAdminState('idle')
@@ -229,12 +230,7 @@ function App() {
         {languageChosen && (
           <>
             <ChatMessage who="bot" ko="무엇을 도와드릴까요? 아래에서 선택해주세요." en="What can I help you with? Pick an option below." />
-            <div className="options nested-options main-options">
-              <button className="pill-button" onClick={() => selectView('contract')}>📄 근로계약서 분석하기 / Analyze my contract</button>
-              <button className="pill-button" onClick={() => selectView('work')}>🔍 현재 근무 실태 체크하기 / Check my current working conditions</button>
-              <button className="pill-button" onClick={() => selectView('admin')}>🗂 행정문서 확인하기 / Check an admin document</button>
-              <button className="pill-button" onClick={() => selectView('agencies')}>☎ 상담기관 바로 연결 / Connect to a counselor</button>
-            </div>
+            <ServiceMenu onSelect={selectView} />
           </>
         )}
 
