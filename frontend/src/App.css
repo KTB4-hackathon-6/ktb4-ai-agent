@@ -289,6 +289,22 @@ button { -webkit-tap-highlight-color: transparent; }
 
 .result-panel h2 { margin: 0 0 4px; color: #22261f; font-size: 14px; line-height: 1.5; font-weight: 700; }
 .panel-description { margin: 0 0 14px; color: #6b6f66; font-size: 12.5px; }
+.agent-result { border-left: 4px solid #1f6f5c; }
+.agent-result h2 { margin: 5px 0 10px; font-size: 17px; }
+.result-eyebrow { color: #1f6f5c; font-size: 10.5px; font-weight: 800; letter-spacing: .08em; }
+.agent-answer { margin: 0; white-space: pre-wrap; color: #33372f; font-size: 13.5px; line-height: 1.7; }
+.agent-section { margin-top: 18px; padding-top: 16px; border-top: 1px solid #e4e1da; }
+.agent-section h3 { margin: 0 0 10px; font-size: 13px; }
+.agent-finding { margin-top: 8px; padding: 12px 14px; background: #f5f4f0; border-radius: 10px; }
+.agent-finding strong { font-size: 13px; }
+.agent-finding p { margin: 4px 0 0; color: #54594f; font-size: 12.5px; line-height: 1.6; }
+.next-actions { margin: 0; padding-left: 21px; color: #3a3f36; font-size: 13px; line-height: 1.7; }
+.fact-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; margin-bottom: 16px; }
+.fact-grid div { padding: 10px; background: #f5f4f0; border-radius: 9px; }
+.fact-grid span { display: block; margin-bottom: 3px; color: #777b72; font-size: 10.5px; }
+.fact-grid strong { font-size: 12.5px; }
+.empty-result { margin: 0; padding: 14px; color: #1f6f5c; background: #eaf3ef; border-radius: 10px; font-size: 13px; }
+.unverified-fields { margin: 14px 0 0; color: #777b72; font-size: 11.5px; line-height: 1.5; }
 .tabs { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 14px; }
 
 .tab {
@@ -448,6 +464,7 @@ button { -webkit-tap-highlight-color: transparent; }
   .upload-panel, .processing-panel, .result-panel { margin-left: 36px; padding: 16px; }
   .upload-target { height: 160px; }
   .admin-grid { grid-template-columns: 1fr; }
+  .fact-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .agency { align-items: flex-start; flex-direction: column; }
   .composer { padding: 10px 12px; }
   .composer button { padding-inline: 16px; }

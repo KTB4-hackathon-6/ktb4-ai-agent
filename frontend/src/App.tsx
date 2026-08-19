@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
-import { analyzeDocument, OcrApiError, type OcrAnalysisResponse } from './api/ocr'
+import { analyzeContract, ContractApiError, type ContractAnalysisResponse } from './api/contracts'
 import AdminFlow from './components/chatbot/AdminFlow'
 import AgencyFlow from './components/chatbot/AgencyFlow'
 import ChatComposer from './components/chatbot/ChatComposer'
@@ -24,7 +24,7 @@ function App() {
   const [languageChosen, setLanguageChosen] = useState(false)
   const [view, setView] = useState<View>(null)
   const [uploadState, setUploadState] = useState<UploadState>('idle')
-  const [ocrResult, setOcrResult] = useState<OcrAnalysisResponse | null>(null)
+  const [contractResult, setContractResult] = useState<ContractAnalysisResponse | null>(null)
   const [uploadError, setUploadError] = useState<string | null>(null)
   const [adminState, setAdminState] = useState<UploadState>('idle')
   const [openClause, setOpenClause] = useState<string | null>(null)
@@ -47,28 +47,28 @@ function App() {
     setView(nextView)
     if (nextView === 'contract') {
       setUploadState('idle')
-      setOcrResult(null)
+      setContractResult(null)
       setUploadError(null)
     }
     if (nextView === 'admin') setAdminState('idle')
   }
 
-  const runContractAnalysis = async (file?: File) => {
+  const runContractAnalysis = async (files?: File[]) => {
     setUploadState('processing')
-    setOcrResult(null)
+    setContractResult(null)
     setUploadError(null)
 
-    if (!file) {
+    if (!files) {
       window.setTimeout(() => setUploadState('done'), 1100)
       return
     }
 
     try {
-      const result = await analyzeDocument(file)
-      setOcrResult(result)
+      const result = await analyzeContract(files, '이 근로계약서에서 주의할 점과 대응 방법을 설명해 주세요.')
+      setContractResult(result)
       setUploadState('done')
     } catch (error) {
-      setUploadError(error instanceof OcrApiError ? error.message : '문서를 인식하지 못했습니다. 다시 시도해주세요.')
+      setUploadError(error instanceof ContractApiError ? error.message : '계약서를 분석하지 못했습니다. 다시 시도해주세요.')
       setUploadState('error')
     }
   }
@@ -136,7 +136,7 @@ function App() {
         {view === 'contract' && (
           <ContractFlow
             uploadState={uploadState}
-            ocrResult={ocrResult}
+            contractResult={contractResult}
             uploadError={uploadError}
             openClause={openClause}
             messages={chatMessages}
