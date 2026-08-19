@@ -37,6 +37,23 @@ def test_flags_underpay_and_missing_rest() -> None:
     assert rule_ids == {"below_minimum_wage", "rest_time_insufficient"}
 
 
+def test_defers_minimum_wage_check_when_wage_is_not_specified() -> None:
+    facts = VALID_MANUFACTURING.model_copy(
+        update={
+            "monthly_wage": 0,
+            "hourly_wage": 0,
+            "wage_specified": False,
+        }
+    )
+
+    violations = check_contract(facts)
+
+    assert not any(v.rule_id == "below_minimum_wage" for v in violations)
+    review = [v for v in violations if v.rule_id == "minimum_wage_needs_review"]
+    assert len(review) == 1
+    assert review[0].severity == "review"
+
+
 def test_weekly_working_hours_does_not_produce_a_violation() -> None:
     # weekly_working_hours는 계약서에 literal하게 없는 추정치라 룰베이스로
     # 판정하지 않는다 — 아무리 커도 위반이 나오면 안 된다.
