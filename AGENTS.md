@@ -85,6 +85,16 @@ cd backend
 - 공통 응답 봉투는 `com.ktb4.aiagent.common.web.ApiResponse<T>`로 구현하고, 예외 처리는
   `@RestControllerAdvice` 한 곳에 모아 위 규칙에 맞는 응답을 생성한다.
 
+### Swagger/OpenAPI 문서 규칙
+
+- Swagger UI는 `/swagger-ui.html`, OpenAPI JSON은 `/v3/api-docs`에서 제공한다.
+- Controller 또는 API DTO를 추가·변경·삭제할 때 Swagger 문서도 같은 변경 단위에서 반드시 갱신한다.
+- 각 Controller에는 도메인을 설명하는 `@Tag`, 각 엔드포인트에는 사용자 관점의 `@Operation` 요약을 작성한다.
+- 요청 파라미터, multipart 파트, DTO 필드의 의미나 허용값이 코드만으로 명확하지 않으면 `@Parameter` 또는 `@Schema`로 설명과 예시를 기록한다.
+- HTTP 메서드, 경로, 요청 형식, 응답 스키마 또는 상태 코드가 바뀌면 관련 OpenAPI 애너테이션과 `OpenApiDocumentationTests`의 기대값을 함께 수정한다.
+- 구현 완료 전 `OpenApiDocumentationTests`를 실행해 `/v3/api-docs`에 변경된 API가 정확히 반영됐는지 확인한다.
+- 실제 비밀값, 토큰, 개인정보 또는 운영 서버 주소를 Swagger 예시에 넣지 않는다.
+
 ## Frontend 작업
 
 ### 기본 명령
