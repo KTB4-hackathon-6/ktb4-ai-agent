@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
+import ChatHeader from './components/chatbot/ChatHeader'
 import './App.css'
 
 type View = 'contract' | 'work' | 'admin' | 'agencies' | null
@@ -173,8 +174,6 @@ function App() {
 
   const analysisDone = uploadState === 'done' || adminState === 'done'
   const pipelineDone = [true, view !== null, analysisDone, chatStep === chatScript.length - 1, resultsShown, view === 'agencies']
-  const pipelineLabels = ['언어', '요청', '분석', '확인', '자료', '연결']
-
   const renderChatFlow = () => {
     const options = chatScript[chatStep]?.options ?? []
     return (
@@ -236,15 +235,7 @@ function App() {
 
   return (
     <main className="app-shell">
-      <header className="app-header">
-        <div className="brand">
-          <div className="brand-avatar" aria-hidden="true">N</div>
-          <div><div className="brand-name">노동나침반 상담봇</div><div className="online"><span />온라인 / Online</div></div>
-        </div>
-        <ol className="pipeline" aria-label="상담 진행 단계">
-          {pipelineLabels.map((label, index) => <li className={pipelineDone[index] ? 'done' : ''} key={label}>{pipelineDone[index] ? '●' : '○'} {label}</li>)}
-        </ol>
-      </header>
+      <ChatHeader completedSteps={pipelineDone} />
 
       <section className="chat" aria-live="polite">
         <BotMessage ko="안녕하세요! 먼저 언어를 선택해주세요." en="Hi! Please choose your language first." />
