@@ -31,6 +31,7 @@ class Settings(BaseSettings):
     # Chat
     deepseek_api_key: str = ""
     chat_model: str = "deepseek-v4-flash"
+    checkpoint_db_path: Path = ROOT_ENV.parent / "ai" / "checkpoints.sqlite3"
 
 
 @lru_cache

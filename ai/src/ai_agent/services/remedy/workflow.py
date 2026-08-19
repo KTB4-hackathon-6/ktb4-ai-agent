@@ -1,0 +1,106 @@
+"""Agent가 구제계획과 서식 작성을 자율적으로 진행하는 workflow."""
+
+import json
+from functools import lru_cache
+from typing import Annotated, TypedDict
+
+from langchain.agents import create_agent
+from langchain.agents.structured_output import ToolStrategy
+from langchain_core.messages import AIMessage, AnyMessage, HumanMessage
+from langgraph.graph import END, START, StateGraph
+from langgraph.graph.message import add_messages
+from pydantic import BaseModel, Field
+
+from ai_agent.services.rag.retriever import search_labor_law
+from ai_agent.services.remedy.guides import REMEDY_SYSTEM_PROMPT
+from ai_agent.services.remedy.models import DetectedIssue
+
+
+class RemedyTurn(BaseModel):
+    """Agent의 한 턴 결과. 값은 SQLite state에 그대로 누적한다."""
+
+    answer: str
+    remedy_plan: list[str] = Field(default_factory=list)
+    selected_forms: list[str] = Field(default_factory=list)
+    field_updates: dict[str, dict[str, str]] = Field(default_factory=dict)
+
+
+class RemedyState(TypedDict, total=False):
+    messages: Annotated[list[AnyMessage], add_messages]
+    issues: list[DetectedIssue]
+    remedy_plan: list[str]
+    selected_forms: list[str]
+    form_drafts: dict[str, dict[str, str]]
+
+
+@lru_cache
+def get_remedy_agent():
+    from ai_agent.services.agent import get_model
+
+    return create_agent(
+        get_model(),
+        tools=[search_labor_law],
+        system_prompt=REMEDY_SYSTEM_PROMPT,
+        response_format=ToolStrategy(RemedyTurn),
+    )
+
+
+def last_user_text(state: RemedyState) -> str:
+    for message in reversed(state.get("messages") or []):
+        if isinstance(message, HumanMessage):
+            return message.text
+    return ""
+
+
+async def run_remedy_agent(state: RemedyState) -> RemedyTurn:
+    context = {
+        "detectedIssues": [issue.model_dump(mode="json") for issue in state.get("issues") or []],
+        "currentPlan": state.get("remedy_plan") or [],
+        "selectedForms": state.get("selected_forms") or [],
+        "formDrafts": state.get("form_drafts") or {},
+        "userMessage": last_user_text(state),
+    }
+    result = await get_remedy_agent().ainvoke(
+        {"messages": [HumanMessage(json.dumps(context, ensure_ascii=False))]}
+    )
+    return result["structured_response"]
+
+
+async def remedy(state: RemedyState) -> dict:
+    turn = await run_remedy_agent(state)
+    forms = list(dict.fromkeys([*(state.get("selected_forms") or []), *turn.selected_forms]))
+    drafts = {form_id: dict(values) for form_id, values in (state.get("form_drafts") or {}).items()}
+    for form_id, updates in turn.field_updates.items():
+        drafts.setdefault(form_id, {}).update(updates)
+        if form_id not in forms:
+            forms.append(form_id)
+    return {
+        "messages": [AIMessage(turn.answer)],
+        "remedy_plan": turn.remedy_plan or state.get("remedy_plan") or [],
+        "selected_forms": forms,
+        "form_drafts": drafts,
+    }
+
+
+async def review(state: RemedyState) -> dict:
+    from ai_agent.services.agent import get_review_agent
+
+    messages = state.get("messages") or []
+    result = await get_review_agent().ainvoke({"messages": messages})
+    return {"messages": result["messages"][len(messages) :]}
+
+
+def route(state: RemedyState) -> str:
+    if state.get("issues") or state.get("remedy_plan") or state.get("form_drafts"):
+        return "remedy"
+    return "review"
+
+
+def build_workflow(checkpointer):
+    builder = StateGraph(RemedyState)
+    builder.add_node("remedy", remedy)
+    builder.add_node("review", review)
+    builder.add_conditional_edges(START, route, ["remedy", "review"])
+    builder.add_edge("remedy", END)
+    builder.add_edge("review", END)
+    return builder.compile(checkpointer=checkpointer)

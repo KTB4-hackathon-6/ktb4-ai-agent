@@ -41,7 +41,7 @@ async def analyze(request: AnalyzeRequest) -> AnalyzeResponse | JSONResponse:
         )
 
     try:
-        answer = await answer_question(request.input.text)
+        answer = await answer_question(request.input.text, request.sessionId)
     except Exception:
         return error_response(
             request,
