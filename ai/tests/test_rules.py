@@ -23,10 +23,9 @@ def test_valid_contract_has_no_violations() -> None:
     assert check_contract(VALID_MANUFACTURING) == []
 
 
-def test_flags_excess_hours_underpay_and_missing_rest() -> None:
+def test_flags_underpay_and_missing_rest() -> None:
     facts = VALID_MANUFACTURING.model_copy(
         update={
-            "weekly_working_hours": 60,
             "hourly_wage": 9_000,
             "rest_minutes_per_workday": 30,
         }
@@ -35,7 +34,17 @@ def test_flags_excess_hours_underpay_and_missing_rest() -> None:
     violations = check_contract(facts)
 
     rule_ids = {v.rule_id for v in violations}
-    assert rule_ids == {"weekly_hours_exceeded", "below_minimum_wage", "rest_time_insufficient"}
+    assert rule_ids == {"below_minimum_wage", "rest_time_insufficient"}
+
+
+def test_weekly_working_hours_does_not_produce_a_violation() -> None:
+    # weekly_working_hours는 계약서에 literal하게 없는 추정치라 룰베이스로
+    # 판정하지 않는다 — 아무리 커도 위반이 나오면 안 된다.
+    facts = VALID_MANUFACTURING.model_copy(update={"weekly_working_hours": 90})
+
+    violations = check_contract(facts)
+
+    assert not any(v.rule_id == "weekly_hours_exceeded" for v in violations)
 
 
 def test_flags_missing_required_disclosures() -> None:
@@ -49,11 +58,10 @@ def test_flags_missing_required_disclosures() -> None:
     assert rule_ids.count("required_disclosure_missing") == 2
 
 
-def test_agriculture_industry_is_exempt_from_hours_rest_and_holiday_rules() -> None:
+def test_agriculture_industry_is_exempt_from_rest_and_holiday_rules() -> None:
     facts = VALID_MANUFACTURING.model_copy(
         update={
             "industry": IndustryCategory.AGRICULTURE_LIVESTOCK_FISHERY,
-            "weekly_working_hours": 70,
             "rest_minutes_per_workday": 0,
             "weekly_paid_holidays": 0,
         }

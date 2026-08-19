@@ -1,5 +1,12 @@
 [
   {
+    "rule_id": "required_disclosure_missing",
+    "law_name": "근로기준법",
+    "article": "제17조",
+    "message": "임금 지급일 항목이 계약서에 명시되어 있지 않습니다.",
+    "severity": "warning"
+  },
+  {
     "rule_id": "below_minimum_wage",
     "law_name": "최저임금법",
     "article": "제6조",
@@ -28,17 +35,10 @@
     "severity": "review"
   },
   {
-    "rule_id": "weekly_hours_exceeded",
-    "law_name": "근로기준법",
-    "article": "제53조",
-    "message": "주당 근로시간 54.0시간은 법정 상한 52시간을 초과합니다.",
-    "severity": "warning"
-  },
-  {
     "rule_id": "rest_time_insufficient",
     "law_name": "근로기준법",
     "article": "제54조",
-    "message": "1일 근로시간 9.0시간 기준 휴게시간은 최소 60분이 필요하지만 30분으로 명시되어 있습니다.",
+    "message": "1일 근로시간 8.0시간 기준 휴게시간은 최소 60분이 필요하지만 30분으로 명시되어 있습니다.",
     "severity": "warning"
   }
 ]

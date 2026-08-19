@@ -43,14 +43,12 @@ def test_diagnose_runs_ocr_extraction_and_rules_end_to_end(monkeypatch) -> None:
     body = response.json()
     assert body["facts"]["weekly_working_hours"] == 60
     rule_ids = {v["rule_id"] for v in body["violations"]}
-    assert rule_ids == {"weekly_hours_exceeded", "below_minimum_wage", "rest_time_insufficient"}
+    assert rule_ids == {"below_minimum_wage", "rest_time_insufficient"}
     assert body["unverified_fields"] == []
 
 
 def test_diagnose_merges_multiple_pages_before_extraction(monkeypatch) -> None:
-    monkeypatch.setattr(
-        contracts_route, "extract_text", lambda data, content_type: data.decode()
-    )
+    monkeypatch.setattr(contracts_route, "extract_text", lambda data, content_type: data.decode())
 
     captured_raw_text = {}
 
@@ -97,4 +95,4 @@ def test_diagnose_does_not_fail_on_unverified_fields_and_suppresses_dependent_vi
     # monthly_wage를 못 믿으면 그걸로 계산한 최저임금 위반은 빠지지만,
     # 별개 필드(근로시간/휴게시간) 위반은 그대로 남아야 한다.
     rule_ids = {v["rule_id"] for v in body["violations"]}
-    assert rule_ids == {"weekly_hours_exceeded", "rest_time_insufficient"}
+    assert rule_ids == {"rest_time_insufficient"}
