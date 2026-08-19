@@ -64,12 +64,37 @@ def test_agriculture_industry_is_exempt_from_hours_rest_and_holiday_rules() -> N
     assert violations == []
 
 
-def test_flags_contract_period_over_three_years() -> None:
+def test_flags_contract_period_over_three_years_as_review() -> None:
+    # 36~58개월(3년~4년10개월)은 연장허가를 받았으면 합법이라 단정 못하므로 REVIEW
     facts = VALID_MANUFACTURING.model_copy(update={"contract_period_months": 48})
 
     violations = check_contract(facts)
 
-    assert any(v.rule_id == "contract_period_exceeded" for v in violations)
+    match = [v for v in violations if v.rule_id == "contract_period_review"]
+    assert len(match) == 1
+    assert match[0].severity == "review"
+    assert not any(v.rule_id == "contract_period_exceeded" for v in violations)
+
+
+def test_flags_contract_period_over_extended_max_as_warning() -> None:
+    # 연장허가를 받아도 넘을 수 없는 58개월(4년10개월) 초과는 명확한 위반
+    facts = VALID_MANUFACTURING.model_copy(update={"contract_period_months": 60})
+
+    violations = check_contract(facts)
+
+    match = [v for v in violations if v.rule_id == "contract_period_exceeded"]
+    assert len(match) == 1
+    assert match[0].severity == "warning"
+    assert not any(v.rule_id == "contract_period_review" for v in violations)
+
+
+def test_contract_period_within_three_years_is_not_flagged() -> None:
+    assert VALID_MANUFACTURING.contract_period_months == 36
+    violations = check_contract(VALID_MANUFACTURING)
+
+    assert not any(
+        v.rule_id in ("contract_period_review", "contract_period_exceeded") for v in violations
+    )
 
 
 def test_flags_missing_payment_date_as_required_disclosure() -> None:

@@ -10,7 +10,12 @@ MINIMUM_HOURLY_WAGE = 10_320  # 2026년 최저임금법 기준, 매년 갱신 �
 MAX_WEEKLY_WORKING_HOURS = 52  # 근로기준법 제50조·제53조 (기본 40 + 연장 12)
 MAX_DAILY_WORKING_HOURS = 8  # 근로기준법 제50조
 MIN_WEEKLY_PAID_HOLIDAYS = 1  # 근로기준법 제55조
-MAX_CONTRACT_PERIOD_MONTHS = 36  # 외국인근로자의 고용 등에 관한 법률 제18조 (취업활동기간 3년)
+# 외국인근로자의 고용 등에 관한 법률 제18조: 취업활동기간 원칙 3년(36개월).
+# 제18조의2: 연장허가를 받으면 1회에 한해 최대 1년 10개월 추가 -> 총 상한 58개월(4년 10개월).
+# 36개월 초과는 연장허가를 받았을 수도 있어 단정할 수 없으므로 REVIEW, 58개월 초과는
+# 연장 상한도 넘는 것이라 WARNING으로 구분한다.
+MAX_CONTRACT_PERIOD_MONTHS_STANDARD = 36
+MAX_CONTRACT_PERIOD_MONTHS_EXTENDED = 58
 
 # 고용노동부 숙식비 공제지침 원문(HWP 첨부)을 직접 확인 못 해 정확한 %를 특정하지
 # 못했다. 보수적으로 15%를 "확인 필요" 기준선으로만 쓰고, WARNING이 아닌 REVIEW로
@@ -127,16 +132,30 @@ def _check_weekly_holiday(facts: ContractFacts) -> list[RuleViolation]:
 
 
 def _check_contract_period(facts: ContractFacts) -> list[RuleViolation]:
-    if facts.contract_period_months <= MAX_CONTRACT_PERIOD_MONTHS:
+    if facts.contract_period_months <= MAX_CONTRACT_PERIOD_MONTHS_STANDARD:
         return []
+    if facts.contract_period_months <= MAX_CONTRACT_PERIOD_MONTHS_EXTENDED:
+        return [
+            RuleViolation(
+                rule_id="contract_period_review",
+                law_name="외국인근로자의 고용 등에 관한 법률",
+                article="제18조의2",
+                message=(
+                    f"근로계약기간 {facts.contract_period_months}개월은 기본 취업활동 기간 "
+                    f"{MAX_CONTRACT_PERIOD_MONTHS_STANDARD}개월(3년)을 초과합니다. "
+                    "취업활동 기간 연장허가(최대 1년 10개월 추가)를 받았는지 확인이 필요합니다."
+                ),
+                severity=Severity.REVIEW,
+            )
+        ]
     return [
         RuleViolation(
             rule_id="contract_period_exceeded",
             law_name="외국인근로자의 고용 등에 관한 법률",
             article="제18조",
             message=(
-                f"근로계약기간 {facts.contract_period_months}개월은 취업활동 기간 상한 "
-                f"{MAX_CONTRACT_PERIOD_MONTHS}개월(3년)을 초과합니다."
+                f"근로계약기간 {facts.contract_period_months}개월은 연장허가를 받아도 넘을 수 "
+                f"없는 상한 {MAX_CONTRACT_PERIOD_MONTHS_EXTENDED}개월(4년 10개월)을 초과합니다."
             ),
             severity=Severity.WARNING,
         )
@@ -187,7 +206,7 @@ _FIELD_TO_DEPENDENT_RULE_IDS: dict[str, tuple[str, ...]] = {
     "monthly_wage": ("below_minimum_wage",),
     "rest_minutes_per_workday": ("rest_time_insufficient",),
     "weekly_paid_holidays": ("weekly_holiday_missing",),
-    "contract_period_months": ("contract_period_exceeded",),
+    "contract_period_months": ("contract_period_exceeded", "contract_period_review"),
     "accommodation_deduction_krw": ("accommodation_deduction_high",),
     "weekly_working_hours": ("weekly_hours_exceeded",),
     "daily_working_hours": ("weekly_hours_exceeded", "rest_time_insufficient"),

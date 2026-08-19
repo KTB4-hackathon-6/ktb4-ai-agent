@@ -1,16 +1,16 @@
 {
   "industry": "manufacturing",
-  "weekly_working_hours": 60.0,
-  "daily_working_hours": 10.0,
+  "weekly_working_hours": 54.0,
+  "daily_working_hours": 9.0,
   "rest_minutes_per_workday": 30,
-  "weekly_paid_holidays": 7,
+  "weekly_paid_holidays": 1,
   "monthly_wage": 1750000,
   "hourly_wage": 8373,
   "wage_specified": true,
   "working_hours_specified": true,
   "holiday_specified": true,
   "contract_period_months": 48,
-  "payment_date_specified": false,
+  "payment_date_specified": true,
   "payment_method_in_person": true,
   "accommodation_deduction_krw": 350000
 }
