@@ -25,8 +25,10 @@ class Settings(BaseSettings):
     naver_ocr_invoke_url: str = ""
     naver_ocr_secret_key: str = ""
 
-    # RAG (embedding provider TBD)
-    embedding_provider_api_key: str = ""
+    # RAG (Upstage solar embeddings + Chroma)
+    upstage_api_key: str = ""
+    embedding_model: str = "solar-embedding-1-large"
+    chroma_dir: Path = ROOT_ENV.parent / "ai" / ".chroma"
 
     # Chat
     deepseek_api_key: str = ""

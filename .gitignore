@@ -28,3 +28,4 @@ dist/
 
 # Local AI state
 /ai/checkpoints.sqlite3
+/ai/.chroma/
