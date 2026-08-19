@@ -64,7 +64,7 @@ function App() {
     }
 
     try {
-		const result = await analyzeDocument(file)
+      const result = await analyzeDocument(file)
       setOcrResult(result)
       setUploadState('done')
     } catch (error) {
