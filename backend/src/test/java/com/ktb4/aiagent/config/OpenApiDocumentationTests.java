@@ -32,6 +32,7 @@ class OpenApiDocumentationTests {
 			.andExpect(jsonPath("$.info.version").value("v1"))
 			.andExpect(jsonPath("$.paths['/api/documents/ocr'].post").exists())
 			.andExpect(jsonPath("$.paths['/api/documents/ocr'].post.summary").value("문서 OCR 분석"))
+			.andExpect(jsonPath("$.paths['/api/documents/ocr'].post.parameters").doesNotExist())
 			.andExpect(jsonPath("$.paths['/api/sessions'].post").exists())
 			.andExpect(jsonPath("$.paths['/api/sessions'].post.summary").value("임시 상담 세션 생성"))
 			.andExpect(jsonPath("$.paths['/api/sessions/{sessionId}/messages'].get").exists())

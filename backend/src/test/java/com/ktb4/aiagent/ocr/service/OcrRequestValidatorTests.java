@@ -5,7 +5,6 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import com.ktb4.aiagent.common.exception.ApplicationException;
 import com.ktb4.aiagent.common.exception.ErrorCode;
-import com.ktb4.aiagent.ocr.dto.DocumentType;
 import org.junit.jupiter.api.Test;
 import org.springframework.mock.web.MockMultipartFile;
 
@@ -36,23 +35,4 @@ class OcrRequestValidatorTests {
 		assertEquals(ErrorCode.INVALID_REQUEST, exception.errorCode());
 	}
 
-	@Test
-	void normalizesDocumentTypeCaseAndWhitespace() {
-		assertEquals(DocumentType.CONTRACT, validator.validateDocumentType(" Contract "));
-		assertEquals(DocumentType.PAYSLIP, validator.validateDocumentType("PAYSLIP"));
-	}
-
-	@Test
-	void rejectsUnknownDocumentType() {
-		ApplicationException exception = assertThrows(ApplicationException.class,
-			() -> validator.validateDocumentType("invoice"));
-		assertEquals(ErrorCode.INVALID_DOCUMENT_TYPE, exception.errorCode());
-	}
-
-	@Test
-	void rejectsBlankDocumentType() {
-		ApplicationException exception = assertThrows(ApplicationException.class,
-			() -> validator.validateDocumentType("  "));
-		assertEquals(ErrorCode.INVALID_DOCUMENT_TYPE, exception.errorCode());
-	}
 }

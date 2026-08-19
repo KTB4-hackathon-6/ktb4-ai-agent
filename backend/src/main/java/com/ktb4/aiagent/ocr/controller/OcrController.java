@@ -9,7 +9,6 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
@@ -29,10 +28,8 @@ public class OcrController {
 	@Operation(summary = "문서 OCR 분석", description = "이미지 파일과 문서 유형을 받아 OCR 분석 결과를 반환합니다.")
 	public ApiResponse<OcrAnalysisResponse> extract(
 			@Parameter(description = "분석할 이미지 파일", required = true)
-			@RequestPart("image") MultipartFile image,
-			@Parameter(description = "문서 유형: contract 또는 payslip", required = true)
-			@RequestParam("documentType") String documentType) {
-		OcrAnalysisResponse result = ocrService.analyze(image, documentType);
+			@RequestPart("image") MultipartFile image) {
+		OcrAnalysisResponse result = ocrService.analyze(image);
 		return ApiResponse.success(result);
 	}
 }
