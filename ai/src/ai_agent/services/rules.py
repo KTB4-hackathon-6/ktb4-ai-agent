@@ -62,6 +62,16 @@ def _check_required_disclosures(facts: ContractFacts) -> list[RuleViolation]:
 
 
 def _check_minimum_wage(facts: ContractFacts) -> list[RuleViolation]:
+    if not facts.wage_specified:
+        return [
+            RuleViolation(
+                rule_id="minimum_wage_needs_review",
+                law_name="최저임금법",
+                article="제6조",
+                message="임금 정보가 확인되지 않아 최저임금 충족 여부 판정을 보류합니다.",
+                severity=Severity.REVIEW,
+            )
+        ]
     if facts.hourly_wage >= MINIMUM_HOURLY_WAGE:
         return []
     return [
