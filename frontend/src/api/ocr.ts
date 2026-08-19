@@ -1,7 +1,4 @@
-export type OcrDocumentType = 'contract' | 'payslip'
-
 export type OcrAnalysisResponse = {
-  documentType: OcrDocumentType
   processedAt: string
   fullText: string
 }
@@ -29,13 +26,9 @@ export class OcrApiError extends Error {
   }
 }
 
-export async function analyzeDocument(
-  file: File,
-  documentType: OcrDocumentType,
-): Promise<OcrAnalysisResponse> {
+export async function analyzeDocument(file: File): Promise<OcrAnalysisResponse> {
   const formData = new FormData()
   formData.append('image', file)
-  formData.append('documentType', documentType)
 
   let response: Response
   try {
