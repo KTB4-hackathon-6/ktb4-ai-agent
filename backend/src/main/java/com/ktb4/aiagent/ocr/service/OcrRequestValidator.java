@@ -2,8 +2,6 @@ package com.ktb4.aiagent.ocr.service;
 
 import com.ktb4.aiagent.common.exception.ApplicationException;
 import com.ktb4.aiagent.common.exception.ErrorCode;
-import com.ktb4.aiagent.ocr.dto.DocumentType;
-import java.util.Locale;
 import java.util.Set;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -32,16 +30,4 @@ public class OcrRequestValidator {
 		}
 	}
 
-	public DocumentType validateDocumentType(String rawDocumentType) {
-		if (rawDocumentType == null || rawDocumentType.isBlank()) {
-			throw new ApplicationException(ErrorCode.INVALID_DOCUMENT_TYPE);
-		}
-		String normalized = rawDocumentType.trim().toUpperCase(Locale.ROOT);
-		try {
-			return DocumentType.valueOf(normalized);
-		} catch (IllegalArgumentException e) {
-			log.warn("Unsupported OCR documentType: {}", rawDocumentType);
-			throw new ApplicationException(ErrorCode.INVALID_DOCUMENT_TYPE);
-		}
-	}
 }

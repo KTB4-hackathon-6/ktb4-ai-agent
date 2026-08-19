@@ -4,7 +4,6 @@ import com.ktb4.aiagent.common.exception.ApplicationException;
 import com.ktb4.aiagent.common.exception.ErrorCode;
 import com.ktb4.aiagent.ocr.client.ClovaOcrClient;
 import com.ktb4.aiagent.ocr.client.ClovaTextJoiner;
-import com.ktb4.aiagent.ocr.dto.DocumentType;
 import com.ktb4.aiagent.ocr.dto.OcrAnalysisResponse;
 import com.ktb4.aiagent.ocr.dto.clova.ClovaOcrImageResult;
 import com.ktb4.aiagent.ocr.dto.clova.ClovaOcrResponse;
@@ -28,9 +27,8 @@ public class OcrService {
 		this.clovaOcrClient = clovaOcrClient;
 	}
 
-	public OcrAnalysisResponse analyze(MultipartFile image, String rawDocumentType) {
+	public OcrAnalysisResponse analyze(MultipartFile image) {
 		validator.validateFile(image);
-		DocumentType documentType = validator.validateDocumentType(rawDocumentType);
 		String format = resolveClovaFormat(image.getContentType());
 
 		byte[] bytes;
@@ -44,7 +42,7 @@ public class OcrService {
 		ClovaOcrImageResult result = firstResult(response);
 		String fullText = ClovaTextJoiner.join(result.fields());
 
-		return new OcrAnalysisResponse(documentType.toValue(), Instant.now(), fullText);
+		return new OcrAnalysisResponse(Instant.now(), fullText);
 	}
 
 	private ClovaOcrImageResult firstResult(ClovaOcrResponse response) {

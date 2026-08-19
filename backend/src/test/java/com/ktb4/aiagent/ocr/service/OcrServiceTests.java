@@ -36,7 +36,7 @@ class OcrServiceTests {
 	}
 
 	@Test
-	void analyzeReturnsJoinedTextForContractDocument() {
+	void analyzeReturnsJoinedText() {
 		MockMultipartFile file = new MockMultipartFile("image", "a.jpg", "image/jpeg", "bytes".getBytes());
 		ClovaOcrResponse response = new ClovaOcrResponse(List.of(
 			new ClovaOcrImageResult("SUCCESS", null, List.of(
@@ -46,9 +46,8 @@ class OcrServiceTests {
 		));
 		when(clovaOcrClient.recognize(any(), eq("jpg"), any(), eq("ko"))).thenReturn(response);
 
-		OcrAnalysisResponse result = ocrService.analyze(file, "contract");
+		OcrAnalysisResponse result = ocrService.analyze(file);
 
-		assertThat(result.documentType()).isEqualTo("contract");
 		assertThat(result.fullText()).isEqualTo("임금 2,000,000원");
 		verify(clovaOcrClient).recognize(any(), eq("jpg"), any(), eq("ko"));
 	}
@@ -58,7 +57,7 @@ class OcrServiceTests {
 		MockMultipartFile file = new MockMultipartFile("image", "a.gif", "image/gif", "bytes".getBytes());
 
 		ApplicationException exception = assertThrows(ApplicationException.class,
-			() -> ocrService.analyze(file, "contract"));
+			() -> ocrService.analyze(file));
 		assertThat(exception.errorCode()).isEqualTo(ErrorCode.UNSUPPORTED_FILE_TYPE);
 	}
 
@@ -69,7 +68,7 @@ class OcrServiceTests {
 			.thenReturn(new ClovaOcrResponse(List.of()));
 
 		ApplicationException exception = assertThrows(ApplicationException.class,
-			() -> ocrService.analyze(file, "payslip"));
+			() -> ocrService.analyze(file));
 		assertThat(exception.errorCode()).isEqualTo(ErrorCode.OCR_PROVIDER_REQUEST_ERROR);
 	}
 }
