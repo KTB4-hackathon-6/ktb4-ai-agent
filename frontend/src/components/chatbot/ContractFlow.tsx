@@ -1,4 +1,4 @@
-import type { OcrAnalysisResponse } from '../../api/ocr'
+import type { ContractAnalysisResponse } from '../../api/contracts'
 import { contractClauses } from '../../mocks/chatbot'
 import type { UploadState } from '../../types/chatbot'
 import ChatMessage, { type ChatMessageItem } from './ChatMessage'
@@ -7,7 +7,7 @@ import ResultsPanel, { type ResultTab } from './ResultsPanel'
 
 type ContractFlowProps = {
   uploadState: UploadState
-  ocrResult: OcrAnalysisResponse | null
+  contractResult: ContractAnalysisResponse | null
   uploadError: string | null
   openClause: string | null
   messages: ChatMessageItem[]
@@ -15,7 +15,7 @@ type ContractFlowProps = {
   resultsShown: boolean
   activeResultTab: ResultTab
   checkedEvidence: string[]
-  onStartAnalysis: (file?: File) => void
+  onStartAnalysis: (files?: File[]) => void
   onResetUpload: () => void
   onToggleClause: (clauseId: string | null) => void
   onPickOption: (ko: string, en: string) => void
@@ -27,7 +27,7 @@ type ContractFlowProps = {
 
 function ContractFlow({
   uploadState,
-  ocrResult,
+  contractResult,
   uploadError,
   openClause,
   messages,
@@ -51,14 +51,15 @@ function ContractFlow({
         <section className="upload-panel">
           <label className="upload-target">
             <span className="upload-icon" aria-hidden="true">＋</span>
-            <strong>근로계약서 사진 업로드</strong>
-            <small>Upload contract photo</small>
+            <strong>근로계약서 PDF 또는 사진 여러 장 업로드</strong>
+            <small>Upload multiple contract PDFs or images</small>
             <input
               type="file"
               accept="image/jpeg,image/png,application/pdf"
+              multiple
               onChange={(event) => {
-                const file = event.target.files?.[0]
-                if (file) onStartAnalysis(file)
+                const files = Array.from(event.target.files ?? [])
+                if (files.length > 0) onStartAnalysis(files)
               }}
             />
           </label>
@@ -73,55 +74,22 @@ function ContractFlow({
       )}
       {uploadState === 'error' && (
         <section className="error-panel" role="alert">
-          <strong>문서 인식에 실패했습니다. / OCR failed</strong>
+          <strong>계약서 분석에 실패했습니다. / Analysis failed</strong>
           <p>{uploadError}</p>
           <button className="secondary-button" onClick={onResetUpload}>다른 파일 선택 / Choose another file</button>
         </section>
       )}
       {uploadState === 'done' && (
         <>
-          {ocrResult && (
-            <section className="result-panel ocr-result">
-              <h2>문서 인식 결과 / OCR Result</h2>
-              <p className="result-caption">문서에서 추출한 원문입니다. 아래 진단 내용은 현재 데모 데이터입니다.</p>
-              <pre>{ocrResult.fullText || '인식된 텍스트가 없습니다.'}</pre>
-            </section>
+          {contractResult ? (
+            <ContractAnalysisResult
+              result={contractResult}
+              openClause={openClause}
+              onToggleClause={onToggleClause}
+            />
+          ) : (
+            <DemoDiagnosis openClause={openClause} onToggleClause={onToggleClause} />
           )}
-          <section className="result-panel diagnosis">
-            <h2>진단 리포트 / Diagnosis Report</h2>
-            <div className="legend">
-              <span className="ok">● 문제없음 / OK</span>
-              <span className="warn">● 확인 필요</span>
-              <span className="danger">● 주의 필요</span>
-            </div>
-            {contractClauses.map((clause) => {
-              const open = openClause === clause.id
-              return (
-                <button
-                  className={`clause ${clause.status}`}
-                  key={clause.id}
-                  onClick={() => onToggleClause(open ? null : clause.id)}
-                  aria-expanded={open}
-                >
-                  <div className="clause-heading">
-                    <div>
-                      <span className={`status ${clause.status}`}>{clause.label}</span>
-                      <h3>{clause.title}</h3>
-                      <p>{clause.en}</p>
-                    </div>
-                    <span className={open ? 'chevron open' : 'chevron'}>⌄</span>
-                  </div>
-                  {open && (
-                    <div className="clause-details">
-                      <strong>원문 / Original</strong><p>{clause.original}</p>
-                      <strong>설명 / Explanation (EN)</strong><p>{clause.explanation}</p>
-                      <strong>관련 법적 근거 / Legal basis</strong><p>{clause.legal}</p>
-                    </div>
-                  )}
-                </button>
-              )
-            })}
-          </section>
           <QuestionFlow
             messages={messages}
             currentStep={currentStep}
@@ -140,6 +108,146 @@ function ContractFlow({
         </>
       )}
     </>
+  )
+}
+
+type DiagnosisProps = {
+  openClause: string | null
+  onToggleClause: (clauseId: string | null) => void
+}
+
+function ContractAnalysisResult({
+  result,
+  openClause,
+  onToggleClause,
+}: DiagnosisProps & { result: ContractAnalysisResponse }) {
+  const { facts, violations, unverified_fields: unverifiedFields } = result.diagnosis
+  const factItems = [
+    ['주당 근로시간', `${facts.weekly_working_hours}시간`],
+    ['하루 근로시간', `${facts.daily_working_hours}시간`],
+    ['월 급여', `${facts.monthly_wage.toLocaleString('ko-KR')}원`],
+    ['계산 시급', `${facts.hourly_wage.toLocaleString('ko-KR')}원`],
+    ['계약 기간', `${facts.contract_period_months}개월`],
+    ['숙식비 공제', `${facts.accommodation_deduction_krw.toLocaleString('ko-KR')}원`],
+  ]
+
+  return (
+    <>
+      <section className="result-panel agent-result">
+        <span className="result-eyebrow">AI AGENT RESPONSE</span>
+        <h2>{result.analysis.summary || '계약서 분석 결과'}</h2>
+        <p className="agent-answer">{result.answer}</p>
+        {result.analysis.findings.length > 0 && (
+          <div className="agent-section">
+            <h3>주요 발견사항</h3>
+            {result.analysis.findings.map((finding, index) => (
+              <article className="agent-finding" key={`${finding.title}-${index}`}>
+                <strong>{finding.title}</strong>
+                <p>{finding.description}</p>
+              </article>
+            ))}
+          </div>
+        )}
+        {result.analysis.nextActions.length > 0 && (
+          <div className="agent-section">
+            <h3>다음 행동</h3>
+            <ol className="next-actions">
+              {result.analysis.nextActions.map((action, index) => <li key={`${action}-${index}`}>{action}</li>)}
+            </ol>
+          </div>
+        )}
+      </section>
+
+      <section className="result-panel diagnosis">
+        <h2>계약서 진단 리포트 / Diagnosis Report</h2>
+        <div className="fact-grid">
+          {factItems.map(([label, value]) => (
+            <div key={label}><span>{label}</span><strong>{value}</strong></div>
+          ))}
+        </div>
+        <div className="legend">
+          <span className="warn">● 확인 필요</span>
+          <span className="danger">● 주의 필요</span>
+        </div>
+        {violations.length === 0 ? (
+          <p className="empty-result">확인된 규칙 위반 항목이 없습니다.</p>
+        ) : violations.map((violation, index) => {
+          const id = `${violation.rule_id}-${index}`
+          const open = openClause === id
+          const status = violation.severity === 'warning' ? 'danger' : 'warn'
+          return (
+            <button
+              className={`clause ${status}`}
+              key={id}
+              onClick={() => onToggleClause(open ? null : id)}
+              aria-expanded={open}
+            >
+              <div className="clause-heading">
+                <div>
+                  <span className={`status ${status}`}>
+                    {status === 'danger' ? '주의 필요 / Warning' : '확인 필요 / Review'}
+                  </span>
+                  <h3>{violation.message}</h3>
+                  <p>{violation.law_name} {violation.article}</p>
+                </div>
+                <span className={open ? 'chevron open' : 'chevron'}>⌄</span>
+              </div>
+              {open && (
+                <div className="clause-details">
+                  <strong>진단 코드 / Check ID</strong><p>{violation.rule_id}</p>
+                  <strong>관련 법적 근거 / Legal basis</strong><p>{violation.law_name} {violation.article}</p>
+                </div>
+              )}
+            </button>
+          )
+        })}
+        {unverifiedFields.length > 0 && (
+          <p className="unverified-fields">
+            OCR 원문에서 확인하지 못한 항목: {unverifiedFields.join(', ')}
+          </p>
+        )}
+      </section>
+    </>
+  )
+}
+
+function DemoDiagnosis({ openClause, onToggleClause }: DiagnosisProps) {
+  return (
+    <section className="result-panel diagnosis">
+      <h2>데모 진단 리포트 / Demo Diagnosis Report</h2>
+      <div className="legend">
+        <span className="ok">● 문제없음 / OK</span>
+        <span className="warn">● 확인 필요</span>
+        <span className="danger">● 주의 필요</span>
+      </div>
+      {contractClauses.map((clause) => {
+        const open = openClause === clause.id
+        return (
+          <button
+            className={`clause ${clause.status}`}
+            key={clause.id}
+            onClick={() => onToggleClause(open ? null : clause.id)}
+            aria-expanded={open}
+          >
+            <div className="clause-heading">
+              <div>
+                <span className={`status ${clause.status}`}>{clause.label}</span>
+                <h3>{clause.title}</h3>
+                <p>{clause.en}</p>
+              </div>
+              <span className={open ? 'chevron open' : 'chevron'}>⌄</span>
+            </div>
+            {open && (
+              <div className="clause-details">
+                <strong>원문 / Original</strong><p>{clause.original}</p>
+                <strong>설명 / Explanation (EN)</strong><p>{clause.explanation}</p>
+                <strong>관련 법적 근거 / Legal basis</strong><p>{clause.legal}</p>
+              </div>
+            )}
+          </button>
+        )
+      })}
+    </section>
   )
 }
 

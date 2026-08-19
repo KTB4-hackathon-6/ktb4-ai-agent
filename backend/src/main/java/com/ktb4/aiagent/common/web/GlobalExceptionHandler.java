@@ -9,7 +9,9 @@ import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.multipart.MaxUploadSizeExceededException;
+import org.springframework.web.multipart.support.MissingServletRequestPartException;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
@@ -21,7 +23,12 @@ public class GlobalExceptionHandler {
 		return errorResponse(exception.errorCode());
 	}
 
-	@ExceptionHandler({MethodArgumentNotValidException.class, HttpMessageNotReadableException.class})
+	@ExceptionHandler({
+		MethodArgumentNotValidException.class,
+		HttpMessageNotReadableException.class,
+		MissingServletRequestParameterException.class,
+		MissingServletRequestPartException.class
+	})
 	ResponseEntity<ApiResponse<ErrorData>> handleInvalidRequest(Exception exception) {
 		return errorResponse(ErrorCode.INVALID_REQUEST);
 	}

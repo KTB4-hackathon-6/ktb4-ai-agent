@@ -35,9 +35,16 @@ class ContractDiagnosisServiceTests {
 			new ContractRuleEngine()
 		);
 
-		ContractDiagnosis result = service.diagnose(List.of(front, back));
+		ContractDiagnosisContext context = service.diagnoseWithContext(List.of(front, back));
+		ContractDiagnosis result = context.diagnosis();
 
 		verify(extractor).extract("앞면 OCR\n\n뒷면 OCR");
+		assertThat(context.documents())
+			.extracting(ContractDiagnosisContext.SourceDocument::fileName)
+			.containsExactly("front.jpg", "back.jpg");
+		assertThat(context.documents())
+			.extracting(ContractDiagnosisContext.SourceDocument::text)
+			.containsExactly("앞면 OCR", "뒷면 OCR");
 		assertThat(result.facts().weeklyWorkingHours()).isEqualTo(60);
 		assertThat(result.unverifiedFields()).containsExactly("monthly_wage");
 		assertThat(result.violations())
