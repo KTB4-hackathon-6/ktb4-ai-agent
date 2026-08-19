@@ -5,7 +5,11 @@ import json
 from functools import lru_cache
 
 from langchain.agents import create_agent
-from langchain.agents.middleware import ToolCallLimitMiddleware
+from langchain.agents.middleware import (
+    ModelCallLimitMiddleware,
+    ToolCallLimitMiddleware,
+    wrap_model_call,
+)
 from langchain.agents.structured_output import ToolStrategy
 from langchain_core.messages import HumanMessage
 from langchain_core.tracers import LangChainTracer
@@ -31,6 +35,8 @@ PASS는 문제가 아니며 UNKNOWN은 확정하지 않는다.
 문서에서 추가 문제를 발견하면 필요한 경우 search_labor_law로 근거를 확인한다. 검색 근거 없이
 법 위반이라고 확정하지 않는다. 각 issue의 facts에는 구제 Agent가 사용할 문서상 핵심 사실과
 증거 문장을 짧은 문자열 key-value로 담는다. 관련 checkId와 documentId를 반드시 연결한다.
+법령 검색 제한 메시지를 받으면 추가 검색을 시도하지 말고, 현재까지 확보한 근거로 즉시
+DocumentReview를 반환한다. 근거가 부족한 내용은 위반으로 확정하지 않는다.
 
 issue_type은 MINIMUM_WAGE, OVERTIME_PREMIUM, UNPAID_WAGE, SEVERANCE_PAY,
 HOUSING_DEDUCTION, WORKING_CONDITION_VIOLATION, DEPARTURE_INSURANCE 중 가장 가까운 값을 쓴다.
@@ -42,6 +48,16 @@ class DocumentReview(BaseModel):
     summary: str
     issues: list[DetectedIssue] = Field(default_factory=list)
     next_actions: list[str] = Field(default_factory=list)
+
+
+@wrap_model_call
+async def stop_search_after_limit(request, handler):
+    search_count = request.state.get("run_tool_call_count", {}).get("search_labor_law", 0)
+    if search_count >= 5:
+        request = request.override(
+            tools=[tool for tool in request.tools if tool.name != "search_labor_law"]
+        )
+    return await handler(request)
 
 
 def deduplicate_issues(issues: list[DetectedIssue]) -> list[DetectedIssue]:
@@ -66,8 +82,10 @@ def get_reviewer_agent():
         tools=[search_labor_law],
         middleware=[
             ToolCallLimitMiddleware(
-                tool_name="search_labor_law", run_limit=3, exit_behavior="continue"
-            )
+                tool_name="search_labor_law", run_limit=5, exit_behavior="continue"
+            ),
+            stop_search_after_limit,
+            ModelCallLimitMiddleware(run_limit=7, exit_behavior="error"),
         ],
         system_prompt=SYSTEM_PROMPT,
         response_format=ToolStrategy(DocumentReview),
