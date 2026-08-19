@@ -1,10 +1,10 @@
 import { useEffect, useRef, useState } from 'react'
 import ChatHeader from './components/chatbot/ChatHeader'
+import ChatMessage, { type ChatMessageItem } from './components/chatbot/ChatMessage'
 import './App.css'
 
 type View = 'contract' | 'work' | 'admin' | 'agencies' | null
 type UploadState = 'idle' | 'processing' | 'done'
-type Message = { who: 'bot' | 'user'; ko: string; en: string }
 
 const languages = [
   { code: 'vi', native: 'Tiếng Việt', ko: '베트남어' },
@@ -104,19 +104,6 @@ const agencies = [
   ['이주민센터 (NGO)', 'Migrant Center (NGO)', '현장 지원·통역 / On-site support & interpreting', '문의하기', 'tel:15772270'],
 ]
 
-function BotMessage({ ko, en }: { ko: string; en: string }) {
-  return (
-    <div className="message-row bot-row">
-      <div className="bot-avatar" aria-hidden="true">N</div>
-      <div className="message bot-message"><div>{ko}</div><div className="message-en">{en}</div></div>
-    </div>
-  )
-}
-
-function UserMessage({ ko, en }: { ko: string; en: string }) {
-  return <div className="message-row user-row"><div className="message user-message"><div>{ko}</div><div className="message-en">{en}</div></div></div>
-}
-
 function App() {
   const [language, setLanguage] = useState('vi')
   const [languageChosen, setLanguageChosen] = useState(false)
@@ -125,7 +112,7 @@ function App() {
   const [adminState, setAdminState] = useState<UploadState>('idle')
   const [openClause, setOpenClause] = useState<string | null>(null)
   const [chatStep, setChatStep] = useState(0)
-  const [chatMessages, setChatMessages] = useState<Message[]>([
+  const [chatMessages, setChatMessages] = useState<ChatMessageItem[]>([
     { who: 'bot', ko: chatScript[0].ko, en: chatScript[0].en },
   ])
   const [resultsShown, setResultsShown] = useState(false)
@@ -178,9 +165,9 @@ function App() {
     const options = chatScript[chatStep]?.options ?? []
     return (
       <>
-        {chatMessages.map((message, index) => message.who === 'bot'
-          ? <BotMessage key={`${message.ko}-${index}`} ko={message.ko} en={message.en} />
-          : <UserMessage key={`${message.ko}-${index}`} ko={message.ko} en={message.en} />)}
+        {chatMessages.map((message, index) => (
+          <ChatMessage key={`${message.ko}-${index}`} {...message} />
+        ))}
         {options.length > 0 && (
           <div className="options nested-options">
             {options.map(([ko, en]) => <button className="pill-button" key={ko} onClick={() => pickChatOption(ko, en)}>{ko} <span>/ {en}</span></button>)}
@@ -238,7 +225,7 @@ function App() {
       <ChatHeader completedSteps={pipelineDone} />
 
       <section className="chat" aria-live="polite">
-        <BotMessage ko="안녕하세요! 먼저 언어를 선택해주세요." en="Hi! Please choose your language first." />
+        <ChatMessage who="bot" ko="안녕하세요! 먼저 언어를 선택해주세요." en="Hi! Please choose your language first." />
         <div className="language-options">
           {languages.map((item) => (
             <button
@@ -252,7 +239,7 @@ function App() {
 
         {languageChosen && (
           <>
-            <BotMessage ko="무엇을 도와드릴까요? 아래에서 선택해주세요." en="What can I help you with? Pick an option below." />
+            <ChatMessage who="bot" ko="무엇을 도와드릴까요? 아래에서 선택해주세요." en="What can I help you with? Pick an option below." />
             <div className="options nested-options main-options">
               <button className="pill-button" onClick={() => selectView('contract')}>📄 근로계약서 분석하기 / Analyze my contract</button>
               <button className="pill-button" onClick={() => selectView('work')}>🔍 현재 근무 실태 체크하기 / Check my current working conditions</button>
@@ -264,7 +251,7 @@ function App() {
 
         {view === 'work' && (
           <>
-            <BotMessage ko="계약서가 없어도 괜찮아요. 실제 근무 상황을 몇 가지 여쭤보고 부당한 부분이 있는지 확인해드릴게요." en="No contract needed. I'll ask a few questions about your actual work situation and check for issues." />
+            <ChatMessage who="bot" ko="계약서가 없어도 괜찮아요. 실제 근무 상황을 몇 가지 여쭤보고 부당한 부분이 있는지 확인해드릴게요." en="No contract needed. I'll ask a few questions about your actual work situation and check for issues." />
             {renderChatFlow()}
             {renderResults()}
           </>
@@ -272,7 +259,7 @@ function App() {
 
         {view === 'contract' && (
           <>
-            <BotMessage ko="좋아요, 근로계약서를 업로드해주세요." en="Great, please upload your labor contract." />
+            <ChatMessage who="bot" ko="좋아요, 근로계약서를 업로드해주세요." en="Great, please upload your labor contract." />
             {uploadState === 'idle' && (
               <section className="upload-panel">
                 <label className="upload-target">
@@ -308,7 +295,7 @@ function App() {
 
         {view === 'admin' && (
           <>
-            <BotMessage ko="행정 문서 사진이나 PDF를 업로드해주세요." en="Please upload a photo or PDF of your admin document." />
+            <ChatMessage who="bot" ko="행정 문서 사진이나 PDF를 업로드해주세요." en="Please upload a photo or PDF of your admin document." />
             {adminState === 'idle' && (
               <section className="upload-panel">
                 <label className="upload-target"><span className="upload-icon" aria-hidden="true">＋</span><strong>행정 문서 사진 업로드</strong><small>Upload admin document</small><input type="file" accept="image/*,.pdf" onChange={() => runDemoAnalysis('admin')} /></label>
@@ -334,7 +321,7 @@ function App() {
 
         {view === 'agencies' && (
           <>
-            <BotMessage ko="상담기관을 안내해드릴게요. AI는 신고를 대신 접수하지 않아요." en="Here are counseling agencies — the AI does not submit reports on your behalf." />
+            <ChatMessage who="bot" ko="상담기관을 안내해드릴게요. AI는 신고를 대신 접수하지 않아요." en="Here are counseling agencies — the AI does not submit reports on your behalf." />
             <section className="result-panel agency-panel">
               <div className="agency-list">{agencies.map(([ko, en, description, phone, href]) => <article className="agency" key={ko}><div><h3>{ko}</h3><p>{en} · {description}</p></div><a href={href}>{phone}</a></article>)}</div>
               <label className="consent"><input type="checkbox" checked={consent} onChange={(event) => setConsent(event.target.checked)} /><span>진단 요약을 상담사와 공유하는 데 동의합니다 / I agree to share my diagnosis summary with the counselor.</span></label>
