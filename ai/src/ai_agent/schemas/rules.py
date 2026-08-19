@@ -20,11 +20,15 @@ class ContractFacts(BaseModel):
     daily_working_hours: float
     rest_minutes_per_workday: int
     weekly_paid_holidays: int
-    hourly_wage: int  # 원
+    monthly_wage: int  # 원, 계약서에 literal하게 적힌 월급
+    hourly_wage: int  # 원, monthly_wage에서 계산 (LLM이 직접 채우지 않음)
     wage_specified: bool
     working_hours_specified: bool
     holiday_specified: bool
-    annual_leave_specified: bool
+    contract_period_months: int  # 근로계약기간(개월)
+    payment_date_specified: bool  # 임금 지급일이 명시(공란 아님)됐는지
+    payment_method_in_person: bool  # 통장입금이 아닌 현금 직접 지급인지
+    accommodation_deduction_krw: int  # 숙박비 공제액(원), 없으면 0
 
 
 class RuleViolation(BaseModel):

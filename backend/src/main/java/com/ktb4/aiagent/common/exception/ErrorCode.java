@@ -11,6 +11,7 @@ public enum ErrorCode {
 	INVALID_DOCUMENT_TYPE(HttpStatus.BAD_REQUEST, "지원하지 않는 documentType입니다."),
 	OCR_PROVIDER_REQUEST_ERROR(HttpStatus.BAD_GATEWAY, "OCR 처리 중 오류가 발생했습니다."),
 	OCR_PROVIDER_TIMEOUT(HttpStatus.GATEWAY_TIMEOUT, "OCR 서비스에 연결할 수 없습니다.");
+	SESSION_NOT_FOUND(HttpStatus.NOT_FOUND, "세션을 찾을 수 없습니다."),
 
 	private final HttpStatus httpStatus;
 	private final String message;
