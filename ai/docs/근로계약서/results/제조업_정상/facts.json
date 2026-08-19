@@ -1,0 +1,16 @@
+{
+  "industry": "manufacturing",
+  "weekly_working_hours": 50.0,
+  "daily_working_hours": 9.0,
+  "rest_minutes_per_workday": 60,
+  "weekly_paid_holidays": 1,
+  "monthly_wage": 2096270,
+  "hourly_wage": 10030,
+  "wage_specified": true,
+  "working_hours_specified": true,
+  "holiday_specified": true,
+  "contract_period_months": 36,
+  "payment_date_specified": true,
+  "payment_method_in_person": false,
+  "accommodation_deduction_krw": 80000
+}

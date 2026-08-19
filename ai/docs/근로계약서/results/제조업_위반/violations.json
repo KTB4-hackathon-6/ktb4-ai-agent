@@ -1,0 +1,44 @@
+[
+  {
+    "rule_id": "required_disclosure_missing",
+    "law_name": "근로기준법",
+    "article": "제17조",
+    "message": "임금 지급일 항목이 계약서에 명시되어 있지 않습니다.",
+    "severity": "warning"
+  },
+  {
+    "rule_id": "below_minimum_wage",
+    "law_name": "최저임금법",
+    "article": "제6조",
+    "message": "시급 8,373원은 2026년 최저임금 10,320원에 미달합니다.",
+    "severity": "warning"
+  },
+  {
+    "rule_id": "contract_period_review",
+    "law_name": "외국인근로자의 고용 등에 관한 법률",
+    "article": "제18조의2",
+    "message": "근로계약기간 48개월은 기본 취업활동 기간 36개월(3년)을 초과합니다. 취업활동 기간 연장허가(최대 1년 10개월 추가)를 받았는지 확인이 필요합니다.",
+    "severity": "review"
+  },
+  {
+    "rule_id": "in_person_payment_risk",
+    "law_name": "근로기준법",
+    "article": "제43조",
+    "message": "임금 지급 방법이 통장 입금이 아닌 현금 직접 지급으로 명시되어 있습니다. 통장·도장을 사용자가 관리하는 등 임금 관리 리스크가 없는지 확인이 필요합니다.",
+    "severity": "review"
+  },
+  {
+    "rule_id": "accommodation_deduction_high",
+    "law_name": "외국인근로자의 고용 등에 관한 법률",
+    "article": "숙식비 공제지침",
+    "message": "숙박비 공제 350,000원은 월급의 20%로, 고용노동부 숙식비 공제 한도 대비 과다하지 않은지 확인이 필요합니다.",
+    "severity": "review"
+  },
+  {
+    "rule_id": "rest_time_insufficient",
+    "law_name": "근로기준법",
+    "article": "제54조",
+    "message": "1일 근로시간 8.0시간 기준 휴게시간은 최소 60분이 필요하지만 30분으로 명시되어 있습니다.",
+    "severity": "warning"
+  }
+]
