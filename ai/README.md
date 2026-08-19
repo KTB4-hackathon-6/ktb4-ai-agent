@@ -20,9 +20,11 @@ src/ai_agent/
   schemas/
     ocr.py
     rag.py
+    rules.py              # ContractFacts, RuleViolation
   services/
     ocr.py               # OCR 클라이언트 (Naver Clova OCR)
     rag/retriever.py       # 법령 조항 검색 (embedding/vector store TBD)
+    rules.py               # 근로조건 위반 판정 (룰 기반, LLM 미개입)
 tests/
 ```
 
