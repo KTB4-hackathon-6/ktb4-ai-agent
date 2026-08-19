@@ -33,7 +33,7 @@ tests/
 ```bash
 cd ai
 uv sync
-cp .env.example .env  # 값 채워넣기
+cp ../.env.example ../.env  # 프로젝트 루트에 생성 후 값 채워넣기
 ```
 
 ### Naver Clova OCR 키 발급
@@ -41,7 +41,7 @@ cp .env.example .env  # 값 채워넣기
 1. [NCP 콘솔](https://console.ncloud.com) 가입 후 **AI・NAVER API > CLOVA OCR**로 이동
 2. 도메인 생성 (General 템플릿) → **Invoke URL** 확인
 3. 해당 도메인의 **Secret Key** 발급
-4. `.env`에 `NAVER_OCR_INVOKE_URL`, `NAVER_OCR_SECRET_KEY`로 입력
+4. 프로젝트 루트 `.env`에 `NAVER_OCR_INVOKE_URL`, `NAVER_OCR_SECRET_KEY`로 입력
 
 ## 실행
 
