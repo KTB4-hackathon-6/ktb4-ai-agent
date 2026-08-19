@@ -7,7 +7,10 @@ from fastapi.testclient import TestClient
 from ai_agent.api.routes import analyze
 from ai_agent.main import app
 from ai_agent.services import agent as agent_service
+from ai_agent.services import reviewer as reviewer_service
 from ai_agent.services.rag.retriever import search_labor_law
+from ai_agent.services.remedy.models import DetectedIssue, IssueType
+from ai_agent.services.reviewer import DocumentReview, deduplicate_issues
 
 REQUEST = {
     "requestId": "req-1",
@@ -41,8 +44,14 @@ REQUEST = {
 def test_analyze_uses_only_input_text(monkeypatch) -> None:
     answer_question = AsyncMock(return_value="확인이 필요합니다.")
     monkeypatch.setattr(analyze, "answer_question", answer_question)
+    request = {
+        **REQUEST,
+        "input": {"text": "관리비를 회사가 빼도 돼?", "documentIds": []},
+        "documents": [],
+        "legalChecks": [],
+    }
 
-    response = TestClient(app).post("/analyze", json=REQUEST)
+    response = TestClient(app).post("/analyze", json=request)
 
     assert response.status_code == 200
     assert response.json() == {
@@ -53,6 +62,109 @@ def test_analyze_uses_only_input_text(monkeypatch) -> None:
         "error": None,
     }
     answer_question.assert_awaited_once_with("관리비를 회사가 빼도 돼?", "session-1")
+
+
+def test_analyze_returns_document_review_without_starting_remedy(monkeypatch) -> None:
+    issue = DetectedIssue(
+        issue_id="housing-1",
+        issue_type=IssueType.HOUSING_DEDUCTION,
+        summary="계약과 다른 숙식비가 공제됐습니다.",
+        facts={"contract_fee": "80000", "deducted_fee": "200000"},
+        severity="HIGH",
+        related_check_ids=["check-1"],
+        related_document_ids=["doc-1"],
+    )
+    review_documents = AsyncMock(
+        return_value=DocumentReview(
+            answer="계약과 다른 숙식비 공제 가능성이 있습니다.",
+            summary="숙식비 공제 문제를 확인했습니다.",
+            issues=[issue],
+            next_actions=["공제액 반환 또는 사업장 변경 의사를 확인합니다."],
+        )
+    )
+    answer_question = AsyncMock()
+    monkeypatch.setattr(analyze, "review_documents", review_documents)
+    monkeypatch.setattr(analyze, "answer_question", answer_question)
+
+    response = TestClient(app).post("/analyze", json=REQUEST)
+
+    assert response.status_code == 200
+    assert response.json()["result"] == {
+        "answer": "계약과 다른 숙식비 공제 가능성이 있습니다.",
+        "analysis": {
+            "summary": "숙식비 공제 문제를 확인했습니다.",
+            "findings": [
+                {
+                    "title": "HOUSING_DEDUCTION",
+                    "description": "계약과 다른 숙식비가 공제됐습니다.",
+                    "severity": "HIGH",
+                    "relatedCheckIds": ["check-1"],
+                    "relatedDocumentIds": ["doc-1"],
+                }
+            ],
+            "nextActions": ["공제액 반환 또는 사업장 변경 의사를 확인합니다."],
+        },
+    }
+    review_documents.assert_awaited_once()
+    answer_question.assert_not_awaited()
+
+
+def test_document_review_deduplicates_same_legal_check() -> None:
+    first = DetectedIssue(
+        issue_id="housing-1",
+        issue_type=IssueType.HOUSING_DEDUCTION,
+        summary="숙식비가 계약보다 많이 공제됐습니다.",
+        related_check_ids=["check-1"],
+    )
+    duplicate = DetectedIssue(
+        issue_id="wage-1",
+        issue_type=IssueType.UNPAID_WAGE,
+        summary="같은 공제액이 임금 미지급일 수 있습니다.",
+        related_check_ids=["check-1"],
+    )
+
+    assert deduplicate_issues([first, duplicate]) == [first]
+
+
+def test_document_reviewer_limits_law_search_to_three_calls(monkeypatch) -> None:
+    model = object()
+    agent = object()
+    agent_factory = Mock(return_value=agent)
+    monkeypatch.setattr(agent_service, "get_model", lambda: model)
+    monkeypatch.setattr(reviewer_service, "create_agent", agent_factory)
+    reviewer_service.get_reviewer_agent.cache_clear()
+
+    assert reviewer_service.get_reviewer_agent() is agent
+    limiter = agent_factory.call_args.kwargs["middleware"][0]
+    assert limiter.tool_name == "search_labor_law"
+    assert limiter.run_limit == 3
+    assert limiter.exit_behavior == "continue"
+
+    reviewer_service.get_reviewer_agent.cache_clear()
+
+
+@pytest.mark.asyncio
+async def test_document_review_passes_trace_metadata(monkeypatch) -> None:
+    review = DocumentReview(answer="답변", summary="요약")
+    agent = SimpleNamespace(ainvoke=AsyncMock(return_value={"structured_response": review}))
+    tracer = object()
+    monkeypatch.setattr(reviewer_service, "get_reviewer_agent", lambda: agent)
+    monkeypatch.setattr(reviewer_service, "get_langsmith_tracer", lambda: tracer)
+
+    result = await reviewer_service.review_documents(
+        "확인해줘", [], [], request_id="req-1", session_id="session-1"
+    )
+
+    assert result == review
+    agent.ainvoke.assert_awaited_once()
+    assert agent.ainvoke.await_args.args[1] == {
+        "callbacks": [tracer],
+        "run_name": "problem-review-agent",
+        "metadata": {
+            "request_id": "req-1",
+            "session_id": "session-1",
+        },
+    }
 
 
 def test_analyze_accepts_null_text() -> None:
@@ -80,7 +192,8 @@ def test_analyze_returns_structured_model_error(monkeypatch) -> None:
         AsyncMock(side_effect=RuntimeError("provider error")),
     )
 
-    response = TestClient(app).post("/analyze", json=REQUEST)
+    request = {**REQUEST, "documents": [], "legalChecks": []}
+    response = TestClient(app).post("/analyze", json=request)
 
     assert response.status_code == 502
     assert response.json() == {

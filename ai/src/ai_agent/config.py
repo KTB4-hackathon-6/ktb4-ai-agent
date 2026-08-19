@@ -33,6 +33,13 @@ class Settings(BaseSettings):
     chat_model: str = "deepseek-v4-flash"
     checkpoint_db_path: Path = ROOT_ENV.parent / "ai" / "checkpoints.sqlite3"
 
+    # Observability
+    langsmith_tracing: bool = False
+    langsmith_api_key: str = ""
+    langsmith_endpoint: str = "https://api.smith.langchain.com"
+    langsmith_project: str = "ktb4-ai-agent"
+    langsmith_workspace_id: str = ""
+
 
 @lru_cache
 def get_settings() -> Settings:

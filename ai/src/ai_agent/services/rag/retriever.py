@@ -7,13 +7,32 @@ from ai_agent.schemas.rag import LawArticle
 DUMMY_ARTICLES = (
     LawArticle(
         law_name="근로기준법",
-        article_number="제17조",
-        text="근로계약 체결 시 임금, 소정근로시간, 휴일, 연차유급휴가 등을 명시해야 한다.",
+        article_number="제43조 제1항",
+        text=(
+            "임금은 통화로 근로자에게 직접 전액 지급해야 한다. 법령 또는 단체협약에 "
+            "특별한 규정이 있는 경우에만 임금 일부를 공제할 수 있다."
+        ),
+    ),
+    LawArticle(
+        law_name="고용노동부 외국인근로자 숙식비 공제지침",
+        article_number="숙식정보 제공 및 비용징수 관련 업무지침",
+        text=(
+            "숙식비는 표준근로계약서에 기재된 금액 범위에서 징수하고, 임금에서 사전 "
+            "공제하려면 근로자가 이해할 수 있는 언어로 작성된 별도 서면 동의를 받아야 한다."
+        ),
     ),
     LawArticle(
         law_name="근로기준법",
-        article_number="제43조",
-        text="임금은 원칙적으로 통화로 근로자에게 직접 전액을 지급해야 한다.",
+        article_number="제48조 제2항",
+        text=(
+            "사용자는 임금을 지급할 때 임금의 구성항목, 계산방법, 공제 내역 등을 적은 "
+            "임금명세서를 서면 또는 전자문서로 교부해야 한다."
+        ),
+    ),
+    LawArticle(
+        law_name="근로기준법",
+        article_number="제17조",
+        text="근로계약 체결 시 임금, 소정근로시간, 휴일, 연차유급휴가 등을 명시해야 한다.",
     ),
     LawArticle(
         law_name="근로기준법",
