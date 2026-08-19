@@ -41,7 +41,6 @@ git status --short
 - `git reset --hard`, 강제 checkout 등 복구하기 어려운 Git 명령
 - 관련 없는 리팩터링과 대규모 포맷 변경
 - 요청 범위 밖의 라이브러리, 기능, API, 데이터베이스 또는 인프라 추가
-- commit, push, PR 생성, merge 및 배포
 
 ## Backend 작업
 
@@ -73,6 +72,18 @@ cd backend
 - 애플리케이션 설정 방식은 `backend/src/main/resources/application.properties`를 따른다.
 - 새로운 API, 의존성 또는 설정은 요청에 필요한 최소 범위로 추가한다.
 - 변경 중에는 가장 작은 관련 테스트를 실행하고, 완료 전에는 전체 `./gradlew test`와 `./gradlew build`를 실행한다.
+
+### API 응답 규칙
+
+- 모든 응답(성공/실패 공통)은 `{ "code": string, "data": object }` 형태의 단일 봉투를 사용한다.
+- `code`는 고정된 상태 문자열이다. 성공은 `"SUCCESS"`, 실패는 도메인별 고정 에러 코드
+  (예: `UNSUPPORTED_FILE_TYPE`)를 사용한다.
+- 성공 시 `data`는 실제 응답 리소스를 담고, 실패 시 `data`는 최소한 사람이 읽을 수 있는
+  `message` 필드를 포함한 객체를 담는다.
+- HTTP 상태 코드는 이 봉투와 별개로 의미대로 사용한다(2xx 성공, 4xx 클라이언트 오류,
+  5xx 서버/업스트림 오류).
+- 공통 응답 봉투는 `com.ktb4.aiagent.common.web.ApiResponse<T>`로 구현하고, 예외 처리는
+  `@RestControllerAdvice` 한 곳에 모아 위 규칙에 맞는 응답을 생성한다.
 
 ## Frontend 작업
 
@@ -142,8 +153,8 @@ set +a
 
 - Conventional Commits의 `<type>: <summary>` 형식을 사용한다.
 - type은 `feat`, `fix`, `refactor`, `test`, `docs`, `chore` 중 하나를 사용한다.
-- summary는 명령형으로 간결하게 작성하고 끝에 마침표를 붙이지 않는다.
-- 예: `feat: add S3 upload configuration`
+- summary는 한글로 작성한다. 명령형·개조식으로 간결하게 작성하고 끝에 마침표를 붙이지 않는다.
+- 예: `feat: S3 업로드 설정 추가`
 - 하나의 커밋에는 하나의 논리적 변경만 포함한다.
 - 관련 없는 수정, 생성 결과물, `.env` 또는 비밀정보를 커밋에 섞지 않는다.
 - 커밋 전 변경 범위에 맞는 테스트와 정적 검사를 실행한다.
