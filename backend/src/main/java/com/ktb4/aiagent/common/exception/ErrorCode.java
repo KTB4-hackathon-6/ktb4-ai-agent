@@ -12,6 +12,8 @@ public enum ErrorCode {
 	OCR_PROVIDER_TIMEOUT(HttpStatus.GATEWAY_TIMEOUT, "OCR 서비스에 연결할 수 없습니다."),
 	CONTRACT_EXTRACTION_FAILED(HttpStatus.BAD_GATEWAY, "계약서 구조화에 실패했습니다."),
 	SESSION_NOT_FOUND(HttpStatus.NOT_FOUND, "세션을 찾을 수 없습니다."),
+	ANALYSIS_NOT_FOUND(HttpStatus.NOT_FOUND, "계약서 분석 작업을 찾을 수 없습니다."),
+	ANALYSIS_BUSY(HttpStatus.SERVICE_UNAVAILABLE, "분석 요청이 많습니다. 잠시 후 다시 시도해주세요."),
 	AI_REQUEST_FAILED(HttpStatus.BAD_GATEWAY, "AI 서비스 요청에 실패했습니다.");
 
 	private final HttpStatus httpStatus;

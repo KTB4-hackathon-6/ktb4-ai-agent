@@ -8,6 +8,8 @@
   50% { opacity: 1; transform: scale(1); }
 }
 
+@keyframes spin { to { transform: rotate(360deg); } }
+
 .app-shell {
   width: min(100%, 1120px);
   height: 100svh;
@@ -277,6 +279,23 @@ button { -webkit-tap-highlight-color: transparent; }
 }
 
 .pulse { width: 12px; height: 12px; background: #1f6f5c; border-radius: 50%; animation: pulse 1s infinite; }
+.analysis-progress { align-items: stretch; padding: 20px; }
+.analysis-progress > strong { text-align: center; }
+.analysis-steps { width: min(100%, 420px); margin: 4px auto 0; padding: 0; list-style: none; }
+.analysis-step { display: flex; gap: 12px; align-items: center; padding: 11px 0; color: #9a9a90; }
+.analysis-step + .analysis-step { border-top: 1px solid #ece9e2; }
+.analysis-step-icon { width: 28px; height: 28px; display: grid; flex: 0 0 28px; place-items: center; border: 1px solid #d8d5ce; border-radius: 50%; font-size: 12px; font-weight: 800; }
+.analysis-step b, .analysis-step small, .analysis-step em { display: block; }
+.analysis-step b { font-size: 13px; }
+.analysis-step small { margin-top: 2px; font-size: 11.5px; }
+.analysis-step em { margin-top: 4px; color: #6b6f66; font-size: 11px; font-style: normal; }
+.analysis-step.active { color: #1f6f5c; }
+.analysis-step.active .analysis-step-icon { border-color: #1f6f5c; background: #eaf3ef; }
+.analysis-step.completed { color: #3f665b; }
+.analysis-step.completed .analysis-step-icon { color: #fff; border-color: #1f6f5c; background: #1f6f5c; }
+.analysis-step.failed { color: #a4473d; }
+.analysis-step.failed .analysis-step-icon { color: #fff; border-color: #a4473d; background: #a4473d; }
+.step-spinner { width: 11px; height: 11px; border: 2px solid rgba(31, 111, 92, .25); border-top-color: #1f6f5c; border-radius: 50%; animation: spin .8s linear infinite; }
 
 .result-panel {
   margin-left: 36px;

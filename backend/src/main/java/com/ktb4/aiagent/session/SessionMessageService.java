@@ -44,10 +44,22 @@ public class SessionMessageService {
 	}
 
 	public SessionMessage addUserMessage(String sessionId, String content) {
+		validateUserMessage(sessionId, content);
+		return addMessage(sessionId, MessageRole.USER, content);
+	}
+
+	public void validateUserMessage(String sessionId, String content) {
 		if (content != null && content.length() > MAX_USER_MESSAGE_LENGTH) {
 			throw new ApplicationException(ErrorCode.INVALID_REQUEST);
 		}
-		return addMessage(sessionId, MessageRole.USER, content);
+		if (content == null || content.isBlank()) {
+			throw new ApplicationException(ErrorCode.INVALID_REQUEST);
+		}
+		validateSession(sessionId);
+	}
+
+	public void validateSession(String sessionId) {
+		requireActiveSession(sessionId);
 	}
 
 	public SessionMessage addAiMessage(String sessionId, String content) {
