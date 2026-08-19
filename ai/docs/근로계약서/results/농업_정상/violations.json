@@ -1,0 +1,9 @@
+[
+  {
+    "rule_id": "below_minimum_wage",
+    "law_name": "최저임금법",
+    "article": "제6조",
+    "message": "시급 9,809원은 2026년 최저임금 10,320원에 미달합니다.",
+    "severity": "warning"
+  }
+]
