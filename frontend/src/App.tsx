@@ -3,6 +3,7 @@ import ChatComposer from './components/chatbot/ChatComposer'
 import ChatHeader from './components/chatbot/ChatHeader'
 import ChatMessage, { type ChatMessageItem } from './components/chatbot/ChatMessage'
 import LanguageSelector from './components/chatbot/LanguageSelector'
+import QuestionFlow from './components/chatbot/QuestionFlow'
 import ResultsPanel, { type ResultTab } from './components/chatbot/ResultsPanel'
 import ServiceMenu from './components/chatbot/ServiceMenu'
 import {
@@ -74,25 +75,6 @@ function App() {
 
   const analysisDone = uploadState === 'done' || adminState === 'done'
   const pipelineDone = [true, view !== null, analysisDone, chatStep === chatScript.length - 1, resultsShown, view === 'agencies']
-  const renderChatFlow = () => {
-    const options = chatScript[chatStep]?.options ?? []
-    return (
-      <>
-        {chatMessages.map((message, index) => (
-          <ChatMessage key={`${message.ko}-${index}`} {...message} />
-        ))}
-        {options.length > 0 && (
-          <div className="options nested-options">
-            {options.map(([ko, en]) => <button className="pill-button" key={ko} onClick={() => pickChatOption(ko, en)}>{ko} <span>/ {en}</span></button>)}
-          </div>
-        )}
-        {chatStep === chatScript.length - 1 && !resultsShown && (
-          <button className="primary-button nested-action" onClick={() => setResultsShown(true)}>결과 확인하기 / View Results</button>
-        )}
-      </>
-    )
-  }
-
   return (
     <main className="app-shell">
       <ChatHeader completedSteps={pipelineDone} />
@@ -117,7 +99,13 @@ function App() {
         {view === 'work' && (
           <>
             <ChatMessage who="bot" ko="계약서가 없어도 괜찮아요. 실제 근무 상황을 몇 가지 여쭤보고 부당한 부분이 있는지 확인해드릴게요." en="No contract needed. I'll ask a few questions about your actual work situation and check for issues." />
-            {renderChatFlow()}
+            <QuestionFlow
+              messages={chatMessages}
+              currentStep={chatStep}
+              resultsShown={resultsShown}
+              onPickOption={pickChatOption}
+              onShowResults={() => setResultsShown(true)}
+            />
             <ResultsPanel
               visible={resultsShown}
               activeTab={resultTab}
@@ -158,7 +146,13 @@ function App() {
                     )
                   })}
                 </section>
-                {renderChatFlow()}
+                <QuestionFlow
+                  messages={chatMessages}
+                  currentStep={chatStep}
+                  resultsShown={resultsShown}
+                  onPickOption={pickChatOption}
+                  onShowResults={() => setResultsShown(true)}
+                />
                 <ResultsPanel
                   visible={resultsShown}
                   activeTab={resultTab}
