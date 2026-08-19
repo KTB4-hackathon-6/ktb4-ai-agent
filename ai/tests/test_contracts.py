@@ -48,9 +48,7 @@ def test_diagnose_runs_ocr_extraction_and_rules_end_to_end(monkeypatch) -> None:
 
 
 def test_diagnose_merges_multiple_pages_before_extraction(monkeypatch) -> None:
-    monkeypatch.setattr(
-        contracts_route, "extract_text", lambda data, content_type: data.decode()
-    )
+    monkeypatch.setattr(contracts_route, "extract_text", lambda data, content_type: data.decode())
 
     captured_raw_text = {}
 
