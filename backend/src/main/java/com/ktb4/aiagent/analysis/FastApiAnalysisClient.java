@@ -38,14 +38,35 @@ public class FastApiAnalysisClient implements AnalysisClient {
 
 	@Override
 	public String analyze(String requestId, String sessionId, String content) {
-		AnalyzeRequest request = new AnalyzeRequest(
+		AnalyzeRequest body = new AnalyzeRequest(
 			requestId,
 			sessionId,
 			new AnalyzeInput(content, List.of()),
 			List.of(),
 			List.of()
 		);
+		AnalyzeResponse response = request(body, requestId, sessionId);
+		return response.result().answer();
+	}
 
+	@Override
+	public DocumentAnalysisResult analyzeDocuments(DocumentAnalysisRequest request) {
+		AnalyzeRequest body = new AnalyzeRequest(
+			request.requestId(),
+			request.sessionId(),
+			new AnalyzeInput(request.text(), request.documentIds()),
+			request.documents(),
+			request.legalChecks()
+		);
+		AnalyzeResponse response = request(body, request.requestId(), request.sessionId());
+		if (response.result().analysis() == null) {
+			log.warn("FastAPI document analysis response had no structured analysis for requestId={}", request.requestId());
+			throw new ApplicationException(ErrorCode.AI_REQUEST_FAILED);
+		}
+		return new DocumentAnalysisResult(response.result().answer(), response.result().analysis());
+	}
+
+	private AnalyzeResponse request(AnalyzeRequest request, String requestId, String sessionId) {
 		AnalyzeResponse response;
 		try {
 			response = restClient.post()
@@ -64,16 +85,11 @@ public class FastApiAnalysisClient implements AnalysisClient {
 			);
 			throw new ApplicationException(ErrorCode.AI_REQUEST_FAILED);
 		}
-
 		if (!isValid(response, requestId, sessionId)) {
-			log.warn(
-				"FastAPI analysis response was invalid for requestId={} sessionId={}",
-				requestId,
-				sessionId
-			);
+			log.warn("FastAPI analysis response was invalid for requestId={} sessionId={}", requestId, sessionId);
 			throw new ApplicationException(ErrorCode.AI_REQUEST_FAILED);
 		}
-		return response.result().answer();
+		return response;
 	}
 
 	private static RestClient createRestClient(
@@ -118,8 +134,8 @@ public class FastApiAnalysisClient implements AnalysisClient {
 		String requestId,
 		String sessionId,
 		AnalyzeInput input,
-		List<Object> documents,
-		List<Object> legalChecks
+		List<?> documents,
+		List<?> legalChecks
 	) {
 	}
 
@@ -141,7 +157,7 @@ public class FastApiAnalysisClient implements AnalysisClient {
 	) {
 	}
 
-	private record AnalyzeResult(String answer, Object analysis) {
+	private record AnalyzeResult(String answer, DocumentAnalysisResult.Analysis analysis) {
 	}
 
 	private record AnalyzeError(String code, String message) {

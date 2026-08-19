@@ -10,6 +10,8 @@ import static org.springframework.test.web.client.response.MockRestResponseCreat
 
 import com.ktb4.aiagent.common.exception.ApplicationException;
 import com.ktb4.aiagent.common.exception.ErrorCode;
+import java.util.List;
+import java.util.Map;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.HttpMethod;
@@ -65,6 +67,88 @@ class FastApiAnalysisClientTests {
 		String answer = client.analyze("request-001", "session-001", "계약서를 확인해줘");
 
 		assertEquals("확인이 필요합니다.", answer);
+		server.verify();
+	}
+
+	@Test
+	void sendsOcrDocumentsAndLegalChecksForContractReview() {
+		server.expect(requestTo(BASE_URL + "/analyze"))
+			.andExpect(method(HttpMethod.POST))
+			.andExpect(content().json("""
+				{
+				  "requestId": "request-002",
+				  "sessionId": "session-001",
+				  "input": {
+				    "text": "계약서 문제를 설명해줘",
+				    "documentIds": ["document-1"]
+				  },
+				  "documents": [{
+				    "documentId": "document-1",
+				    "fileName": "contract.jpg",
+				    "pages": [{"pageNumber": 1, "text": "월급 1,750,000원"}]
+				  }],
+				  "legalChecks": [{
+				    "checkId": "below_minimum_wage",
+				    "legalReference": {
+				      "lawName": "최저임금법",
+				      "article": "제6조",
+				      "paragraph": null,
+				      "item": null
+				    },
+				    "result": "VIOLATION",
+				    "reason": "최저임금에 미달합니다.",
+				    "relatedDocumentIds": ["document-1"],
+				    "values": {"hourly_wage": 8373}
+				  }]
+				}
+				"""))
+			.andRespond(withSuccess("""
+				{
+				  "requestId": "request-002",
+				  "sessionId": "session-001",
+				  "status": "COMPLETED",
+				  "result": {
+				    "answer": "최저임금 미달 문제를 확인했습니다.",
+				    "analysis": {
+				      "summary": "최저임금 위반",
+				      "findings": [{
+				        "title": "MINIMUM_WAGE",
+				        "description": "시급이 최저임금보다 낮습니다.",
+				        "severity": "HIGH",
+				        "relatedCheckIds": ["below_minimum_wage"],
+				        "relatedDocumentIds": ["document-1"]
+				      }],
+				      "nextActions": ["임금 조정을 요청합니다."]
+				    }
+				  },
+				  "error": null
+				}
+				""", MediaType.APPLICATION_JSON));
+
+		DocumentAnalysisRequest request = new DocumentAnalysisRequest(
+			"request-002",
+			"session-001",
+			"계약서 문제를 설명해줘",
+			List.of(new DocumentAnalysisRequest.Document(
+				"document-1",
+				"contract.jpg",
+				List.of(new DocumentAnalysisRequest.Page(1, "월급 1,750,000원"))
+			)),
+			List.of(new DocumentAnalysisRequest.LegalCheck(
+				"below_minimum_wage",
+				new DocumentAnalysisRequest.LegalReference("최저임금법", "제6조", null, null),
+				DocumentAnalysisRequest.CheckResult.VIOLATION,
+				"최저임금에 미달합니다.",
+				List.of("document-1"),
+				Map.of("hourly_wage", 8373)
+			))
+		);
+
+		DocumentAnalysisResult result = client.analyzeDocuments(request);
+
+		assertEquals("최저임금 미달 문제를 확인했습니다.", result.answer());
+		assertEquals("최저임금 위반", result.analysis().summary());
+		assertEquals("MINIMUM_WAGE", result.analysis().findings().getFirst().title());
 		server.verify();
 	}
 
