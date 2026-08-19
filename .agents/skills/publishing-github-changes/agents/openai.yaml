@@ -1,0 +1,4 @@
+interface:
+  display_name: "Publish GitHub Changes"
+  short_description: "Safely publish reviewed changes as a GitHub pull request"
+  default_prompt: "Use $publishing-github-changes to prepare and publish the current changes as a reviewed GitHub pull request."
