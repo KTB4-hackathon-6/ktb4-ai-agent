@@ -23,6 +23,7 @@ from langchain_deepseek import ChatDeepSeek
 from pydantic import BaseModel
 
 from ai_agent.config import get_settings
+from ai_agent.services import evidence as evidence_rules
 from ai_agent.schemas.extraction import ExtractionResult
 from ai_agent.schemas.rules import ContractFacts, IndustryCategory
 
@@ -35,17 +36,31 @@ _SYSTEM_PROMPT = """너는 대한민국 표준근로계약서(외국인근로자
 monthly_wage는 계산하지 말고 계약서에 적힌 월급 숫자를 그대로 읽는다(시간급으로 환산하지 않음).
 휴게시간이 "1시간 30분"처럼 시/분으로 나뉘어 있으면 합산해서 분 단위로 채운다.
 payment_method_in_person은 임금 지급방법이 "통장 입금"이 아니라 "직접 지급"에 체크된
-경우에만 true다."""
+경우에만 true다.
 
+*_evidence 필드에는 해당 정보가 적힌 원문 줄을 **한 글자도 바꾸지 말고 그대로** 복사한다.
+값을 계산하거나 요약·번역하지 않는다. 한국어 줄을 영문 번역줄보다 우선한다.
+해당 정보를 못 찾으면 빈 문자열로 둔다.
+  - work_hours_evidence: 시업시각~종업시각이 적힌 줄
+  - rest_evidence: 휴게시간이 적힌 줄
+  - holiday_evidence: 주휴일/휴일이 적힌 줄
+  - period_evidence: 근로계약기간(개월 수 또는 시작~종료 날짜)이 적힌 줄"""
+
+# 숫자가 원문에 그대로 찍히는 금액 필드만 "숫자 대조"로 검증한다. 7자리 금액은
+# 우연히 일치할 수 없어 이 방식이 신뢰할 만하다. 반면 시간·개월·일수처럼 작은
+# 숫자는 조문 번호나 날짜와 우연히 일치해 검증이 무의미해지므로(예: "1. 근로계약기간"의
+# 1이 weekly_paid_holidays=1을 통과시킨다), 근거 문장 방식으로 옮겼다.
 _GROUNDED_FIELDS = (
-    # 표준근로계약서 양식은 근로시간을 시작~종료 시각으로만 적고 daily/weekly
-    # working_hours, hourly_wage는 거기서 계산해내는 값이라 literal하게
-    # 원문에 안 나온다. 계약서에 숫자 그대로 찍혀있는 필드만 검증한다.
+    "monthly_wage",
+    "accommodation_deduction_krw",
+)
+
+# 근거 문장에서 코드가 값을 재계산하는 필드. LLM이 낸 값은 버리고 이 값을 쓴다.
+_EVIDENCE_FIELDS = (
+    "daily_working_hours",
     "rest_minutes_per_workday",
     "weekly_paid_holidays",
-    "monthly_wage",
     "contract_period_months",
-    "accommodation_deduction_krw",
 )
 
 # 최저임금 판정은 연장근로를 제외한 "소정근로시간"만 기준으로 한다 — 연장근로는
@@ -65,6 +80,11 @@ def _monthly_wage_to_hourly(monthly_wage: int) -> int:
 
 class _LLMExtraction(BaseModel):
     industry: IndustryCategory
+    # 근거 문장. LLM은 값을 계산하지 말고 원문 줄을 그대로 복사만 한다.
+    work_hours_evidence: str
+    rest_evidence: str
+    holiday_evidence: str
+    period_evidence: str
     weekly_working_hours: float
     daily_working_hours: float
     rest_minutes_per_workday: int
@@ -96,17 +116,64 @@ def extract_contract_facts(raw_text: str) -> ExtractionResult:
             ("human", raw_text),
         ]
     )
-    hourly_wage = _monthly_wage_to_hourly(extracted.monthly_wage)
-    facts = ContractFacts(**extracted.model_dump(), hourly_wage=hourly_wage)
+    fields = extracted.model_dump()
+    evidence = {k: fields.pop(k) for k in list(fields) if k.endswith("_evidence")}
+
+    recomputed, evidence_unverified = _recompute_from_evidence(evidence, raw_text)
+    fields.update(recomputed)
+
+    hourly_wage = _monthly_wage_to_hourly(fields["monthly_wage"])
+    facts = ContractFacts(**fields, hourly_wage=hourly_wage)
 
     unverified = (
         _grounding_warnings(facts, raw_text)
+        + evidence_unverified
         + _weekly_hours_warnings(facts)
         + _specified_but_zero_warnings(facts)
     )
     # 같은 필드가 여러 체크에 동시에 걸릴 수 있어 중복 제거하되 순서는 유지한다.
     unverified = list(dict.fromkeys(unverified))
     return ExtractionResult(facts=facts, unverified_fields=unverified)
+
+
+def _recompute_from_evidence(
+    evidence: dict[str, str], raw_text: str
+) -> tuple[dict[str, float | int], list[str]]:
+    """근거 문장에서 값을 직접 계산한다. LLM이 낸 값은 쓰지 않는다.
+
+    근거 문장이 원문에 실재하지 않으면(LLM이 지어냈거나 재조합한 경우) 그 필드는
+    계산하지 않고 unverified로 넘긴다. 계산에 실패한 경우도 마찬가지다.
+    """
+
+    def cited(key: str) -> str:
+        text = evidence.get(key) or ""
+        # 원문에 그대로 없는 근거는 신뢰할 수 없다. OCR 줄바꿈 차이는 허용한다.
+        return text if text and _appears_in(text, raw_text) else ""
+
+    work, rest = cited("work_hours_evidence"), cited("rest_evidence")
+    computed: dict[str, float | int | None] = {
+        "rest_minutes_per_workday": evidence_rules.rest_minutes(rest),
+        "weekly_paid_holidays": evidence_rules.weekly_holidays(cited("holiday_evidence")),
+        "contract_period_months": evidence_rules.contract_months(cited("period_evidence")),
+    }
+    minutes = evidence_rules.daily_working_minutes(work, rest)
+    computed["daily_working_hours"] = None if minutes is None else round(minutes / 60, 2)
+
+    values: dict[str, float | int] = {}
+    unverified: list[str] = []
+    for field in _EVIDENCE_FIELDS:
+        value = computed[field]
+        if value is None:
+            values[field] = 0
+            unverified.append(field)
+        else:
+            values[field] = value
+    return values, unverified
+
+
+def _appears_in(evidence: str, raw_text: str) -> bool:
+    squash = lambda s: re.sub(r"\s+", "", s)
+    return squash(evidence) in squash(raw_text)
 
 
 def _grounding_warnings(facts: ContractFacts, raw_text: str) -> list[str]:

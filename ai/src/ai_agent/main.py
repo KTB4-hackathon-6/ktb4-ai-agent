@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 
-from ai_agent.api.routes import analyze, contracts, health, ocr, rag
+from ai_agent.api.routes import analyze, contracts, health, ocr, payslips, rag
 
 app = FastAPI(title="ai-agent", version="0.1.0")
 
@@ -9,6 +9,7 @@ app.include_router(analyze.router)
 app.include_router(ocr.router)
 app.include_router(rag.router)
 app.include_router(contracts.router)
+app.include_router(payslips.router)
 
 
 def main() -> None:

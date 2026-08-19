@@ -41,3 +41,37 @@ def test_extract_text_joins_fields_from_clova_response(
 
     assert result == "임금 2,000,000원\n근무지"
     get_settings.cache_clear()
+
+
+def test_extract_text_joins_every_page_of_a_multipage_pdf(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    # Clova는 PDF 한 장당 image 하나를 돌려준다. 첫 장만 읽으면 뒷장에 적힌
+    # 임금·지급일을 "미기재"로 오판하게 된다.
+    monkeypatch.setenv("NAVER_OCR_INVOKE_URL", "https://example.com/ocr")
+    monkeypatch.setenv("NAVER_OCR_SECRET_KEY", "test-secret")
+    get_settings.cache_clear()
+
+    def fake_post(url: str, *, json: dict, headers: dict, timeout: float) -> httpx.Response:
+        return httpx.Response(
+            200,
+            json={
+                "images": [
+                    {"fields": [{"inferText": "근로계약기간", "lineBreak": True}]},
+                    {
+                        "fields": [
+                            {"inferText": "기본급", "lineBreak": False},
+                            {"inferText": "2,500,000원", "lineBreak": True},
+                        ]
+                    },
+                ]
+            },
+            request=httpx.Request("POST", url),
+        )
+
+    monkeypatch.setattr(httpx, "post", fake_post)
+
+    result = extract_text(b"fake-pdf-bytes", "application/pdf")
+
+    assert result == "근로계약기간\n\n기본급 2,500,000원"
+    get_settings.cache_clear()

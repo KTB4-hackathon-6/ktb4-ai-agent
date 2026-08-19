@@ -1,3 +1,5 @@
+import json
+
 from fastapi.testclient import TestClient
 
 from ai_agent.api.routes import contracts as contracts_route
@@ -26,6 +28,7 @@ def _violating_facts() -> ContractFacts:
 
 
 def test_diagnose_runs_ocr_extraction_and_rules_end_to_end(monkeypatch) -> None:
+    monkeypatch.setattr(contracts_route, "save_diagnosis_snapshot", lambda *a, **kw: None)
     monkeypatch.setattr(contracts_route, "extract_text", lambda data, content_type: "raw text")
     monkeypatch.setattr(
         contracts_route,
@@ -48,6 +51,7 @@ def test_diagnose_runs_ocr_extraction_and_rules_end_to_end(monkeypatch) -> None:
 
 
 def test_diagnose_merges_multiple_pages_before_extraction(monkeypatch) -> None:
+    monkeypatch.setattr(contracts_route, "save_diagnosis_snapshot", lambda *a, **kw: None)
     monkeypatch.setattr(contracts_route, "extract_text", lambda data, content_type: data.decode())
 
     captured_raw_text = {}
@@ -74,6 +78,7 @@ def test_diagnose_merges_multiple_pages_before_extraction(monkeypatch) -> None:
 def test_diagnose_does_not_fail_on_unverified_fields_and_suppresses_dependent_violation(
     monkeypatch,
 ) -> None:
+    monkeypatch.setattr(contracts_route, "save_diagnosis_snapshot", lambda *a, **kw: None)
     monkeypatch.setattr(contracts_route, "extract_text", lambda data, content_type: "raw text")
     monkeypatch.setattr(
         contracts_route,
@@ -96,3 +101,29 @@ def test_diagnose_does_not_fail_on_unverified_fields_and_suppresses_dependent_vi
     # 별개 필드(근로시간/휴게시간) 위반은 그대로 남아야 한다.
     rule_ids = {v["rule_id"] for v in body["violations"]}
     assert rule_ids == {"rest_time_insufficient"}
+
+
+def test_diagnose_saves_local_snapshot_of_raw_text_and_facts(monkeypatch, tmp_path) -> None:
+    from ai_agent.services import storage as storage_service
+
+    monkeypatch.setattr(storage_service.get_settings(), "diagnosis_storage_dir", str(tmp_path))
+    monkeypatch.setattr(contracts_route, "extract_text", lambda data, content_type: "raw text")
+    monkeypatch.setattr(
+        contracts_route,
+        "extract_contract_facts",
+        lambda raw_text: ExtractionResult(facts=_violating_facts(), unverified_fields=[]),
+    )
+
+    client = TestClient(app)
+    response = client.post(
+        "/contracts/diagnose",
+        files=[("files", ("contract.jpg", b"fake-bytes", "image/jpeg"))],
+    )
+
+    assert response.status_code == 200
+    saved_files = list(tmp_path.glob("*.json"))
+    assert len(saved_files) == 1
+    snapshot = json.loads(saved_files[0].read_text(encoding="utf-8"))
+    assert snapshot["raw_text"] == "raw text"
+    assert snapshot["facts"]["monthly_wage"] == 1_600_000
+    assert snapshot["violations"][0]["rule_id"] in {"below_minimum_wage", "rest_time_insufficient"}

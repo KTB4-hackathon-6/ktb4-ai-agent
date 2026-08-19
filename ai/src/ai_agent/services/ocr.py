@@ -52,8 +52,10 @@ def extract_text(file_bytes: bytes, content_type: str) -> str:
     except httpx.HTTPError as exc:
         raise OcrError(f"Naver Clova OCR request failed: {exc}") from exc
 
-    fields = response.json()["images"][0]["fields"]
-    return _join_fields(fields)
+    # Clova는 PDF 한 장당 image 하나를 돌려준다. images[0]만 읽으면 2페이지부터
+    # 통째로 버려져, 뒷장에 적힌 임금·지급일을 "미기재"로 오판하게 된다.
+    images = response.json()["images"]
+    return "\n\n".join(_join_fields(image["fields"]) for image in images)
 
 
 def _join_fields(fields: list[dict]) -> str:

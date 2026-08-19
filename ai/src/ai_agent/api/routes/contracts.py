@@ -5,6 +5,7 @@ from ai_agent.schemas.diagnosis import ContractDiagnosis
 from ai_agent.services.extraction import extract_contract_facts
 from ai_agent.services.ocr import OcrError, extract_text
 from ai_agent.services.rules import check_contract, suppress_unverified
+from ai_agent.services.storage import save_diagnosis_snapshot
 
 router = APIRouter(prefix="/contracts", tags=["contracts"])
 
@@ -32,8 +33,12 @@ async def diagnose(files: list[UploadFile] = File(...)) -> ContractDiagnosis:
     violations = check_contract(extraction.facts)
     violations = suppress_unverified(violations, extraction.unverified_fields)
 
-    return ContractDiagnosis(
+    diagnosis = ContractDiagnosis(
         facts=extraction.facts,
         violations=violations,
         unverified_fields=extraction.unverified_fields,
     )
+    await run_in_threadpool(
+        save_diagnosis_snapshot, combined_raw_text, extraction, diagnosis
+    )
+    return diagnosis

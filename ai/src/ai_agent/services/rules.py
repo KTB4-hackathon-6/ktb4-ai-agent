@@ -62,6 +62,9 @@ def _check_required_disclosures(facts: ContractFacts) -> list[RuleViolation]:
 
 
 def _check_minimum_wage(facts: ContractFacts) -> list[RuleViolation]:
+    # 임금이 명시 안 된 계약서는 monthly_wage/hourly_wage가 0으로 채워지는데, 이건
+    # "0원을 준다고 약속"한 게 아니라 "안 적었다"는 뜻이다. 0원을 최저임금 미달로
+    # 판정하면 사용자가 오해하므로, 판정을 보류했다고 명시적으로 알린다.
     if not facts.wage_specified:
         return [
             RuleViolation(

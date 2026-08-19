@@ -4,6 +4,7 @@ from pathlib import Path
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 ROOT_ENV = Path(__file__).resolve().parents[3] / ".env"
+AI_ROOT = Path(__file__).resolve().parents[2]
 
 
 class Settings(BaseSettings):
@@ -39,6 +40,9 @@ class Settings(BaseSettings):
     langsmith_endpoint: str = "https://api.smith.langchain.com"
     langsmith_project: str = "ktb4-ai-agent"
     langsmith_workspace_id: str = ""
+
+    # 로컬 디버깅용: OCR raw_text + LLM 추출 결과 스냅샷 저장 위치
+    diagnosis_storage_dir: str = str(AI_ROOT / "data" / "diagnoses")
 
 
 @lru_cache

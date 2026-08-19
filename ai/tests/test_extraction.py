@@ -9,9 +9,12 @@ from ai_agent.services.extraction import (
 )
 
 RAW_TEXT = (
-    "근로시간 09시00분~18시00분(1일 8시간), 휴게 1일 60 분, "
-    "근로계약기간 (36)개월, 주 45시간, 휴일 1일, 월급 2,300,000원, "
-    "숙박비 80,000원"
+    "1. 근로계약기간 - 신규 또는 재입국자: ( 36 ) 개월\n"
+    "4. 소정근로시간 : 09시 00분부터 18시 00분까지\n"
+    "(휴게시간 : 12시 00분 ~ 13시 00분)\n"
+    "5. 근무일/휴일 : 매주 5일 근무, 주휴일 매주 일요일\n"
+    "- 월급 : 2,300,000원\n"
+    "- 숙소 제공, 근로자 부담액: 월 80,000원"
 )
 
 
@@ -26,15 +29,20 @@ class _FakeModel:
 def _extraction(**overrides: object) -> _LLMExtraction:
     defaults = dict(
         industry=IndustryCategory.MANUFACTURING,
-        weekly_working_hours=45,
-        daily_working_hours=8,
-        rest_minutes_per_workday=60,
-        weekly_paid_holidays=1,
+        weekly_working_hours=40,
+        # 아래 4개 값은 근거 문장에서 코드가 재계산하므로 LLM 값은 버려진다.
+        daily_working_hours=0,
+        rest_minutes_per_workday=0,
+        weekly_paid_holidays=0,
+        contract_period_months=0,
+        work_hours_evidence="09시 00분부터 18시 00분까지",
+        rest_evidence="휴게시간 : 12시 00분 ~ 13시 00분",
+        holiday_evidence="주휴일 매주 일요일",
+        period_evidence="( 36 ) 개월",
         monthly_wage=2_300_000,
         wage_specified=True,
         working_hours_specified=True,
         holiday_specified=True,
-        contract_period_months=36,
         payment_date_specified=True,
         payment_method_in_person=False,
         accommodation_deduction_krw=80_000,
@@ -43,144 +51,146 @@ def _extraction(**overrides: object) -> _LLMExtraction:
     return _LLMExtraction(**defaults)
 
 
-def test_extract_contract_facts_computes_hourly_wage_from_monthly(
-    monkeypatch: pytest.MonkeyPatch,
-) -> None:
-    extracted = _extraction()
-    monkeypatch.setattr(extraction, "_get_model", lambda: _FakeModel(extracted))
+def _run(monkeypatch, raw_text=RAW_TEXT, **overrides):
+    monkeypatch.setattr(extraction, "_get_model", lambda: _FakeModel(_extraction(**overrides)))
+    return extract_contract_facts(raw_text)
 
-    result = extract_contract_facts(RAW_TEXT)
 
-    expected_hourly_wage = _monthly_wage_to_hourly(extracted.monthly_wage)
-    assert result.facts.hourly_wage == expected_hourly_wage
-    assert result.facts.monthly_wage == 2_300_000
+def test_values_are_recomputed_from_evidence(monkeypatch: pytest.MonkeyPatch) -> None:
+    result = _run(monkeypatch)
+
+    # 소정근로시간 = 시업~종업(9h) - 휴게(1h)
+    assert result.facts.daily_working_hours == 8.0
+    assert result.facts.rest_minutes_per_workday == 60
+    assert result.facts.weekly_paid_holidays == 1
     assert result.facts.contract_period_months == 36
     assert result.unverified_fields == []
 
 
-def test_extract_contract_facts_flags_ungrounded_numbers_instead_of_failing(
+def test_llm_value_is_discarded_in_favour_of_the_evidence(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-    extracted = _extraction(rest_minutes_per_workday=99)  # raw_text에 없는 숫자
-    monkeypatch.setattr(extraction, "_get_model", lambda: _FakeModel(extracted))
+    # 실측에서 같은 근거 "09시~18시(휴게 12~13)"를 두고 LLM이 8시간과 9시간으로
+    # 갈렸다. 근거가 같으면 답도 같아야 하므로 LLM 값은 쓰지 않는다.
+    result = _run(monkeypatch, daily_working_hours=9, rest_minutes_per_workday=999)
 
-    result = extract_contract_facts(RAW_TEXT)
-
-    # 요청 자체는 실패하지 않는다 — 대신 어떤 필드를 못 믿는지 알려준다.
-    assert result.facts.rest_minutes_per_workday == 99
-    assert result.unverified_fields == ["rest_minutes_per_workday"]
+    assert result.facts.daily_working_hours == 8.0
+    assert result.facts.rest_minutes_per_workday == 60
 
 
-def test_extract_contract_facts_accepts_hours_and_minutes_split_across_text(
+def test_evidence_absent_from_raw_text_is_unverified(monkeypatch: pytest.MonkeyPatch) -> None:
+    # LLM이 지어냈거나 표 조각을 재조합한 근거는 신뢰할 수 없다.
+    result = _run(monkeypatch, rest_evidence="휴게시간 : 09시 00분 ~ 12시 00분")
+
+    assert "rest_minutes_per_workday" in result.unverified_fields
+    assert result.facts.rest_minutes_per_workday == 0
+
+
+def test_unparseable_evidence_is_unverified(monkeypatch: pytest.MonkeyPatch) -> None:
+    # 원문에 있는 문장이지만 값을 뽑아낼 수 없는 경우(표 헤더 등).
+    result = _run(monkeypatch, holiday_evidence="5. 근무일/휴일")
+
+    assert "weekly_paid_holidays" in result.unverified_fields
+
+
+def test_whitespace_differences_do_not_break_evidence_matching(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-    # 농업/축산업/어업 서식: "1일 (2)회, (1)시간 (30)분" -> 90분으로 합산돼야 함
-    raw_text = "휴게시간 1일 (2)회, (1) 시간 (30) 분, 휴일 주1회, 계약기간 (24)개월"
-    extracted = _extraction(
-        rest_minutes_per_workday=90,
-        contract_period_months=24,
-        monthly_wage=0,  # 이 테스트 원문엔 없는 값 -> grounding 대상에서 제외
-        wage_specified=False,
-        accommodation_deduction_krw=0,
+    # OCR은 같은 줄을 "09 시 00 분"처럼 띄어 읽기도 한다.
+    raw = "소정근로시간 : 09 시 00 분 ~ 18 시 00 분\n휴게 1일 60 분\n주휴일 매주 일요일\n( 36 ) 개월\n월급 2,300,000원\n숙박비 80,000원"
+    result = _run(
+        monkeypatch,
+        raw_text=raw,
+        work_hours_evidence="09시 00분 ~ 18시 00분",
+        rest_evidence="휴게 1일 60 분",
     )
-    monkeypatch.setattr(extraction, "_get_model", lambda: _FakeModel(extracted))
 
-    result = extract_contract_facts(raw_text)
-    assert result.facts.rest_minutes_per_workday == 90
+    assert result.facts.daily_working_hours == 8.0
     assert result.unverified_fields == []
 
 
-def test_extract_contract_facts_flags_implausible_weekly_hours(
+def test_hours_and_minutes_split_rest_time_is_summed(monkeypatch: pytest.MonkeyPatch) -> None:
+    # 농업/축산업/어업 서식: "(1) 시간 (30) 분" -> 90분
+    raw = "휴게시간 1일 (2)회, (1) 시간 (30) 분\n근무시간 08시 00분 ~ 18시 00분\n휴일 주1회\n계약기간 ( 24 ) 개월"
+    result = _run(
+        monkeypatch,
+        raw_text=raw,
+        work_hours_evidence="근무시간 08시 00분 ~ 18시 00분",
+        rest_evidence="휴게시간 1일 (2)회, (1) 시간 (30) 분",
+        holiday_evidence="휴일 주1회",
+        period_evidence="계약기간 ( 24 ) 개월",
+        monthly_wage=0,
+        wage_specified=False,
+        accommodation_deduction_krw=0,
+    )
+
+    assert result.facts.rest_minutes_per_workday == 90
+    assert result.facts.daily_working_hours == 8.5  # 10시간 - 90분
+    assert result.facts.contract_period_months == 24
+
+
+def test_date_range_evidence_is_converted_to_months(monkeypatch: pytest.MonkeyPatch) -> None:
+    raw = RAW_TEXT + "\n근로계약기간 : 2025. 06. 01.부터 2026. 05. 31.까지"
+    result = _run(
+        monkeypatch,
+        raw_text=raw,
+        period_evidence="근로계약기간 : 2025. 06. 01.부터 2026. 05. 31.까지",
+    )
+
+    assert result.facts.contract_period_months == 12
+
+
+def test_checkbox_evidence_is_read_as_a_paid_holiday(monkeypatch: pytest.MonkeyPatch) -> None:
+    # 표준서식은 주휴일을 체크박스로 적어 숫자가 없다. LLM은 여기서 0을 내는 일이
+    # 잦았지만 원문에는 ☑가 찍혀 있다.
+    raw = RAW_TEXT + "\n6. 휴일\n☑일요일 ☑공휴일(☑유급 □무급)"
+    result = _run(monkeypatch, raw_text=raw, holiday_evidence="☑일요일 ☑공휴일(☑유급 □무급)")
+
+    assert result.facts.weekly_paid_holidays == 1
+
+
+def test_ungrounded_amount_is_flagged_instead_of_failing(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-    # 실제로 겪은 버그: daily_working_hours=8인데 weekly_working_hours=0이 나온 적이 있다.
-    extracted = _extraction(weekly_working_hours=0)
-    monkeypatch.setattr(extraction, "_get_model", lambda: _FakeModel(extracted))
+    result = _run(monkeypatch, monthly_wage=9_999_999)
 
-    result = extract_contract_facts(RAW_TEXT)
-    assert result.unverified_fields == ["weekly_working_hours"]
-
-
-def test_extract_contract_facts_flags_weekly_hours_exceeding_seven_days(
-    monkeypatch: pytest.MonkeyPatch,
-) -> None:
-    extracted = _extraction(weekly_working_hours=200)  # daily 8시간 x 7일(56)보다 큼
-    monkeypatch.setattr(extraction, "_get_model", lambda: _FakeModel(extracted))
-
-    result = extract_contract_facts(RAW_TEXT)
-    assert result.unverified_fields == ["weekly_working_hours"]
-
-
-def test_extract_contract_facts_flags_zero_daily_hours_when_specified(
-    monkeypatch: pytest.MonkeyPatch,
-) -> None:
-    # 실제로 겪은 버그: daily_working_hours=0이면 이전 코드는 아예 검증을 건너뛰고
-    # weekly_working_hours=0도 통과시켰다. working_hours_specified=True인데
-    # daily가 0인 것 자체가 이미 모순이므로 여기서 잡아야 한다.
-    extracted = _extraction(daily_working_hours=0, weekly_working_hours=0)
-    monkeypatch.setattr(extraction, "_get_model", lambda: _FakeModel(extracted))
-
-    result = extract_contract_facts(RAW_TEXT)
-    assert result.unverified_fields == ["daily_working_hours"]
-
-
-def test_extract_contract_facts_flags_zero_holidays_when_specified(
-    monkeypatch: pytest.MonkeyPatch,
-) -> None:
-    # 실제로 겪은 버그: weekly_working_hours=0이 나온 응답에서 weekly_paid_holidays도
-    # 같이 0으로 나왔다. grounding은 0을 "명시 안 됨"으로 보고 건너뛰기 때문에
-    # holiday_specified=True와의 모순을 별도로 잡아야 한다.
-    extracted = _extraction(weekly_paid_holidays=0, holiday_specified=True)
-    monkeypatch.setattr(extraction, "_get_model", lambda: _FakeModel(extracted))
-
-    result = extract_contract_facts(RAW_TEXT)
-    assert result.unverified_fields == ["weekly_paid_holidays"]
-
-
-def test_extract_contract_facts_flags_zero_wage_when_specified(
-    monkeypatch: pytest.MonkeyPatch,
-) -> None:
-    extracted = _extraction(monthly_wage=0, wage_specified=True)
-    monkeypatch.setattr(extraction, "_get_model", lambda: _FakeModel(extracted))
-
-    result = extract_contract_facts(RAW_TEXT)
+    assert result.facts.monthly_wage == 9_999_999
     assert result.unverified_fields == ["monthly_wage"]
 
 
-def test_extract_contract_facts_deduplicates_unverified_fields(
-    monkeypatch: pytest.MonkeyPatch,
-) -> None:
-    # daily_working_hours=0은 _weekly_hours_warnings와 _specified_but_zero_warnings
-    # 양쪽 다 건드릴 수 있는 지점이라, 중복 없이 한 번만 나와야 한다.
-    extracted = _extraction(daily_working_hours=0, weekly_working_hours=0)
-    monkeypatch.setattr(extraction, "_get_model", lambda: _FakeModel(extracted))
+def test_flags_implausible_weekly_hours(monkeypatch: pytest.MonkeyPatch) -> None:
+    result = _run(monkeypatch, weekly_working_hours=0)
+    assert result.unverified_fields == ["weekly_working_hours"]
 
-    result = extract_contract_facts(RAW_TEXT)
+
+def test_flags_weekly_hours_exceeding_seven_days(monkeypatch: pytest.MonkeyPatch) -> None:
+    result = _run(monkeypatch, weekly_working_hours=200)
+    assert result.unverified_fields == ["weekly_working_hours"]
+
+
+def test_flags_zero_wage_when_specified(monkeypatch: pytest.MonkeyPatch) -> None:
+    result = _run(monkeypatch, monthly_wage=0, wage_specified=True)
+    assert result.unverified_fields == ["monthly_wage"]
+
+
+def test_deduplicates_unverified_fields(monkeypatch: pytest.MonkeyPatch) -> None:
+    # 근거 실패로 daily_working_hours=0이 되면 _specified_but_zero_warnings도
+    # 같은 필드를 집는다. 중복 없이 한 번만 나와야 한다.
+    result = _run(monkeypatch, work_hours_evidence="")
+
     assert result.unverified_fields.count("daily_working_hours") == 1
 
 
-def test_extract_contract_facts_skips_hours_check_for_agriculture(
-    monkeypatch: pytest.MonkeyPatch,
-) -> None:
-    # 농업/축산/수산업 서식은 "월 234시간"처럼 월 단위로만 적혀있어 LLM이
-    # weekly_working_hours를 0으로 잘못 뽑는 게 실제로 재현됐다. 이 업종은
-    # 근로기준법 제63조로 근로시간 체크 자체를 안 쓰니 검증에서 제외해야 한다.
-    extracted = _extraction(
+def test_skips_hours_check_for_agriculture(monkeypatch: pytest.MonkeyPatch) -> None:
+    result = _run(
+        monkeypatch,
         industry=IndustryCategory.AGRICULTURE_LIVESTOCK_FISHERY,
-        daily_working_hours=0,
         weekly_working_hours=0,
     )
-    monkeypatch.setattr(extraction, "_get_model", lambda: _FakeModel(extracted))
 
-    result = extract_contract_facts(RAW_TEXT)
-    assert result.facts.weekly_working_hours == 0
     assert "weekly_working_hours" not in result.unverified_fields
-    assert "daily_working_hours" not in result.unverified_fields
 
 
 def test_monthly_wage_to_hourly_uses_fixed_standard_hours() -> None:
-    # 실제로 겪은 버그: 같은 계산이 문서마다 다른 나누는 기준(209시간 vs 176시간)으로
-    # 됐었다. 계약서의 실제 근로시간과 무관하게 항상 고정된 209시간으로 나눠야 한다
-    # (연장근로는 최저임금 계산에서 제외하고 별도 가산임금으로 다루는 게 원칙이라).
     assert _monthly_wage_to_hourly(2_090_000) == 10_000
     assert _monthly_wage_to_hourly(1_750_000) == round(1_750_000 / 209)
