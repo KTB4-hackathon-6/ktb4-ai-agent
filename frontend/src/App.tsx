@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
+import ChatComposer from './components/chatbot/ChatComposer'
 import ChatHeader from './components/chatbot/ChatHeader'
 import ChatMessage, { type ChatMessageItem } from './components/chatbot/ChatMessage'
 import LanguageSelector from './components/chatbot/LanguageSelector'
@@ -317,11 +318,7 @@ function App() {
         <div ref={chatEndRef} />
       </section>
 
-      <form className="composer" onSubmit={(event) => { event.preventDefault(); sendFreeText() }}>
-        <label className="sr-only" htmlFor="free-message">직접 메시지 입력</label>
-        <input id="free-message" value={freeText} onChange={(event) => setFreeText(event.target.value)} placeholder="직접 입력 (선택사항) / Type your own message (optional)" />
-        <button type="submit">전송 / Send</button>
-      </form>
+      <ChatComposer value={freeText} onChange={setFreeText} onSubmit={sendFreeText} />
     </main>
   )
 }
