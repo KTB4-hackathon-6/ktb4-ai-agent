@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
+import { analyzeDocument, OcrApiError, type OcrAnalysisResponse } from './api/ocr'
 import AdminFlow from './components/chatbot/AdminFlow'
 import AgencyFlow from './components/chatbot/AgencyFlow'
 import ChatComposer from './components/chatbot/ChatComposer'
@@ -23,6 +24,8 @@ function App() {
   const [languageChosen, setLanguageChosen] = useState(false)
   const [view, setView] = useState<View>(null)
   const [uploadState, setUploadState] = useState<UploadState>('idle')
+  const [ocrResult, setOcrResult] = useState<OcrAnalysisResponse | null>(null)
+  const [uploadError, setUploadError] = useState<string | null>(null)
   const [adminState, setAdminState] = useState<UploadState>('idle')
   const [openClause, setOpenClause] = useState<string | null>(null)
   const [chatStep, setChatStep] = useState(0)
@@ -42,18 +45,37 @@ function App() {
 
   const selectView = (nextView: ServiceView) => {
     setView(nextView)
-    if (nextView === 'contract') setUploadState('idle')
+    if (nextView === 'contract') {
+      setUploadState('idle')
+      setOcrResult(null)
+      setUploadError(null)
+    }
     if (nextView === 'admin') setAdminState('idle')
   }
 
-  const runDemoAnalysis = (kind: 'contract' | 'admin') => {
-    if (kind === 'contract') {
-      setUploadState('processing')
+  const runContractAnalysis = async (file?: File) => {
+    setUploadState('processing')
+    setOcrResult(null)
+    setUploadError(null)
+
+    if (!file) {
       window.setTimeout(() => setUploadState('done'), 1100)
-    } else {
-      setAdminState('processing')
-      window.setTimeout(() => setAdminState('done'), 1100)
+      return
     }
+
+    try {
+      const result = await analyzeDocument(file, 'contract')
+      setOcrResult(result)
+      setUploadState('done')
+    } catch (error) {
+      setUploadError(error instanceof OcrApiError ? error.message : '문서를 인식하지 못했습니다. 다시 시도해주세요.')
+      setUploadState('error')
+    }
+  }
+
+  const runAdminDemoAnalysis = () => {
+    setAdminState('processing')
+    window.setTimeout(() => setAdminState('done'), 1100)
   }
 
   const pickChatOption = (ko: string, en: string) => {
@@ -114,13 +136,19 @@ function App() {
         {view === 'contract' && (
           <ContractFlow
             uploadState={uploadState}
+            ocrResult={ocrResult}
+            uploadError={uploadError}
             openClause={openClause}
             messages={chatMessages}
             currentStep={chatStep}
             resultsShown={resultsShown}
             activeResultTab={resultTab}
             checkedEvidence={checkedEvidence}
-            onStartAnalysis={() => runDemoAnalysis('contract')}
+            onStartAnalysis={runContractAnalysis}
+            onResetUpload={() => {
+              setUploadState('idle')
+              setUploadError(null)
+            }}
             onToggleClause={setOpenClause}
             onPickOption={pickChatOption}
             onShowResults={() => setResultsShown(true)}
@@ -133,7 +161,7 @@ function App() {
         {view === 'admin' && (
           <AdminFlow
             state={adminState}
-            onStartAnalysis={() => runDemoAnalysis('admin')}
+            onStartAnalysis={runAdminDemoAnalysis}
             onConnect={() => selectView('agencies')}
           />
         )}
