@@ -8,6 +8,7 @@ on:
 
 jobs:
   test:
+    if: ${{ hashFiles('ai/pyproject.toml') != '' }}
     runs-on: ubuntu-latest
 
     defaults:
