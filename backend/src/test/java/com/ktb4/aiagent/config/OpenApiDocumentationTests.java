@@ -35,7 +35,10 @@ class OpenApiDocumentationTests {
 			.andExpect(jsonPath("$.paths['/api/sessions'].post").exists())
 			.andExpect(jsonPath("$.paths['/api/sessions'].post.summary").value("임시 상담 세션 생성"))
 			.andExpect(jsonPath("$.paths['/api/sessions/{sessionId}/messages'].get").exists())
-			.andExpect(jsonPath("$.paths['/api/sessions/{sessionId}/messages'].post").exists());
+			.andExpect(jsonPath("$.paths['/api/sessions/{sessionId}/messages'].post").doesNotExist())
+			.andExpect(jsonPath("$.paths['/api/sessions/{sessionId}/chat'].post").exists())
+			.andExpect(jsonPath("$.paths['/api/sessions/{sessionId}/chat'].post.summary")
+				.value("상담 메시지 분석 및 AI 답변 생성"));
 	}
 
 	@Test

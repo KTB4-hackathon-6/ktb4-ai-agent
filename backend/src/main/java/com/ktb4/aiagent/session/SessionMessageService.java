@@ -13,6 +13,8 @@ import org.springframework.stereotype.Service;
 @Service
 public class SessionMessageService {
 
+	private static final int MAX_USER_MESSAGE_LENGTH = 4000;
+
 	private final InMemorySessionStore sessionStore;
 	private final InMemorySessionMessageStore messageStore;
 	private final Clock clock;
@@ -42,6 +44,9 @@ public class SessionMessageService {
 	}
 
 	public SessionMessage addUserMessage(String sessionId, String content) {
+		if (content != null && content.length() > MAX_USER_MESSAGE_LENGTH) {
+			throw new ApplicationException(ErrorCode.INVALID_REQUEST);
+		}
 		return addMessage(sessionId, MessageRole.USER, content);
 	}
 

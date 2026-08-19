@@ -113,6 +113,8 @@ Windows PowerShell:
 
 Controller나 API DTO를 변경할 때는 `AGENTS.md`의 Swagger/OpenAPI 문서 규칙에 따라 애너테이션과 문서 테스트를 함께 갱신합니다.
 
+세션 및 채팅 API는 구현되어 있으며 `/health` API는 아직 없습니다.
+
 ## 4. React Frontend 기본 세팅
 
 프론트엔드는 Vite의 React TypeScript 템플릿으로 이미 생성되어 있습니다.
@@ -163,6 +165,16 @@ spring.datasource.password=${DB_PASSWORD}
 ```
 
 현재 데이터베이스 의존성이나 연결 설정은 추가되어 있지 않습니다.
+
+Spring 백엔드가 FastAPI 분석 서버를 호출하기 위한 비민감 설정은 다음과 같습니다.
+
+```env
+AI_BASE_URL=http://localhost:8000
+AI_CONNECT_TIMEOUT=2s
+AI_READ_TIMEOUT=30s
+```
+
+기본값은 `backend/src/main/resources/application.properties`에 정의되어 있습니다. 상세 요청 계약과 세션 동기화 규칙은 `docs/api/session-chat-api.md`를 참고합니다.
 
 S3 사용을 위한 비민감 설정 예시는 같은 파일에 다음과 같이 정의되어 있습니다.
 
@@ -282,7 +294,7 @@ npm run dev
 
 - `bootRun` 로그에 애플리케이션 시작 완료 메시지가 표시되는지 확인합니다.
 - 로그에 표시된 포트에서 HTTP 응답이 오는지 확인합니다.
-- 현재 기본 API나 `/health` API가 없으므로 루트 경로의 `404` 응답은 서버 실행 실패를 의미하지 않습니다.
+- `/health` API는 없으므로 루트 경로의 `404` 응답은 서버 실행 실패를 의미하지 않습니다.
 
 ```bash
 curl -i http://localhost:8080/
