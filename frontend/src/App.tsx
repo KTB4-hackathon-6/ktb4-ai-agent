@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
+import AdminFlow from './components/chatbot/AdminFlow'
 import ChatComposer from './components/chatbot/ChatComposer'
 import ContractFlow from './components/chatbot/ContractFlow'
 import ChatHeader from './components/chatbot/ChatHeader'
@@ -8,7 +9,6 @@ import { type ResultTab } from './components/chatbot/ResultsPanel'
 import ServiceMenu from './components/chatbot/ServiceMenu'
 import WorkCheckFlow from './components/chatbot/WorkCheckFlow'
 import {
-  adminDocumentItems,
   agencyItems,
   chatScript,
   type ServiceView,
@@ -131,24 +131,11 @@ function App() {
         )}
 
         {view === 'admin' && (
-          <>
-            <ChatMessage who="bot" ko="행정 문서 사진이나 PDF를 업로드해주세요." en="Please upload a photo or PDF of your admin document." />
-            {adminState === 'idle' && (
-              <section className="upload-panel">
-                <label className="upload-target"><span className="upload-icon" aria-hidden="true">＋</span><strong>행정 문서 사진 업로드</strong><small>Upload admin document</small><input type="file" accept="image/*,.pdf" onChange={() => runDemoAnalysis('admin')} /></label>
-                <button className="primary-button" onClick={() => runDemoAnalysis('admin')}>데모 문서로 분석 / Analyze Demo Document</button>
-              </section>
-            )}
-            {adminState === 'processing' && <section className="processing-panel"><span className="pulse" /><strong>문서를 분석하고 있습니다... / Reading your document...</strong></section>}
-            {adminState === 'done' && (
-              <>
-                <section className="result-panel admin-result"><h2>체류기간 연장허가 신청서 / Visa Extension Application</h2><div className="admin-grid">
-                  {adminDocumentItems.map((item) => <div key={item.label}><strong>{item.label}</strong><p>{item.value}</p></div>)}
-                </div></section>
-                <button className="secondary-button nested-action" onClick={() => selectView('agencies')}>상담기관에 문의하기 / Ask a counselor</button>
-              </>
-            )}
-          </>
+          <AdminFlow
+            state={adminState}
+            onStartAnalysis={() => runDemoAnalysis('admin')}
+            onConnect={() => selectView('agencies')}
+          />
         )}
 
         {view === 'agencies' && (
