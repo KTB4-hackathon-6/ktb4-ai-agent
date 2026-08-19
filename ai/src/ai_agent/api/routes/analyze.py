@@ -2,13 +2,16 @@ from fastapi import APIRouter
 from fastapi.responses import JSONResponse
 
 from ai_agent.schemas.analyze import (
+    Analysis,
     AnalyzeError,
     AnalyzeRequest,
     AnalyzeResponse,
     AnalyzeResult,
     AnalyzeStatus,
+    Finding,
 )
 from ai_agent.services.agent import answer_question
+from ai_agent.services.reviewer import review_documents
 
 router = APIRouter(tags=["analyze"])
 
@@ -41,7 +44,20 @@ async def analyze(request: AnalyzeRequest) -> AnalyzeResponse | JSONResponse:
         )
 
     try:
-        answer = await answer_question(request.input.text, request.sessionId)
+        review = None
+        if request.documents or request.legalChecks:
+            review = await review_documents(
+                request.input.text,
+                request.documents,
+                request.legalChecks,
+                request_id=request.requestId,
+                session_id=request.sessionId,
+            )
+        answer = (
+            review.answer
+            if review
+            else await answer_question(request.input.text, request.sessionId)
+        )
     except Exception:
         return error_response(
             request,
@@ -53,6 +69,26 @@ async def analyze(request: AnalyzeRequest) -> AnalyzeResponse | JSONResponse:
         requestId=request.requestId,
         sessionId=request.sessionId,
         status=AnalyzeStatus.COMPLETED,
-        result=AnalyzeResult(answer=answer, analysis=None),
+        result=AnalyzeResult(
+            answer=answer,
+            analysis=(
+                Analysis(
+                    summary=review.summary,
+                    findings=[
+                        Finding(
+                            title=issue.issue_type.value,
+                            description=issue.summary,
+                            severity=issue.severity,
+                            relatedCheckIds=issue.related_check_ids,
+                            relatedDocumentIds=issue.related_document_ids,
+                        )
+                        for issue in review.issues
+                    ],
+                    nextActions=review.next_actions,
+                )
+                if review
+                else None
+            ),
+        ),
         error=None,
     )

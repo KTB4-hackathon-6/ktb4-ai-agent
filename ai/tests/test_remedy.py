@@ -67,7 +67,8 @@ async def test_agent_can_plan_multiple_remedies_and_forms(run_turn, monkeypatch)
     monkeypatch.setattr(workflow, "run_remedy_agent", decide)
 
     answer = await run_turn(
-        "돈도 돌려받고 사업장도 바꾸고 싶어요", injected={"issues": [housing_issue()]}
+        "돈도 돌려받고 사업장도 바꾸고 싶어요",
+        injected={"issues": [housing_issue().model_dump(mode="json")]},
     )
     state = await run_turn.read()
 
@@ -103,7 +104,10 @@ async def test_free_talk_updates_multiple_fields_without_losing_state(
         return next(turns)
 
     monkeypatch.setattr(workflow, "run_remedy_agent", decide)
-    await run_turn("숙식비 반환 진정을 작성해줘", injected={"issues": [housing_issue()]})
+    await run_turn(
+        "숙식비 반환 진정을 작성해줘",
+        injected={"issues": [housing_issue().model_dump(mode="json")]},
+    )
     await run_turn("대한농장에서 일했고 번호는 010-1234-5678이에요")
     state = await run_turn.read()
 

@@ -13,7 +13,6 @@ from pydantic import BaseModel, Field
 
 from ai_agent.services.rag.retriever import search_labor_law
 from ai_agent.services.remedy.guides import REMEDY_SYSTEM_PROMPT
-from ai_agent.services.remedy.models import DetectedIssue
 
 
 class RemedyTurn(BaseModel):
@@ -21,13 +20,17 @@ class RemedyTurn(BaseModel):
 
     answer: str
     remedy_plan: list[str] = Field(default_factory=list)
-    selected_forms: list[str] = Field(default_factory=list)
-    field_updates: dict[str, dict[str, str]] = Field(default_factory=dict)
+    selected_forms: list[str] = Field(
+        default_factory=list, description="실제로 작성할 민원서식 이름 또는 공식 식별자"
+    )
+    field_updates: dict[str, dict[str, str]] = Field(
+        default_factory=dict, description="selected_forms의 서식별 작성 필드"
+    )
 
 
 class RemedyState(TypedDict, total=False):
     messages: Annotated[list[AnyMessage], add_messages]
-    issues: list[DetectedIssue]
+    issues: list[dict]
     remedy_plan: list[str]
     selected_forms: list[str]
     form_drafts: dict[str, dict[str, str]]
@@ -54,7 +57,7 @@ def last_user_text(state: RemedyState) -> str:
 
 async def run_remedy_agent(state: RemedyState) -> RemedyTurn:
     context = {
-        "detectedIssues": [issue.model_dump(mode="json") for issue in state.get("issues") or []],
+        "detectedIssues": state.get("issues") or [],
         "currentPlan": state.get("remedy_plan") or [],
         "selectedForms": state.get("selected_forms") or [],
         "formDrafts": state.get("form_drafts") or {},
@@ -71,9 +74,9 @@ async def remedy(state: RemedyState) -> dict:
     forms = list(dict.fromkeys([*(state.get("selected_forms") or []), *turn.selected_forms]))
     drafts = {form_id: dict(values) for form_id, values in (state.get("form_drafts") or {}).items()}
     for form_id, updates in turn.field_updates.items():
-        drafts.setdefault(form_id, {}).update(updates)
         if form_id not in forms:
-            forms.append(form_id)
+            continue
+        drafts.setdefault(form_id, {}).update(updates)
     return {
         "messages": [AIMessage(turn.answer)],
         "remedy_plan": turn.remedy_plan or state.get("remedy_plan") or [],
