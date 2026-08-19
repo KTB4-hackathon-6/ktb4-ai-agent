@@ -1,10 +1,11 @@
 from fastapi import FastAPI
 
-from ai_agent.api.routes import health, ocr, rag
+from ai_agent.api.routes import chat, health, ocr, rag
 
 app = FastAPI(title="ai-agent", version="0.1.0")
 
 app.include_router(health.router)
+app.include_router(chat.router)
 app.include_router(ocr.router)
 app.include_router(rag.router)
 

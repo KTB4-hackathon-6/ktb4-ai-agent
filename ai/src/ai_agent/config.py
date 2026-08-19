@@ -25,6 +25,10 @@ class Settings(BaseSettings):
     # RAG (embedding provider TBD)
     embedding_provider_api_key: str = ""
 
+    # Chat
+    deepseek_api_key: str = ""
+    chat_model: str = "deepseek-v4-flash"
+
 
 @lru_cache
 def get_settings() -> Settings:
