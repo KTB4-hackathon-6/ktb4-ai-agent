@@ -50,3 +50,14 @@ def test_extract_contract_facts_rejects_ungrounded_numbers(
 
     with pytest.raises(ExtractionGroundingError):
         extract_contract_facts(RAW_TEXT)
+
+
+def test_extract_contract_facts_accepts_hours_and_minutes_split_across_text(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    # 농업/축산업/어업 서식: "1일 (2)회, (1)시간 (30)분" -> 90분으로 합산돼야 함
+    raw_text = "휴게시간 1일 (2)회, (1) 시간 (30) 분, 휴일 주1회"
+    facts = _facts(rest_minutes_per_workday=90)
+    monkeypatch.setattr(extraction, "_get_model", lambda: _FakeModel(facts))
+
+    assert extract_contract_facts(raw_text) == facts

@@ -63,7 +63,19 @@ def _verify_grounded(facts: ContractFacts, raw_text: str) -> None:
     numbers_in_text = set(re.findall(r"\d+", raw_text.replace(",", "")))
     for field in _GROUNDED_FIELDS:
         value = getattr(facts, field)
-        if value and str(int(value)) not in numbers_in_text:
+        if value and not _is_grounded(int(value), numbers_in_text):
             raise ExtractionGroundingError(
                 f"{field}={value}가 OCR 원문에서 확인되지 않습니다. 수동 확인이 필요합니다."
             )
+
+
+def _is_grounded(value: int, numbers_in_text: set[str]) -> bool:
+    if str(value) in numbers_in_text:
+        return True
+    # 농업/축산업/어업 서식은 휴게시간을 "1시간 30분"처럼 시/분으로 나눠 적는다.
+    # 합산해서 나온 값도, 그 구성요소가 원문에 그대로 있으면 근거로 인정한다.
+    for hours in range(1, 13):
+        minutes = value - hours * 60
+        if 0 <= minutes < 60 and str(hours) in numbers_in_text and str(minutes) in numbers_in_text:
+            return True
+    return False
