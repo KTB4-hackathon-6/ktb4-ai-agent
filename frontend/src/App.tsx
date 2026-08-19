@@ -1,19 +1,11 @@
 import { useEffect, useRef, useState } from 'react'
 import ChatHeader from './components/chatbot/ChatHeader'
 import ChatMessage, { type ChatMessageItem } from './components/chatbot/ChatMessage'
+import LanguageSelector from './components/chatbot/LanguageSelector'
 import './App.css'
 
 type View = 'contract' | 'work' | 'admin' | 'agencies' | null
 type UploadState = 'idle' | 'processing' | 'done'
-
-const languages = [
-  { code: 'vi', native: 'Tiếng Việt', ko: '베트남어' },
-  { code: 'en', native: 'English', ko: '영어' },
-  { code: 'th', native: 'ภาษาไทย', ko: '태국어' },
-  { code: 'id', native: 'Bahasa Indonesia', ko: '인도네시아어' },
-  { code: 'mn', native: 'Монгол хэл', ko: '몽골어' },
-  { code: 'km', native: 'ភាសាខ្មែរ', ko: '캄보디아어' },
-]
 
 const chatScript = [
   {
@@ -226,16 +218,13 @@ function App() {
 
       <section className="chat" aria-live="polite">
         <ChatMessage who="bot" ko="안녕하세요! 먼저 언어를 선택해주세요." en="Hi! Please choose your language first." />
-        <div className="language-options">
-          {languages.map((item) => (
-            <button
-              className={language === item.code ? 'language-chip selected' : 'language-chip'}
-              key={item.code}
-              lang={item.code}
-              onClick={() => { setLanguage(item.code); setLanguageChosen(true) }}
-            >{item.native} <span>({item.ko})</span></button>
-          ))}
-        </div>
+        <LanguageSelector
+          selectedLanguage={language}
+          onSelect={(selectedLanguage) => {
+            setLanguage(selectedLanguage)
+            setLanguageChosen(true)
+          }}
+        />
 
         {languageChosen && (
           <>
