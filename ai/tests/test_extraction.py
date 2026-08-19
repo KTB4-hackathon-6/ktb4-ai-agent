@@ -45,7 +45,7 @@ def test_extract_contract_facts_returns_grounded_result(monkeypatch: pytest.Monk
 def test_extract_contract_facts_rejects_ungrounded_numbers(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-    facts = _facts(weekly_working_hours=99)  # raw_text에 없는 숫자
+    facts = _facts(rest_minutes_per_workday=99)  # raw_text에 없는 숫자
     monkeypatch.setattr(extraction, "_get_model", lambda: _FakeModel(facts))
 
     with pytest.raises(ExtractionGroundingError):

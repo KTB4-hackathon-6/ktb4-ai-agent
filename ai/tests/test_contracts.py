@@ -29,7 +29,7 @@ def test_diagnose_runs_ocr_extraction_and_rules_end_to_end(monkeypatch) -> None:
     client = TestClient(app)
     response = client.post(
         "/contracts/diagnose",
-        files={"file": ("contract.jpg", b"fake-bytes", "image/jpeg")},
+        files=[("files", ("contract.jpg", b"fake-bytes", "image/jpeg"))],
     )
 
     assert response.status_code == 200
@@ -37,3 +37,29 @@ def test_diagnose_runs_ocr_extraction_and_rules_end_to_end(monkeypatch) -> None:
     assert body["facts"]["weekly_working_hours"] == 60
     rule_ids = {v["rule_id"] for v in body["violations"]}
     assert rule_ids == {"weekly_hours_exceeded", "below_minimum_wage", "rest_time_insufficient"}
+
+
+def test_diagnose_merges_multiple_pages_before_extraction(monkeypatch) -> None:
+    monkeypatch.setattr(
+        contracts_route, "extract_text", lambda data, content_type: data.decode()
+    )
+
+    captured_raw_text = {}
+
+    def fake_extract_contract_facts(raw_text: str) -> ContractFacts:
+        captured_raw_text["value"] = raw_text
+        return _violating_facts()
+
+    monkeypatch.setattr(contracts_route, "extract_contract_facts", fake_extract_contract_facts)
+
+    client = TestClient(app)
+    response = client.post(
+        "/contracts/diagnose",
+        files=[
+            ("files", ("front.jpg", b"front page text", "image/jpeg")),
+            ("files", ("back.jpg", b"back page text", "image/jpeg")),
+        ],
+    )
+
+    assert response.status_code == 200
+    assert captured_raw_text["value"] == "front page text\n\nback page text"

@@ -26,8 +26,9 @@ _SYSTEM_PROMPT = """너는 대한민국 표준근로계약서(외국인근로자
 나눠 원 단위 정수로 추정한다."""
 
 _GROUNDED_FIELDS = (
-    "weekly_working_hours",
-    "daily_working_hours",
+    # 표준근로계약서 양식은 근로시간을 시작~종료 시각으로만 적고 daily/weekly
+    # working_hours, hourly_wage는 거기서 계산해내는 값이라 literal하게
+    # 원문에 안 나온다. 계약서에 숫자 그대로 찍혀있는 필드만 검증한다.
     "rest_minutes_per_workday",
     "weekly_paid_holidays",
 )
