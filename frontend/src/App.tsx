@@ -4,9 +4,9 @@ import ContractFlow from './components/chatbot/ContractFlow'
 import ChatHeader from './components/chatbot/ChatHeader'
 import ChatMessage, { type ChatMessageItem } from './components/chatbot/ChatMessage'
 import LanguageSelector from './components/chatbot/LanguageSelector'
-import QuestionFlow from './components/chatbot/QuestionFlow'
-import ResultsPanel, { type ResultTab } from './components/chatbot/ResultsPanel'
+import { type ResultTab } from './components/chatbot/ResultsPanel'
 import ServiceMenu from './components/chatbot/ServiceMenu'
+import WorkCheckFlow from './components/chatbot/WorkCheckFlow'
 import {
   adminDocumentItems,
   agencyItems,
@@ -97,24 +97,18 @@ function App() {
         )}
 
         {view === 'work' && (
-          <>
-            <ChatMessage who="bot" ko="계약서가 없어도 괜찮아요. 실제 근무 상황을 몇 가지 여쭤보고 부당한 부분이 있는지 확인해드릴게요." en="No contract needed. I'll ask a few questions about your actual work situation and check for issues." />
-            <QuestionFlow
-              messages={chatMessages}
-              currentStep={chatStep}
-              resultsShown={resultsShown}
-              onPickOption={pickChatOption}
-              onShowResults={() => setResultsShown(true)}
-            />
-            <ResultsPanel
-              visible={resultsShown}
-              activeTab={resultTab}
-              checkedEvidence={checkedEvidence}
-              onTabChange={setResultTab}
-              onToggleEvidence={(id) => setCheckedEvidence((items) => items.includes(id) ? items.filter((item) => item !== id) : [...items, id])}
-              onConnect={() => selectView('agencies')}
-            />
-          </>
+          <WorkCheckFlow
+            messages={chatMessages}
+            currentStep={chatStep}
+            resultsShown={resultsShown}
+            activeResultTab={resultTab}
+            checkedEvidence={checkedEvidence}
+            onPickOption={pickChatOption}
+            onShowResults={() => setResultsShown(true)}
+            onResultTabChange={setResultTab}
+            onToggleEvidence={(id) => setCheckedEvidence((items) => items.includes(id) ? items.filter((item) => item !== id) : [...items, id])}
+            onConnect={() => selectView('agencies')}
+          />
         )}
 
         {view === 'contract' && (
