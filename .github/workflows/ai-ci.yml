@@ -5,10 +5,10 @@ on:
     paths:
       - "ai/**"
       - ".github/workflows/ai-ci.yml"
-  workflow_dispatch:
 
 jobs:
   test:
+    if: ${{ hashFiles('ai/pyproject.toml') != '' }}
     runs-on: ubuntu-latest
 
     defaults:
