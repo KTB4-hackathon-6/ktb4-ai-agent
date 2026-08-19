@@ -176,6 +176,28 @@ AI_READ_TIMEOUT=30s
 
 기본값은 `backend/src/main/resources/application.properties`에 정의되어 있습니다. 상세 요청 계약과 세션 동기화 규칙은 `docs/api/session-chat-api.md`를 참고합니다.
 
+근로계약서 OCR 결과를 구조화하려면 DeepSeek 설정이 추가로 필요합니다.
+
+```env
+DEEPSEEK_BASE_URL=https://api.deepseek.com
+DEEPSEEK_API_KEY=
+CHAT_MODEL=deepseek-v4-flash
+CONTRACT_EXTRACTION_CONNECT_TIMEOUT=5s
+CONTRACT_EXTRACTION_READ_TIMEOUT=30s
+```
+
+`DEEPSEEK_API_KEY`에는 로컬 또는 배포 환경의 실제 키를 주입하고 Git에 커밋하지 않습니다.
+근로계약서 앞·뒷면처럼 여러 페이지를 진단할 때는 같은 `files` 파트로 반복해서 전송합니다.
+
+```bash
+curl -X POST http://localhost:8080/api/contracts/diagnose \
+  -F 'files=@contract-front.jpg' \
+  -F 'files=@contract-back.jpg'
+```
+
+이 API는 각 파일에 OCR을 수행하고 페이지 텍스트를 합친 뒤, 구조화된 `facts`, 규칙 기반
+`violations`, 원문 근거가 부족한 `unverified_fields`를 공통 응답 봉투의 `data`에 반환합니다.
+
 S3 사용을 위한 비민감 설정 예시는 같은 파일에 다음과 같이 정의되어 있습니다.
 
 ```env
