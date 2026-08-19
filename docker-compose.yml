@@ -26,6 +26,18 @@ services:
     networks:
       - app-network
 
+  ai:
+    build:
+      context: ./ai
+    container_name: hackathon-ai
+    restart: unless-stopped
+    env_file:
+      - .env
+    expose:
+      - "8000"
+    networks:
+      - app-network
+
   frontend:
     build:
       context: ./frontend
