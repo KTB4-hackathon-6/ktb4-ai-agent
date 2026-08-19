@@ -153,8 +153,8 @@ set +a
 
 - Conventional Commits의 `<type>: <summary>` 형식을 사용한다.
 - type은 `feat`, `fix`, `refactor`, `test`, `docs`, `chore` 중 하나를 사용한다.
-- summary는 명령형으로 간결하게 작성하고 끝에 마침표를 붙이지 않는다.
-- 예: `feat: add S3 upload configuration`
+- summary는 한글로 작성한다. 명령형·개조식으로 간결하게 작성하고 끝에 마침표를 붙이지 않는다.
+- 예: `feat: S3 업로드 설정 추가`
 - 하나의 커밋에는 하나의 논리적 변경만 포함한다.
 - 관련 없는 수정, 생성 결과물, `.env` 또는 비밀정보를 커밋에 섞지 않는다.
 - 커밋 전 변경 범위에 맞는 테스트와 정적 검사를 실행한다.
