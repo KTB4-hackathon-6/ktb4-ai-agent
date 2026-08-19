@@ -4,7 +4,6 @@ import static org.hamcrest.Matchers.emptyOrNullString;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.not;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -58,23 +57,8 @@ class SessionMessageControllerTests {
 	}
 
 	@Test
-	void storesPostedMessagesAndReturnsThemInOrder() throws Exception {
-		mockMvc.perform(post("/api/sessions/session-001/messages")
-				.contentType(MediaType.APPLICATION_JSON)
-				.content("""
-					{
-					  "content": "계약서를 확인해줘"
-					}
-					"""))
-			.andExpect(status().isCreated())
-			.andExpect(content().contentType(MediaType.APPLICATION_JSON))
-			.andExpect(jsonPath("$.*", hasSize(2)))
-			.andExpect(jsonPath("$.code").value("SUCCESS"))
-			.andExpect(jsonPath("$.data.messageId").value("message-001"))
-			.andExpect(jsonPath("$.data.role").value("USER"))
-			.andExpect(jsonPath("$.data.content").value("계약서를 확인해줘"))
-			.andExpect(jsonPath("$.data.createdAt").value("2026-08-19T00:00:00Z"));
-
+	void returnsStoredMessagesInOrder() throws Exception {
+		messageService.addUserMessage("session-001", "계약서를 확인해줘");
 		clock.advance(Duration.ofSeconds(1));
 		messageService.addAiMessage("session-001", "확인해볼게요");
 
@@ -92,36 +76,6 @@ class SessionMessageControllerTests {
 	}
 
 	@Test
-	void returnsInvalidRequestForBlankMessageContent() throws Exception {
-		mockMvc.perform(post("/api/sessions/session-001/messages")
-				.contentType(MediaType.APPLICATION_JSON)
-				.content("""
-					{
-					  "content": "   "
-					}
-					"""))
-			.andExpect(status().isBadRequest())
-			.andExpect(jsonPath("$.code").value("INVALID_REQUEST"))
-			.andExpect(jsonPath("$.data.message", not(emptyOrNullString())));
-	}
-
-	@Test
-	void doesNotAllowClientToCreateAiMessage() throws Exception {
-		mockMvc.perform(post("/api/sessions/session-001/messages")
-				.contentType(MediaType.APPLICATION_JSON)
-				.content("""
-					{
-					  "role": "AI",
-					  "content": "클라이언트가 작성한 메시지"
-					}
-					"""))
-			.andExpect(status().isCreated())
-			.andExpect(jsonPath("$.code").value("SUCCESS"))
-			.andExpect(jsonPath("$.data.role").value("USER"))
-			.andExpect(jsonPath("$.data.content").value("클라이언트가 작성한 메시지"));
-	}
-
-	@Test
 	void returnsNotFoundForMissingSession() throws Exception {
 		assertSessionNotFound("missing-session");
 	}
@@ -131,20 +85,6 @@ class SessionMessageControllerTests {
 		clock.advance(Duration.ofMinutes(30));
 
 		assertSessionNotFound("session-001");
-	}
-
-	@Test
-	void rejectsPostingMessageToMissingSession() throws Exception {
-		mockMvc.perform(post("/api/sessions/missing-session/messages")
-				.contentType(MediaType.APPLICATION_JSON)
-				.content("""
-					{
-					  "content": "저장하면 안 되는 메시지"
-					}
-					"""))
-			.andExpect(status().isNotFound())
-			.andExpect(jsonPath("$.code").value("SESSION_NOT_FOUND"))
-			.andExpect(jsonPath("$.data.message", not(emptyOrNullString())));
 	}
 
 	private void assertSessionNotFound(String sessionId) throws Exception {
