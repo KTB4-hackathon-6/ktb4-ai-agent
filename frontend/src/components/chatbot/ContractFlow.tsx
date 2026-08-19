@@ -1,3 +1,4 @@
+import type { OcrAnalysisResponse } from '../../api/ocr'
 import { contractClauses } from '../../mocks/chatbot'
 import type { UploadState } from '../../types/chatbot'
 import ChatMessage, { type ChatMessageItem } from './ChatMessage'
@@ -6,13 +7,16 @@ import ResultsPanel, { type ResultTab } from './ResultsPanel'
 
 type ContractFlowProps = {
   uploadState: UploadState
+  ocrResult: OcrAnalysisResponse | null
+  uploadError: string | null
   openClause: string | null
   messages: ChatMessageItem[]
   currentStep: number
   resultsShown: boolean
   activeResultTab: ResultTab
   checkedEvidence: string[]
-  onStartAnalysis: () => void
+  onStartAnalysis: (file?: File) => void
+  onResetUpload: () => void
   onToggleClause: (clauseId: string | null) => void
   onPickOption: (ko: string, en: string) => void
   onShowResults: () => void
@@ -23,6 +27,8 @@ type ContractFlowProps = {
 
 function ContractFlow({
   uploadState,
+  ocrResult,
+  uploadError,
   openClause,
   messages,
   currentStep,
@@ -30,6 +36,7 @@ function ContractFlow({
   activeResultTab,
   checkedEvidence,
   onStartAnalysis,
+  onResetUpload,
   onToggleClause,
   onPickOption,
   onShowResults,
@@ -46,9 +53,16 @@ function ContractFlow({
             <span className="upload-icon" aria-hidden="true">＋</span>
             <strong>근로계약서 사진 업로드</strong>
             <small>Upload contract photo</small>
-            <input type="file" accept="image/*,.pdf" onChange={onStartAnalysis} />
+            <input
+              type="file"
+              accept="image/jpeg,image/png,application/pdf"
+              onChange={(event) => {
+                const file = event.target.files?.[0]
+                if (file) onStartAnalysis(file)
+              }}
+            />
           </label>
-          <button className="primary-button" onClick={onStartAnalysis}>데모 계약서로 진단 시작 / Start Demo Diagnosis</button>
+          <button className="primary-button" onClick={() => onStartAnalysis()}>데모 계약서로 진단 시작 / Start Demo Diagnosis</button>
         </section>
       )}
       {uploadState === 'processing' && (
@@ -57,8 +71,22 @@ function ContractFlow({
           <strong>분석 중입니다... / Analyzing your contract...</strong>
         </section>
       )}
+      {uploadState === 'error' && (
+        <section className="error-panel" role="alert">
+          <strong>문서 인식에 실패했습니다. / OCR failed</strong>
+          <p>{uploadError}</p>
+          <button className="secondary-button" onClick={onResetUpload}>다른 파일 선택 / Choose another file</button>
+        </section>
+      )}
       {uploadState === 'done' && (
         <>
+          {ocrResult && (
+            <section className="result-panel ocr-result">
+              <h2>문서 인식 결과 / OCR Result</h2>
+              <p className="result-caption">문서에서 추출한 원문입니다. 아래 진단 내용은 현재 데모 데이터입니다.</p>
+              <pre>{ocrResult.fullText || '인식된 텍스트가 없습니다.'}</pre>
+            </section>
+          )}
           <section className="result-panel diagnosis">
             <h2>진단 리포트 / Diagnosis Report</h2>
             <div className="legend">
