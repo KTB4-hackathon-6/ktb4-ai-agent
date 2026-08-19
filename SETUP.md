@@ -171,7 +171,7 @@ Spring 백엔드가 FastAPI 분석 서버를 호출하기 위한 비민감 설�
 ```env
 AI_BASE_URL=http://localhost:8000
 AI_CONNECT_TIMEOUT=2s
-AI_READ_TIMEOUT=30s
+AI_READ_TIMEOUT=50s
 ```
 
 기본값은 `backend/src/main/resources/application.properties`에 정의되어 있습니다. 상세 요청 계약과 세션 동기화 규칙은 `docs/api/session-chat-api.md`를 참고합니다.
@@ -197,6 +197,23 @@ curl -X POST http://localhost:8080/api/contracts/diagnose \
 
 이 API는 각 파일에 OCR을 수행하고 페이지 텍스트를 합친 뒤, 구조화된 `facts`, 규칙 기반
 `violations`, 원문 근거가 부족한 `unverified_fields`를 공통 응답 봉투의 `data`에 반환합니다.
+
+OCR 원문과 규칙 진단을 FastAPI 문서 검토 에이전트에 함께 전달하려면 먼저 상담 세션을
+생성한 후 계약서 분석 API를 호출합니다.
+
+```bash
+SESSION_ID=$(curl -sS -X POST http://localhost:8080/api/sessions | jq -r '.data.sessionId')
+
+curl -X POST http://localhost:8080/api/contracts/analyze \
+  -F "sessionId=${SESSION_ID}" \
+  -F 'text=이 계약서의 중요한 문제와 다음 행동을 알려주세요.' \
+  -F 'files=@contract-front.jpg' \
+  -F 'files=@contract-back.jpg'
+```
+
+Spring Boot는 페이지별 OCR 원문을 FastAPI의 `documents`로, 규칙 진단 결과를
+`legalChecks`로 변환합니다. FastAPI의 자연어 `answer`와 구조화된 `analysis`는 Spring의
+계약 진단 결과와 함께 반환되며 사용자·AI 메시지는 해당 세션에 저장됩니다.
 
 S3 사용을 위한 비민감 설정 예시는 같은 파일에 다음과 같이 정의되어 있습니다.
 

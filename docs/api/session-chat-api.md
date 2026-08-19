@@ -83,7 +83,10 @@ Spring은 현재 FastAPI 계약에 맞춰 다음 요청을 `POST /analyze`로 �
 }
 ```
 
-현재 채팅 연동에는 문서와 법률 검증 결과를 포함하지 않으므로 관련 배열을 빈 배열로 전달한다.
+일반 채팅 API는 문서와 법률 검증 결과를 포함하지 않으므로 관련 배열을 빈 배열로 전달한다.
+`POST /api/contracts/analyze`는 OCR 원문을 `documents`에, Spring 규칙 진단 결과를
+`legalChecks`에 넣어 같은 FastAPI 경로로 전달한다. 상세 스키마는
+`docs/api/analysis-api.md`를 따른다.
 
 ## 4. 동기화 값과 책임
 
@@ -98,7 +101,7 @@ Spring은 현재 FastAPI 계약에 맞춰 다음 요청을 `POST /analyze`로 �
 | 응답 `requestId` | FastAPI | 요청의 `requestId`와 같아야 한다. 불일치하면 Spring은 응답을 폐기한다. |
 | `messageId` | Spring | USER/AI 메시지마다 Spring이 생성한다. FastAPI와 동기화하지 않는다. |
 | `createdAt` | Spring | 메시지 저장 시각을 UTC로 생성한다. FastAPI와 동기화하지 않는다. |
-| `documentIds`, `documents`, `legalChecks` | 향후 정의 | 현재는 모두 빈 배열이다. 문서 분석 연동 시 별도 계약을 확정해야 한다. |
+| `documentIds`, `documents`, `legalChecks` | Spring | 일반 채팅에서는 빈 배열이며, 계약 분석에서는 OCR 문서 ID·페이지 원문·규칙 진단 결과를 전달한다. |
 
 ## 5. 세션 상태 책임
 
@@ -130,7 +133,7 @@ AI 요청이 실패하면 사용자가 보낸 사실을 복구할 수 있도록 
 |---|---|---|
 | `AI_BASE_URL` | `http://localhost:8000` | FastAPI 기본 주소 |
 | `AI_CONNECT_TIMEOUT` | `2s` | 연결 제한 시간 |
-| `AI_READ_TIMEOUT` | `30s` | 응답 대기 제한 시간 |
+| `AI_READ_TIMEOUT` | `50s` | 문서 검토 제한 시간(45초)보다 길게 둔 응답 대기 제한 시간 |
 
 로컬에서는 Spring과 FastAPI를 각각 `8080`, `8000` 포트로 실행하면 기본값을 그대로 사용할 수 있다.
 
@@ -139,4 +142,4 @@ AI 요청이 실패하면 사용자가 보낸 사실을 복구할 수 있도록 
 - FastAPI의 `sessionId` 기반 대화 메모리는 아직 구현되지 않았다.
 - Spring 메시지 저장소는 인메모리이므로 서버 재시작 시 복구되지 않는다.
 - 같은 세션에서 여러 채팅 요청을 동시에 처리하는 순서 보장은 아직 정의하지 않았다.
-- 문서 및 법률 검증 결과는 FastAPI 요청에 아직 연결하지 않는다.
+- 규칙 위반의 정확한 원문 페이지 위치는 아직 추적하지 않아 각 `legalCheck`가 요청의 모든 문서 ID를 참조한다.
