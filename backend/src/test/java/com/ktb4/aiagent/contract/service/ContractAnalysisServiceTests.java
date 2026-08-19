@@ -33,7 +33,7 @@ class ContractAnalysisServiceTests {
 		SessionMessageService messageService = mock(SessionMessageService.class);
 		List<MultipartFile> files = List.of(file("front.jpg"), file("back.jpg"));
 		ContractDiagnosis diagnosis = diagnosis();
-		when(diagnosisService.diagnoseWithContext(any())).thenReturn(new ContractDiagnosisContext(
+		when(diagnosisService.diagnoseWithContext(any(), any())).thenReturn(new ContractDiagnosisContext(
 			diagnosis,
 			List.of(
 				new ContractDiagnosisContext.SourceDocument("front.jpg", "앞면 OCR"),
