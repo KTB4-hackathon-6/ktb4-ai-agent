@@ -3,10 +3,9 @@ package com.ktb4.aiagent.ocr.service;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
+import com.ktb4.aiagent.common.exception.ApplicationException;
+import com.ktb4.aiagent.common.exception.ErrorCode;
 import com.ktb4.aiagent.ocr.dto.DocumentType;
-import com.ktb4.aiagent.ocr.exception.InvalidDocumentTypeException;
-import com.ktb4.aiagent.ocr.exception.InvalidRequestException;
-import com.ktb4.aiagent.ocr.exception.UnsupportedFileTypeException;
 import org.junit.jupiter.api.Test;
 import org.springframework.mock.web.MockMultipartFile;
 
@@ -25,14 +24,16 @@ class OcrRequestValidatorTests {
 	void rejectsUnsupportedContentType() {
 		MockMultipartFile file = new MockMultipartFile("image", "a.gif", "image/gif", new byte[] {1});
 
-		assertThrows(UnsupportedFileTypeException.class, () -> validator.validateFile(file));
+		ApplicationException exception = assertThrows(ApplicationException.class, () -> validator.validateFile(file));
+		assertEquals(ErrorCode.UNSUPPORTED_FILE_TYPE, exception.errorCode());
 	}
 
 	@Test
 	void rejectsEmptyFile() {
 		MockMultipartFile file = new MockMultipartFile("image", "a.pdf", "application/pdf", new byte[0]);
 
-		assertThrows(InvalidRequestException.class, () -> validator.validateFile(file));
+		ApplicationException exception = assertThrows(ApplicationException.class, () -> validator.validateFile(file));
+		assertEquals(ErrorCode.INVALID_REQUEST, exception.errorCode());
 	}
 
 	@Test
@@ -43,11 +44,15 @@ class OcrRequestValidatorTests {
 
 	@Test
 	void rejectsUnknownDocumentType() {
-		assertThrows(InvalidDocumentTypeException.class, () -> validator.validateDocumentType("invoice"));
+		ApplicationException exception = assertThrows(ApplicationException.class,
+			() -> validator.validateDocumentType("invoice"));
+		assertEquals(ErrorCode.INVALID_DOCUMENT_TYPE, exception.errorCode());
 	}
 
 	@Test
 	void rejectsBlankDocumentType() {
-		assertThrows(InvalidDocumentTypeException.class, () -> validator.validateDocumentType("  "));
+		ApplicationException exception = assertThrows(ApplicationException.class,
+			() -> validator.validateDocumentType("  "));
+		assertEquals(ErrorCode.INVALID_DOCUMENT_TYPE, exception.errorCode());
 	}
 }

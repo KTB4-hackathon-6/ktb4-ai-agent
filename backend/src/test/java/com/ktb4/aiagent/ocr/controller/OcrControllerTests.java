@@ -5,11 +5,9 @@ import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart;
 
+import com.ktb4.aiagent.common.exception.ApplicationException;
+import com.ktb4.aiagent.common.exception.ErrorCode;
 import com.ktb4.aiagent.ocr.dto.OcrAnalysisResponse;
-import com.ktb4.aiagent.ocr.exception.ClovaOcrClientException;
-import com.ktb4.aiagent.ocr.exception.ClovaOcrUnavailableException;
-import com.ktb4.aiagent.ocr.exception.InvalidDocumentTypeException;
-import com.ktb4.aiagent.ocr.exception.UnsupportedFileTypeException;
 import com.ktb4.aiagent.ocr.service.OcrService;
 import java.time.Instant;
 import org.junit.jupiter.api.Test;
@@ -47,7 +45,7 @@ class OcrControllerTests {
 	@Test
 	void returnsUnsupportedMediaTypeErrorEnvelope() {
 		when(ocrService.analyze(any(), anyString()))
-			.thenThrow(new UnsupportedFileTypeException("지원하지 않는 파일 형식입니다: image/gif"));
+			.thenThrow(new ApplicationException(ErrorCode.UNSUPPORTED_FILE_TYPE));
 
 		mvc.perform(multipart("/api/documents/ocr").file(imagePart()).param("documentType", "contract"))
 			.assertThat()
@@ -59,7 +57,7 @@ class OcrControllerTests {
 	@Test
 	void returnsBadRequestErrorEnvelopeForInvalidDocumentType() {
 		when(ocrService.analyze(any(), anyString()))
-			.thenThrow(new InvalidDocumentTypeException("지원하지 않는 documentType입니다: invoice"));
+			.thenThrow(new ApplicationException(ErrorCode.INVALID_DOCUMENT_TYPE));
 
 		mvc.perform(multipart("/api/documents/ocr").file(imagePart()).param("documentType", "invoice"))
 			.assertThat()
@@ -71,7 +69,7 @@ class OcrControllerTests {
 	@Test
 	void returnsBadGatewayErrorEnvelopeForClovaClientError() {
 		when(ocrService.analyze(any(), anyString()))
-			.thenThrow(new ClovaOcrClientException("upstream error"));
+			.thenThrow(new ApplicationException(ErrorCode.OCR_PROVIDER_REQUEST_ERROR));
 
 		mvc.perform(multipart("/api/documents/ocr").file(imagePart()).param("documentType", "contract"))
 			.assertThat()
@@ -83,7 +81,7 @@ class OcrControllerTests {
 	@Test
 	void returnsGatewayTimeoutErrorEnvelopeForClovaUnavailable() {
 		when(ocrService.analyze(any(), anyString()))
-			.thenThrow(new ClovaOcrUnavailableException("timeout", new RuntimeException()));
+			.thenThrow(new ApplicationException(ErrorCode.OCR_PROVIDER_TIMEOUT));
 
 		mvc.perform(multipart("/api/documents/ocr").file(imagePart()).param("documentType", "contract"))
 			.assertThat()

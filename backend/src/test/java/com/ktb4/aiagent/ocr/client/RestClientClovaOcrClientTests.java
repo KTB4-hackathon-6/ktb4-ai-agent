@@ -8,9 +8,9 @@ import static org.springframework.test.web.client.match.MockRestRequestMatchers.
 import static org.springframework.test.web.client.response.MockRestResponseCreators.withStatus;
 import static org.springframework.test.web.client.response.MockRestResponseCreators.withSuccess;
 
+import com.ktb4.aiagent.common.exception.ApplicationException;
+import com.ktb4.aiagent.common.exception.ErrorCode;
 import com.ktb4.aiagent.ocr.dto.clova.ClovaOcrResponse;
-import com.ktb4.aiagent.ocr.exception.ClovaOcrClientException;
-import com.ktb4.aiagent.ocr.exception.ClovaOcrUnavailableException;
 import java.io.IOException;
 import java.time.Duration;
 import org.junit.jupiter.api.Test;
@@ -60,8 +60,9 @@ class RestClientClovaOcrClientTests {
 		holder[0].expect(requestTo(INVOKE_URL))
 			.andRespond(withStatus(HttpStatus.UNAUTHORIZED));
 
-		assertThrows(ClovaOcrClientException.class,
+		ApplicationException exception = assertThrows(ApplicationException.class,
 			() -> client.recognize("bytes".getBytes(), "jpg", "document", "ko"));
+		assertEquals(ErrorCode.OCR_PROVIDER_REQUEST_ERROR, exception.errorCode());
 	}
 
 	@Test
@@ -74,7 +75,8 @@ class RestClientClovaOcrClientTests {
 				throw new IOException("connection reset");
 			});
 
-		assertThrows(ClovaOcrUnavailableException.class,
+		ApplicationException exception = assertThrows(ApplicationException.class,
 			() -> client.recognize("bytes".getBytes(), "jpg", "document", "ko"));
+		assertEquals(ErrorCode.OCR_PROVIDER_TIMEOUT, exception.errorCode());
 	}
 }

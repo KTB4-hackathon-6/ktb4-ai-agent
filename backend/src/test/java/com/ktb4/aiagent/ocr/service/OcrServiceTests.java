@@ -7,13 +7,13 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import com.ktb4.aiagent.common.exception.ApplicationException;
+import com.ktb4.aiagent.common.exception.ErrorCode;
 import com.ktb4.aiagent.ocr.client.ClovaOcrClient;
 import com.ktb4.aiagent.ocr.dto.OcrAnalysisResponse;
 import com.ktb4.aiagent.ocr.dto.clova.ClovaOcrField;
 import com.ktb4.aiagent.ocr.dto.clova.ClovaOcrImageResult;
 import com.ktb4.aiagent.ocr.dto.clova.ClovaOcrResponse;
-import com.ktb4.aiagent.ocr.exception.ClovaOcrClientException;
-import com.ktb4.aiagent.ocr.exception.UnsupportedFileTypeException;
 import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -57,7 +57,9 @@ class OcrServiceTests {
 	void analyzeRejectsUnsupportedContentTypeBeforeCallingClova() {
 		MockMultipartFile file = new MockMultipartFile("image", "a.gif", "image/gif", "bytes".getBytes());
 
-		assertThrows(UnsupportedFileTypeException.class, () -> ocrService.analyze(file, "contract"));
+		ApplicationException exception = assertThrows(ApplicationException.class,
+			() -> ocrService.analyze(file, "contract"));
+		assertThat(exception.errorCode()).isEqualTo(ErrorCode.UNSUPPORTED_FILE_TYPE);
 	}
 
 	@Test
@@ -66,6 +68,8 @@ class OcrServiceTests {
 		when(clovaOcrClient.recognize(any(), eq("png"), any(), eq("ko")))
 			.thenReturn(new ClovaOcrResponse(List.of()));
 
-		assertThrows(ClovaOcrClientException.class, () -> ocrService.analyze(file, "payslip"));
+		ApplicationException exception = assertThrows(ApplicationException.class,
+			() -> ocrService.analyze(file, "payslip"));
+		assertThat(exception.errorCode()).isEqualTo(ErrorCode.OCR_PROVIDER_REQUEST_ERROR);
 	}
 }

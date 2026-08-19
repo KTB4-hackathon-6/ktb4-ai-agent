@@ -1,9 +1,11 @@
 package com.ktb4.aiagent.ocr.client;
 
+import com.ktb4.aiagent.common.exception.ApplicationException;
+import com.ktb4.aiagent.common.exception.ErrorCode;
 import com.ktb4.aiagent.ocr.dto.clova.ClovaOcrRequest;
 import com.ktb4.aiagent.ocr.dto.clova.ClovaOcrResponse;
-import com.ktb4.aiagent.ocr.exception.ClovaOcrClientException;
-import com.ktb4.aiagent.ocr.exception.ClovaOcrUnavailableException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.ResourceAccessException;
@@ -12,6 +14,8 @@ import org.springframework.web.client.RestClientResponseException;
 
 @Component
 public class RestClientClovaOcrClient implements ClovaOcrClient {
+
+	private static final Logger log = LoggerFactory.getLogger(RestClientClovaOcrClient.class);
 
 	private final RestClient restClient;
 	private final ClovaOcrProperties properties;
@@ -36,9 +40,11 @@ public class RestClientClovaOcrClient implements ClovaOcrClient {
 				.retrieve()
 				.body(ClovaOcrResponse.class);
 		} catch (RestClientResponseException e) {
-			throw new ClovaOcrClientException("Naver Clova OCR 요청이 실패했습니다: " + e.getStatusCode(), e);
+			log.warn("Naver Clova OCR request failed: {}", e.getStatusCode(), e);
+			throw new ApplicationException(ErrorCode.OCR_PROVIDER_REQUEST_ERROR);
 		} catch (ResourceAccessException e) {
-			throw new ClovaOcrUnavailableException("Naver Clova OCR 호출에 실패했습니다", e);
+			log.warn("Naver Clova OCR call failed", e);
+			throw new ApplicationException(ErrorCode.OCR_PROVIDER_TIMEOUT);
 		}
 	}
 }
