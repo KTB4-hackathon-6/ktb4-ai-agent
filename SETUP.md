@@ -324,7 +324,15 @@ Spring Boot 서버
 http://localhost:8080
 ```
 
-실제 주소와 포트는 실행 로그를 우선합니다. 서로 다른 출처 간 요청에는 CORS 또는 Vite 개발 프록시 설정이 필요할 수 있지만, 현재는 프론트엔드와 백엔드 연결 코드가 없으므로 관련 설정을 추가하지 않았습니다.
+실제 주소와 포트는 실행 로그를 우선합니다. 로컬 개발에서는 Vite가 `/api` 요청을 `http://localhost:8080`으로 프록시하므로 별도 CORS 설정 없이 OCR API를 호출할 수 있습니다.
+
+운영 환경에서 API 서버가 프론트엔드와 다른 origin이라면 `frontend/.env`에 서버 기본 URL을 설정합니다.
+
+```env
+VITE_API_BASE_URL=https://api.example.com
+```
+
+계약서 화면에서 JPEG, PNG 또는 PDF 파일을 선택하면 frontend가 `POST /api/documents/ocr`에 multipart 요청을 보내고 OCR 원문을 표시합니다.
 
 ## 10. 초기 세팅 체크리스트
 
