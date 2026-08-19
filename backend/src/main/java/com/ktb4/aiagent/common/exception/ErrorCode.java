@@ -10,6 +10,7 @@ public enum ErrorCode {
 	FILE_TOO_LARGE(HttpStatus.CONTENT_TOO_LARGE, "파일 크기가 허용 범위를 초과했습니다."),
 	OCR_PROVIDER_REQUEST_ERROR(HttpStatus.BAD_GATEWAY, "OCR 처리 중 오류가 발생했습니다."),
 	OCR_PROVIDER_TIMEOUT(HttpStatus.GATEWAY_TIMEOUT, "OCR 서비스에 연결할 수 없습니다."),
+	CONTRACT_EXTRACTION_FAILED(HttpStatus.BAD_GATEWAY, "계약서 구조화에 실패했습니다."),
 	SESSION_NOT_FOUND(HttpStatus.NOT_FOUND, "세션을 찾을 수 없습니다."),
 	AI_REQUEST_FAILED(HttpStatus.BAD_GATEWAY, "AI 서비스 요청에 실패했습니다.");
 
