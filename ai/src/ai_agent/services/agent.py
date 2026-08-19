@@ -12,7 +12,7 @@ SYSTEM_PROMPT = """대한민국에서 일하는 외국인 근로자를 돕는 �
 
 
 @lru_cache
-def get_chat_agent():
+def get_agent():
     settings = get_settings()
     model = ChatDeepSeek(
         model=settings.chat_model,
@@ -23,5 +23,5 @@ def get_chat_agent():
 
 
 async def answer_question(question: str) -> str:
-    result = await get_chat_agent().ainvoke({"messages": [{"role": "user", "content": question}]})
+    result = await get_agent().ainvoke({"messages": [{"role": "user", "content": question}]})
     return result["messages"][-1].text
