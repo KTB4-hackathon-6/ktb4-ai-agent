@@ -2,13 +2,17 @@
 
 농림·축산·수산업 종사자는 근로기준법 제63조에 따라 근로시간·휴게·휴일 규정이
 적용되지 않으므로 해당 업종은 그 세 가지 체크를 건너뛴다.
+
+주당 근로시간(제53조, 주 52시간 한도)은 여기서 판정하지 않는다.
+weekly_working_hours는 계약서에 literal하게 적혀있지 않고 시작~종료 시각·근무일수
+등에서 추정한 값이라 grounding으로 확실히 검증할 수 없다. 이 룰 엔진은 원문에
+숫자 그대로 있어 확실히 검증 가능한 값만 판정하고, 애매한 추정치는 agent의
+의미 판단(POSSIBLE_VIOLATION/UNKNOWN)으로 넘긴다.
 """
 
 from ai_agent.schemas.rules import ContractFacts, IndustryCategory, RuleViolation, Severity
 
 MINIMUM_HOURLY_WAGE = 10_320  # 2026년 최저임금법 기준, 매년 갱신 필요
-MAX_WEEKLY_WORKING_HOURS = 52  # 근로기준법 제50조·제53조 (기본 40 + 연장 12)
-MAX_DAILY_WORKING_HOURS = 8  # 근로기준법 제50조
 MIN_WEEKLY_PAID_HOLIDAYS = 1  # 근로기준법 제55조
 # 외국인근로자의 고용 등에 관한 법률 제18조: 취업활동기간 원칙 3년(36개월).
 # 제18조의2: 연장허가를 받으면 1회에 한해 최대 1년 10개월 추가 -> 총 상한 58개월(4년 10개월).
@@ -32,7 +36,6 @@ def check_contract(facts: ContractFacts) -> list[RuleViolation]:
         *_check_accommodation_deduction(facts),
     ]
     if facts.industry is not IndustryCategory.AGRICULTURE_LIVESTOCK_FISHERY:
-        violations += _check_working_hours(facts)
         violations += _check_rest_time(facts)
         violations += _check_weekly_holiday(facts)
     return violations
@@ -69,23 +72,6 @@ def _check_minimum_wage(facts: ContractFacts) -> list[RuleViolation]:
             message=(
                 f"시급 {facts.hourly_wage:,}원은 2026년 최저임금 "
                 f"{MINIMUM_HOURLY_WAGE:,}원에 미달합니다."
-            ),
-            severity=Severity.WARNING,
-        )
-    ]
-
-
-def _check_working_hours(facts: ContractFacts) -> list[RuleViolation]:
-    if facts.weekly_working_hours <= MAX_WEEKLY_WORKING_HOURS:
-        return []
-    return [
-        RuleViolation(
-            rule_id="weekly_hours_exceeded",
-            law_name="근로기준법",
-            article="제53조",
-            message=(
-                f"주당 근로시간 {facts.weekly_working_hours}시간은 "
-                f"법정 상한 {MAX_WEEKLY_WORKING_HOURS}시간을 초과합니다."
             ),
             severity=Severity.WARNING,
         )
@@ -208,8 +194,7 @@ _FIELD_TO_DEPENDENT_RULE_IDS: dict[str, tuple[str, ...]] = {
     "weekly_paid_holidays": ("weekly_holiday_missing",),
     "contract_period_months": ("contract_period_exceeded", "contract_period_review"),
     "accommodation_deduction_krw": ("accommodation_deduction_high",),
-    "weekly_working_hours": ("weekly_hours_exceeded",),
-    "daily_working_hours": ("weekly_hours_exceeded", "rest_time_insufficient"),
+    "daily_working_hours": ("rest_time_insufficient",),
 }
 
 

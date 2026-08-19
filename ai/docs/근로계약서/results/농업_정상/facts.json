@@ -1,7 +1,7 @@
 {
   "industry": "agriculture_livestock_fishery",
   "weekly_working_hours": 0.0,
-  "daily_working_hours": 0.0,
+  "daily_working_hours": 9.0,
   "rest_minutes_per_workday": 90,
   "weekly_paid_holidays": 0,
   "monthly_wage": 2050000,

@@ -5,12 +5,5 @@
     "article": "제6조",
     "message": "시급 10,030원은 2026년 최저임금 10,320원에 미달합니다.",
     "severity": "warning"
-  },
-  {
-    "rule_id": "weekly_hours_exceeded",
-    "law_name": "근로기준법",
-    "article": "제53조",
-    "message": "주당 근로시간 53.0시간은 법정 상한 52시간을 초과합니다.",
-    "severity": "warning"
   }
 ]
