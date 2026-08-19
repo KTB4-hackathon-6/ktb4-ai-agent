@@ -88,6 +88,11 @@ Spring은 현재 FastAPI 계약에 맞춰 다음 요청을 `POST /analyze`로 �
 `legalChecks`에 넣어 같은 FastAPI 경로로 전달한다. 상세 스키마는
 `docs/api/analysis-api.md`를 따른다.
 
+Frontend는 `POST /api/sessions/{sessionId}/contract-analyses`로 비동기 작업을 시작하고,
+`GET /api/sessions/{sessionId}/contract-analyses/{analysisId}`를 1초마다 조회한다. 작업 상태는
+`PROCESSING`, `COMPLETED`, `FAILED`이며 처리 단계는 `OCR`, `STRUCTURING`,
+`GENERATING_RESPONSE`, `COMPLETED`로 구분한다.
+
 ## 4. 동기화 값과 책임
 
 | 값 | 생성·관리 주체 | 동기화 규칙 |
@@ -110,6 +115,7 @@ Spring은 현재 FastAPI 계약에 맞춰 다음 요청을 `POST /analyze`로 �
 | 클라이언트 화면 복구용 메시지 | Spring 인메모리 메시지 저장소 |
 | 세션 유효성 및 30분 TTL | Spring 인메모리 세션 저장소 |
 | AI 멀티턴 대화 문맥 | FastAPI에서 `sessionId` 기반으로 구현 예정 |
+| 계약서 분석 작업 상태 | Spring 인메모리 작업 저장소, 30분 TTL |
 
 FastAPI의 세션 메모리가 추가되면 Spring과 동일한 `sessionId`를 사용해야 한다. FastAPI 측 TTL은 최소한 Spring 세션 TTL과 맞추고, Spring 세션이 만료된 뒤 AI 문맥이 불필요하게 남지 않도록 정리 정책을 함께 정해야 한다.
 
@@ -123,6 +129,8 @@ FastAPI가 재시작되거나 여러 워커로 실행될 때도 문맥을 유지
 | 빈 내용 또는 4,000자 초과 | `400 INVALID_REQUEST` | 저장하지 않음 |
 | FastAPI 연결·타임아웃·비정상 HTTP 응답 | `502 AI_REQUEST_FAILED` | USER 메시지만 유지 |
 | 응답 ID 불일치, 실패 상태, 빈 AI 답변 | `502 AI_REQUEST_FAILED` | USER 메시지만 유지 |
+| 존재하지 않거나 만료된 분석 작업 조회 | `404 ANALYSIS_NOT_FOUND` | 변경 없음 |
+| 분석 실행 큐 포화 | `503 ANALYSIS_BUSY` | 저장하지 않음 |
 | 정상 응답 | `201 SUCCESS` | USER와 AI 메시지 모두 저장 |
 
 AI 요청이 실패하면 사용자가 보낸 사실을 복구할 수 있도록 USER 메시지는 유지하고 AI 메시지는 저장하지 않는다. 현재는 재시도 멱등성 키를 제공하지 않으므로 클라이언트가 같은 질문을 다시 보내면 별도의 USER 메시지로 저장된다.

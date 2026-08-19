@@ -198,22 +198,27 @@ curl -X POST http://localhost:8080/api/contracts/diagnose \
 이 API는 각 파일에 OCR을 수행하고 페이지 텍스트를 합친 뒤, 구조화된 `facts`, 규칙 기반
 `violations`, 원문 근거가 부족한 `unverified_fields`를 공통 응답 봉투의 `data`에 반환합니다.
 
-OCR 원문과 규칙 진단을 FastAPI 문서 검토 에이전트에 함께 전달하려면 먼저 상담 세션을
-생성한 후 계약서 분석 API를 호출합니다.
+OCR 원문과 규칙 진단을 FastAPI 문서 검토 에이전트에 함께 전달하면서 실제 처리 단계를
+확인하려면 먼저 상담 세션을 생성한 후 비동기 계약서 분석 작업을 시작합니다.
 
 ```bash
 SESSION_ID=$(curl -sS -X POST http://localhost:8080/api/sessions | jq -r '.data.sessionId')
 
-curl -X POST http://localhost:8080/api/contracts/analyze \
-  -F "sessionId=${SESSION_ID}" \
+START_RESPONSE=$(curl -sS -X POST \
+  "http://localhost:8080/api/sessions/${SESSION_ID}/contract-analyses" \
   -F 'text=이 계약서의 중요한 문제와 다음 행동을 알려주세요.' \
   -F 'files=@contract-front.jpg' \
-  -F 'files=@contract-back.jpg'
+  -F 'files=@contract-back.jpg')
+
+ANALYSIS_ID=$(printf '%s' "$START_RESPONSE" | jq -r '.data.analysisId')
+curl -sS \
+  "http://localhost:8080/api/sessions/${SESSION_ID}/contract-analyses/${ANALYSIS_ID}" | jq
 ```
 
 Spring Boot는 페이지별 OCR 원문을 FastAPI의 `documents`로, 규칙 진단 결과를
 `legalChecks`로 변환합니다. FastAPI의 자연어 `answer`와 구조화된 `analysis`는 Spring의
-계약 진단 결과와 함께 반환되며 사용자·AI 메시지는 해당 세션에 저장됩니다.
+계약 진단 결과와 함께 반환되며 사용자·AI 메시지는 해당 세션에 저장됩니다. 상태 조회의
+`stage`는 `OCR`, `STRUCTURING`, `GENERATING_RESPONSE`, `COMPLETED` 순서로 변경됩니다.
 
 S3 사용을 위한 비민감 설정 예시는 같은 파일에 다음과 같이 정의되어 있습니다.
 
@@ -371,7 +376,9 @@ http://localhost:8080
 VITE_API_BASE_URL=https://api.example.com
 ```
 
-계약서 화면에서 JPEG, PNG 또는 PDF 파일을 선택하면 frontend가 `POST /api/documents/ocr`에 multipart 요청을 보내고 OCR 원문을 표시합니다.
+계약서 화면에서 JPEG, PNG 또는 PDF 파일을 여러 개 선택하면 frontend가 비동기 계약서 분석
+작업을 시작하고 1초마다 상태를 조회합니다. 화면에는 문서 글자 읽기, 계약 정보 정리,
+문제점과 대응 방법 만들기의 실제 처리 단계가 표시됩니다.
 
 ## 10. 초기 세팅 체크리스트
 
