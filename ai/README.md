@@ -21,7 +21,7 @@ src/ai_agent/
     ocr.py
     rag.py
   services/
-    ocr.py               # OCR 클라이언트 (provider TBD)
+    ocr.py               # OCR 클라이언트 (Naver Clova OCR)
     rag/retriever.py       # 법령 조항 검색 (embedding/vector store TBD)
 tests/
 ```
@@ -33,6 +33,13 @@ cd ai
 uv sync
 cp .env.example .env  # 값 채워넣기
 ```
+
+### Naver Clova OCR 키 발급
+
+1. [NCP 콘솔](https://console.ncloud.com) 가입 후 **AI・NAVER API > CLOVA OCR**로 이동
+2. 도메인 생성 (General 템플릿) → **Invoke URL** 확인
+3. 해당 도메인의 **Secret Key** 발급
+4. `.env`에 `NAVER_OCR_INVOKE_URL`, `NAVER_OCR_SECRET_KEY`로 입력
 
 ## 실행
 

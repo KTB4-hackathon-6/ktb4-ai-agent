@@ -18,8 +18,9 @@ class Settings(BaseSettings):
     s3_models_prefix: str = "models/"
     s3_presigned_expires_seconds: int = 600
 
-    # OCR (provider TBD: Naver Clova / Google Vision)
-    ocr_provider_api_key: str = ""
+    # OCR (Naver Clova OCR)
+    naver_ocr_invoke_url: str = ""
+    naver_ocr_secret_key: str = ""
 
     # RAG (embedding provider TBD)
     embedding_provider_api_key: str = ""
