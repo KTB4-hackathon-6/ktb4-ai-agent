@@ -104,7 +104,14 @@ Windows PowerShell:
 
 터미널에 애플리케이션 시작 완료 메시지가 출력되고 오류가 없는지 확인합니다. 기본 설정에서는 일반적으로 `http://localhost:8080`을 사용하지만 실제 로그에 표시된 포트를 우선합니다.
 
-현재 비즈니스 API나 `/health` API는 구현되어 있지 않습니다.
+### Swagger/OpenAPI 확인
+
+백엔드 실행 후 다음 주소에서 현재 API 명세를 확인할 수 있습니다.
+
+- Swagger UI: `http://localhost:8080/swagger-ui.html`
+- OpenAPI JSON: `http://localhost:8080/v3/api-docs`
+
+Controller나 API DTO를 변경할 때는 `AGENTS.md`의 Swagger/OpenAPI 문서 규칙에 따라 애너테이션과 문서 테스트를 함께 갱신합니다.
 
 ## 4. React Frontend 기본 세팅
 
