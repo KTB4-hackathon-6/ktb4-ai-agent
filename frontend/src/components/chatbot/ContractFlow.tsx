@@ -30,19 +30,20 @@ type ContractFlowProps = {
   uploadError: string | null
   documentFiles: File[]
   openItem: string | null
-  checkedEvidence: string[]
   documentPreparation: DocumentPreparationResponse | null
   complaintMessages: ComplaintChatMessage[]
   draftDownloaded: boolean
   documentState: UploadState
   documentError: string | null
+  chatValue: string
   issue: keyof typeof issueLabels
   onDocumentFilesChange: (files: File[]) => void
   onStartAnalysis: (files: File[]) => void
   onToggleItem: (itemId: string | null) => void
-  onToggleEvidence: (id: string) => void
   onStartDraft: () => void
   onSubmitComplaint: (content: string) => void
+  onChatChange: (content: string) => void
+  onChatSubmit: () => void
   onGoTo: (state: FlowState) => void
   onDownloadDraft: () => void
   onRestart: () => void
@@ -50,9 +51,9 @@ type ContractFlowProps = {
 
 function ContractFlow({
   state, contractResult, contractProgress, uploadError, documentFiles, openItem,
-  checkedEvidence, documentPreparation, complaintMessages, draftDownloaded, documentState, documentError,
-  issue, onDocumentFilesChange, onStartAnalysis, onToggleItem, onToggleEvidence,
-  onStartDraft, onSubmitComplaint, onGoTo, onDownloadDraft, onRestart,
+  documentPreparation, complaintMessages, draftDownloaded, documentState, documentError, chatValue,
+  issue, onDocumentFilesChange, onStartAnalysis, onToggleItem,
+  onStartDraft, onSubmitComplaint, onChatChange, onChatSubmit, onGoTo, onDownloadDraft, onRestart,
 }: ContractFlowProps) {
   const { t } = useTranslation()
   const [redactionStep, setRedactionStep] = useState<'upload' | 'preparing' | 'review' | 'exporting'>('upload')
@@ -166,7 +167,7 @@ function ContractFlow({
           )}
           {state === 'ANALYZING' && <AnalysisProgress key="analyzing" job={contractProgress} />}
           {state === 'REVIEW' && (
-            <ReviewPanel key="review" result={contractResult} openItem={openItem} checkedEvidence={checkedEvidence} onToggleItem={onToggleItem} onToggleEvidence={onToggleEvidence} onStartDraft={onStartDraft} onSkipToAgency={() => onGoTo('AGENCY')} />
+            <ReviewPanel key="review" result={contractResult} openItem={openItem} onToggleItem={onToggleItem} onStartDraft={onStartDraft} onSkipToAgency={() => onGoTo('AGENCY')} />
           )}
           {state === 'DRAFTING' && (
             <ComplaintDraftPanel
@@ -175,7 +176,10 @@ function ContractFlow({
               messages={complaintMessages}
               preparing={documentState === 'processing'}
               error={documentError}
+              inputValue={chatValue}
               onReply={onSubmitComplaint}
+              onInputChange={onChatChange}
+              onInputSubmit={onChatSubmit}
               onReady={() => onGoTo('DRAFT_READY')}
               onBack={() => onGoTo('REVIEW')}
             />

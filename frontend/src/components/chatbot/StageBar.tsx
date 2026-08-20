@@ -24,6 +24,10 @@ function StageBar({ state }: StageBarProps) {
 
   return (
     <nav className="stage-bar" aria-label={t('stage.aria')}>
+      <span className="mobile-stage-current">
+        <b>{current + 1}/{flowStages.length}</b>
+        {t(`stage.${flowStages[current].id}`)}
+      </span>
       <ol className="stage-list">
         {flowStages.map((stage, index) => {
           const status = index < current ? 'done' : index === current ? 'now' : 'wait'

@@ -12,7 +12,12 @@
 
 html,
 body,
-#root { min-width: 320px; min-height: 100%; }
+#root {
+  width: 100%;
+  height: 100%;
+  min-width: 320px;
+  overflow: hidden;
+}
 
 /* 파스텔 하늘색과 노란색이 옅게 섞인 배경 */
 body {
@@ -23,4 +28,14 @@ body {
     radial-gradient(circle at 78% 96%, rgba(22, 104, 240, .12) 0%, rgba(22, 104, 240, 0) 50%),
     #f3f7ff;
   background-attachment: fixed;
+}
+
+@media (max-width: 900px) {
+  html,
+  body,
+  #root {
+    height: auto;
+    min-height: 100%;
+    overflow: visible;
+  }
 }

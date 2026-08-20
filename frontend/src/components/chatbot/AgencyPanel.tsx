@@ -57,17 +57,17 @@ function AgencyPanel({ issue, onFinish, onBack }: AgencyPanelProps) {
         {t('agency.note')}
       </p>
 
-      <div className="panel-actions">
+      <div className="panel-actions agency-actions">
         <motion.button
           className="primary-button"
           type="button"
-          onClick={onFinish}
+          onClick={onBack}
           whileHover={{ y: -2 }}
           whileTap={{ scale: 0.97 }}
         >
-          {t('agency.done')}
+          {t('agency.back')}
         </motion.button>
-        <button className="ghost-button" type="button" onClick={onBack}>{t('agency.back')}</button>
+        <button className="ghost-button" type="button" onClick={onFinish}>{t('agency.done')}</button>
       </div>
     </motion.section>
   )

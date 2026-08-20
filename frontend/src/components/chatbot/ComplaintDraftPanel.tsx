@@ -1,8 +1,11 @@
+import { useEffect, useRef } from 'react'
 import { motion } from 'framer-motion'
 import { useTranslation } from 'react-i18next'
 import type { DocumentPreparationResponse } from '../../api/contracts'
-import { complaintPreviewGroups, requiredFieldProgress } from '../../complaint/presentation'
+import { requiredFieldProgress } from '../../complaint/presentation'
 import type { ComplaintChatMessage } from '../../types/chatbot'
+import ChatComposer from './ChatComposer'
+import LaborComplaintPreview from './LaborComplaintPreview'
 import StageMascot from './StageMascot'
 
 type ComplaintDraftPanelProps = {
@@ -10,7 +13,10 @@ type ComplaintDraftPanelProps = {
   messages: ComplaintChatMessage[]
   preparing: boolean
   error: string | null
+  inputValue: string
   onReply: (content: string) => void
+  onInputChange: (content: string) => void
+  onInputSubmit: () => void
   onReady: () => void
   onBack: () => void
 }
@@ -26,7 +32,10 @@ function ComplaintDraftPanel({
   messages,
   preparing,
   error,
+  inputValue,
   onReply,
+  onInputChange,
+  onInputSubmit,
   onReady,
   onBack,
 }: ComplaintDraftPanelProps) {
@@ -34,9 +43,14 @@ function ComplaintDraftPanel({
   const draft = preparation?.documentDrafts[0] ?? null
   const missingField = draft?.missingFields[0] ?? null
   const progress = draft ? requiredFieldProgress(draft.data) : null
-  const previewGroups = draft ? complaintPreviewGroups(draft.data) : []
   const completed = draft?.status === 'READY'
   const quickReplies = missingField?.validationRules.allowedValues ?? []
+  const chatRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    const chat = chatRef.current
+    if (chat) chat.scrollTop = chat.scrollHeight
+  }, [messages, preparing])
 
   return (
     <motion.section className="panel draft-panel" {...panelMotion}>
@@ -64,61 +78,51 @@ function ComplaintDraftPanel({
         )}
       </header>
 
-      <div className="complaint-chat" aria-live="polite" aria-label={t('complaint.chatAria')}>
-        {messages.map((message) => (
-          <div className={`complaint-message ${message.role}`} key={message.id}>
-            <span className="complaint-message-role">{message.role === 'assistant' ? 'ILLO AI' : t('complaint.me')}</span>
-            <p>{message.content}</p>
+      <div className={`draft-workspace${draft ? ' with-preview' : ''}`}>
+        <section className="complaint-chat-shell">
+          <div className="complaint-chat" ref={chatRef} aria-live="polite" aria-label={t('complaint.chatAria')}>
+            {messages.map((message) => (
+              <div className={`complaint-message ${message.role}`} key={message.id}>
+                <span className="complaint-message-role">{message.role === 'assistant' ? 'ILLO AI' : t('complaint.me')}</span>
+                <p>{message.content}</p>
+              </div>
+            ))}
+            {!preparing && quickReplies.length > 0 && (
+              <div className="draft-options" aria-label={t('complaint.quickReplies', { field: missingField?.displayName ?? '' })}>
+                {quickReplies.map((option) => (
+                  <button className="chip" type="button" key={option} onClick={() => onReply(option)}>
+                    {t(`complaint.option.${option}`, { defaultValue: option })}
+                  </button>
+                ))}
+              </div>
+            )}
+            {preparing && (
+              <div className="complaint-message assistant pending">
+                <span className="complaint-message-role">ILLO AI</span>
+                <p><span className="step-spinner" aria-hidden="true" /> {t('complaint.checking')}</p>
+              </div>
+            )}
           </div>
-        ))}
-        {preparing && (
-          <div className="complaint-message assistant pending">
-            <span className="complaint-message-role">ILLO AI</span>
-            <p><span className="step-spinner" aria-hidden="true" /> {t('complaint.checking')}</p>
-          </div>
+
+          {error && <p className="inline-error" role="alert">{error}</p>}
+          {missingField?.sensitive && !preparing && <p className="complaint-sensitive-note">{t('complaint.sensitive')}</p>}
+          <ChatComposer
+            value={inputValue}
+            busy={preparing}
+            onChange={onInputChange}
+            onSubmit={onInputSubmit}
+          />
+        </section>
+
+        {draft && (
+          <section className="complaint-live-preview" aria-label={t('complaint.preview')}>
+            <h3>{t('complaint.preview')}</h3>
+            <div className="complaint-preview-scroll">
+              <LaborComplaintPreview data={draft.data} compact />
+            </div>
+          </section>
         )}
       </div>
-
-      {missingField && !preparing && (
-        <aside className="current-question-card">
-          <span>{t('complaint.currentField', { field: missingField.displayName })}</span>
-          <strong>{missingField.question}</strong>
-          <small>{missingField.reason}</small>
-          {missingField.sensitive && <em>{t('complaint.sensitive')}</em>}
-          {quickReplies.length > 0 && (
-            <div className="draft-options" aria-label={t('complaint.quickReplies', { field: missingField.displayName })}>
-              {quickReplies.map((option) => (
-                <button className="chip" type="button" key={option} onClick={() => onReply(option)}>
-                  {t(`complaint.option.${option}`, { defaultValue: option })}
-                </button>
-              ))}
-            </div>
-          )}
-        </aside>
-      )}
-
-      {draft && (
-        <details className="complaint-live-preview">
-          <summary>{t('complaint.preview')}</summary>
-          <div className="draft-preview compact">
-            {previewGroups.map((group) => (
-              <section className="draft-preview-group" key={group.id}>
-                <h4>{group.label}</h4>
-                <dl>
-                  {group.rows.filter((row) => row.value !== null).map((row) => (
-                    <div key={row.fieldId}>
-                      <dt>{row.label}</dt>
-                      <dd>{row.value}</dd>
-                    </div>
-                  ))}
-                </dl>
-              </section>
-            ))}
-          </div>
-        </details>
-      )}
-
-      {error && <p className="inline-error" role="alert">{error}</p>}
 
       <div className="panel-actions">
         {completed && (
@@ -135,7 +139,6 @@ function ComplaintDraftPanel({
         <button className="ghost-button" type="button" onClick={onBack} disabled={preparing}>
           {t('complaint.back')}
         </button>
-        {!completed && !preparing && <span className="panel-note">{t('complaint.inputNote')}</span>}
       </div>
     </motion.section>
   )
