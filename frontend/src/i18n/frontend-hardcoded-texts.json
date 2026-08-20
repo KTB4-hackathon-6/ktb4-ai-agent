@@ -2,7 +2,7 @@
   "_meta": {
     "generatedAt": "2026-08-20T11:27:25.535Z",
     "sourceRef": "feat/frontend-i18n working tree",
-    "entryCount": 249,
+    "entryCount": 213,
     "targetLanguages": [
       "ko",
       "en",
@@ -13,7 +13,7 @@
       "km"
     ],
     "translationMethod": "Google Translate machine translation; unreviewed",
-    "scope": "Current frontend static UI, including manual redaction flow"
+    "scope": "Current frontend static UI"
   },
   "entries": [
     {
@@ -808,23 +808,6 @@
       }
     },
     {
-      "key": "upload.features.redaction",
-      "sources": [],
-      "kind": "ui_static",
-      "values": {
-        "ko": "기기 내 개인정보 가림"
-      },
-      "machineTranslations": {
-        "ko": "기기 내 개인정보 가림",
-        "en": "Hide personal information on your device",
-        "vi": "Ẩn thông tin cá nhân trên thiết bị của bạn",
-        "th": "ซ่อนข้อมูลส่วนบุคคลบนอุปกรณ์ของคุณ",
-        "id": "Sembunyikan informasi pribadi di perangkat Anda",
-        "mn": "Төхөөрөмж дээрээ хувийн мэдээллээ нуу",
-        "km": "លាក់ព័ត៌មានផ្ទាល់ខ្លួននៅលើឧបករណ៍របស់អ្នក។"
-      }
-    },
-    {
       "key": "upload.features.compare",
       "sources": [],
       "kind": "ui_static",
@@ -1016,16 +999,16 @@
       "sources": [],
       "kind": "ui_static",
       "values": {
-        "ko": "사진 촬영 또는 파일 선택"
+        "ko": "파일 선택"
       },
       "machineTranslations": {
-        "ko": "사진 촬영 또는 파일 선택",
-        "en": "Take a photo or select a file",
-        "vi": "Chụp ảnh hoặc chọn một tập tin",
-        "th": "ถ่ายภาพหรือเลือกไฟล์",
-        "id": "Ambil foto atau pilih file",
-        "mn": "Зураг авах эсвэл файл сонгоно уу",
-        "km": "ថតរូប ឬជ្រើសរើសឯកសារ"
+        "ko": "파일 선택",
+        "en": "Select files",
+        "vi": "Chọn tệp",
+        "th": "เลือกไฟล์",
+        "id": "Pilih file",
+        "mn": "Файл сонгох",
+        "km": "ជ្រើសរើសឯកសារ"
       }
     },
     {
@@ -1080,496 +1063,20 @@
       }
     },
     {
-      "key": "upload.privacyHeading",
+      "key": "upload.analyze",
       "sources": [],
       "kind": "ui_static",
       "values": {
-        "ko": "아직 서버에 전송되지 않았습니다."
+        "ko": "분석 시작"
       },
       "machineTranslations": {
-        "ko": "아직 서버에 전송되지 않았습니다.",
-        "en": "It hasn't been sent to the server yet.",
-        "vi": "Nó chưa được gửi đến máy chủ.",
-        "th": "ยังไม่ได้ส่งไปยังเซิร์ฟเวอร์",
-        "id": "Itu belum dikirim ke server.",
-        "mn": "Энэ нь сервер рүү хараахан илгээгдээгүй байна.",
-        "km": "វាមិនទាន់ត្រូវបានផ្ញើទៅម៉ាស៊ីនមេនៅឡើយទេ។"
-      }
-    },
-    {
-      "key": "upload.redact",
-      "sources": [],
-      "kind": "ui_static",
-      "values": {
-        "ko": "다음: 민감정보 가리기"
-      },
-      "machineTranslations": {
-        "ko": "다음: 민감정보 가리기",
-        "en": "Next: Hiding sensitive information",
-        "vi": "Tiếp theo: Ẩn thông tin nhạy cảm",
-        "th": "ถัดไป: การซ่อนข้อมูลที่ละเอียดอ่อน",
-        "id": "Berikutnya: Menyembunyikan informasi sensitif",
-        "mn": "Дараа нь: Нууц мэдээллийг нуух",
-        "km": "បន្ទាប់៖ លាក់ព័ត៌មានរសើប"
-      }
-    },
-    {
-      "key": "upload.privacyNote",
-      "sources": [],
-      "kind": "ui_static",
-      "values": {
-        "ko": "직접 가린 사본만 서버로 전송됩니다."
-      },
-      "machineTranslations": {
-        "ko": "직접 가린 사본만 서버로 전송됩니다.",
-        "en": "Only the manually masked copy is sent to the server.",
-        "vi": "Chỉ bản sao được che dấu thủ công mới được gửi đến máy chủ.",
-        "th": "เฉพาะสำเนาที่ปกปิดด้วยตนเองเท่านั้นที่ถูกส่งไปยังเซิร์ฟเวอร์",
-        "id": "Hanya salinan yang disamarkan secara manual yang dikirim ke server.",
-        "mn": "Зөвхөн гараар далдлагдсан хуулбарыг сервер рүү илгээдэг.",
-        "km": "មានតែច្បាប់ចម្លងបិទមុខដោយដៃប៉ុណ្ណោះដែលត្រូវបានផ្ញើទៅកាន់ម៉ាស៊ីនមេ។"
-      }
-    },
-    {
-      "key": "redaction.preparing.heading",
-      "sources": [],
-      "kind": "ui_static",
-      "values": {
-        "ko": "문서를 기기에서 준비하고 있습니다"
-      },
-      "machineTranslations": {
-        "ko": "문서를 기기에서 준비하고 있습니다",
-        "en": "The document is being prepared on the device",
-        "vi": "Tài liệu đang được chuẩn bị trên thiết bị",
-        "th": "กำลังเตรียมเอกสารบนอุปกรณ์",
-        "id": "Dokumen sedang disiapkan di perangkat",
-        "mn": "Баримт бичгийг төхөөрөмж дээр бэлтгэж байна",
-        "km": "ឯកសារកំពុងត្រូវបានរៀបចំនៅលើឧបករណ៍"
-      }
-    },
-    {
-      "key": "redaction.preparing.description",
-      "sources": [],
-      "kind": "ui_static",
-      "values": {
-        "ko": "서버에는 아직 전송되지 않았습니다."
-      },
-      "machineTranslations": {
-        "ko": "서버에는 아직 전송되지 않았습니다.",
-        "en": "It hasn't been sent to the server yet.",
-        "vi": "Nó chưa được gửi đến máy chủ.",
-        "th": "ยังไม่ได้ส่งไปยังเซิร์ฟเวอร์",
-        "id": "Itu belum dikirim ke server.",
-        "mn": "Энэ нь сервер рүү хараахан илгээгдээгүй байна.",
-        "km": "វាមិនទាន់ត្រូវបានផ្ញើទៅម៉ាស៊ីនមេនៅឡើយទេ។"
-      }
-    },
-    {
-      "key": "redaction.preparing.pages",
-      "sources": [],
-      "kind": "ui_static",
-      "values": {
-        "ko": "{count}개 페이지 준비됨"
-      },
-      "machineTranslations": {
-        "ko": "{count}개 페이지 준비됨",
-        "en": "{count} pages ready",
-        "vi": "{count} trang đã sẵn sàng",
-        "th": "{count} พร้อมแล้ว",
-        "id": "{count} halaman sudah siap",
-        "mn": "{count} хуудас бэлэн боллоо",
-        "km": "{count} ទំព័ររួចរាល់"
-      }
-    },
-    {
-      "key": "redaction.cancel",
-      "sources": [],
-      "kind": "ui_static",
-      "values": {
-        "ko": "취소"
-      },
-      "machineTranslations": {
-        "ko": "취소",
-        "en": "Cancel",
-        "vi": "Hủy bỏ",
-        "th": "ยกเลิก",
-        "id": "Batalkan",
-        "mn": "Цуцлах",
-        "km": "បោះបង់"
-      }
-    },
-    {
-      "key": "redaction.error.prepare",
-      "sources": [],
-      "kind": "ui_static",
-      "values": {
-        "ko": "문서를 기기에서 준비하지 못했습니다."
-      },
-      "machineTranslations": {
-        "ko": "문서를 기기에서 준비하지 못했습니다.",
-        "en": "The document could not be prepared on the device.",
-        "vi": "Không thể chuẩn bị tài liệu trên thiết bị.",
-        "th": "ไม่สามารถเตรียมเอกสารบนอุปกรณ์ได้",
-        "id": "Dokumen tidak dapat disiapkan di perangkat.",
-        "mn": "Баримт бичгийг төхөөрөмж дээр бэлтгэх боломжгүй байна.",
-        "km": "ឯកសារមិនអាចត្រូវបានរៀបចំនៅលើឧបករណ៍បានទេ។"
-      }
-    },
-    {
-      "key": "redaction.error.export",
-      "sources": [],
-      "kind": "ui_static",
-      "values": {
-        "ko": "가린 문서를 만들지 못했습니다."
-      },
-      "machineTranslations": {
-        "ko": "가린 문서를 만들지 못했습니다.",
-        "en": "Failed to create masked document.",
-        "vi": "Không tạo được tài liệu bị ẩn.",
-        "th": "ไม่สามารถสร้างเอกสารที่มาสก์ได้",
-        "id": "Gagal membuat dokumen bertopeng.",
-        "mn": "Бүрхэгдсэн баримт бичгийг үүсгэж чадсангүй.",
-        "km": "បរាជ័យក្នុងការបង្កើតឯកសារបិទបាំង។"
-      }
-    },
-    {
-      "key": "redaction.status",
-      "sources": [],
-      "kind": "ui_static",
-      "values": {
-        "ko": "기기에서 처리 중"
-      },
-      "machineTranslations": {
-        "ko": "기기에서 처리 중",
-        "en": "Processing on device",
-        "vi": "Xử lý trên thiết bị",
-        "th": "กำลังประมวลผลบนอุปกรณ์",
-        "id": "Memproses di perangkat",
-        "mn": "Төхөөрөмж дээр боловсруулж байна",
-        "km": "ដំណើរការនៅលើឧបករណ៍"
-      }
-    },
-    {
-      "key": "redaction.heading",
-      "sources": [],
-      "kind": "ui_static",
-      "values": {
-        "ko": "서버로 보내기 전에 민감정보를 가려주세요"
-      },
-      "machineTranslations": {
-        "ko": "서버로 보내기 전에 민감정보를 가려주세요",
-        "en": "Please mask sensitive information before sending it to the server.",
-        "vi": "Vui lòng che giấu thông tin nhạy cảm trước khi gửi nó đến máy chủ.",
-        "th": "กรุณาปิดบังข้อมูลที่ละเอียดอ่อนก่อนที่จะส่งไปยังเซิร์ฟเวอร์",
-        "id": "Harap sembunyikan informasi sensitif sebelum mengirimkannya ke server.",
-        "mn": "Сервер рүү илгээхээсээ өмнө нууц мэдээллийг нууж дарна уу.",
-        "km": "សូមបិទបាំងព័ត៌មានរសើប មុនពេលបញ្ជូនវាទៅម៉ាស៊ីនមេ។"
-      }
-    },
-    {
-      "key": "redaction.description",
-      "sources": [],
-      "kind": "ui_static",
-      "values": {
-        "ko": "이 화면을 완료하기 전에는 문서가 서버에 전송되지 않습니다."
-      },
-      "machineTranslations": {
-        "ko": "이 화면을 완료하기 전에는 문서가 서버에 전송되지 않습니다.",
-        "en": "Your document will not be sent to the server until you complete this screen.",
-        "vi": "Tài liệu của bạn sẽ không được gửi đến máy chủ cho đến khi bạn hoàn thành màn hình này.",
-        "th": "เอกสารของคุณจะไม่ถูกส่งไปยังเซิร์ฟเวอร์จนกว่าคุณจะเสร็จสิ้นหน้าจอนี้",
-        "id": "Dokumen Anda tidak akan dikirim ke server sampai Anda menyelesaikan layar ini.",
-        "mn": "Энэ дэлгэцийг дуусгах хүртэл таны баримтыг сервер рүү илгээхгүй.",
-        "km": "ឯកសាររបស់អ្នកនឹងមិនត្រូវបានផ្ញើទៅម៉ាស៊ីនមេទេ រហូតដល់អ្នកបញ្ចប់អេក្រង់នេះ។"
-      }
-    },
-    {
-      "key": "redaction.confirmedCount",
-      "sources": [],
-      "kind": "ui_static",
-      "values": {
-        "ko": "{confirmed}/{total} 페이지 확인"
-      },
-      "machineTranslations": {
-        "ko": "{confirmed}/{total} 페이지 확인",
-        "en": "Check {confirmed}/{total} pages",
-        "vi": "Kiểm tra các trang {confirmed}/{total}",
-        "th": "ตรวจสอบ {confirmed}/{total} หน้า",
-        "id": "Periksa halaman {confirmed}/{total}",
-        "mn": "{confirmed}/{total} хуудсыг шалгана уу",
-        "km": "ពិនិត្យទំព័រ {confirmed}/{total}"
-      }
-    },
-    {
-      "key": "redaction.previous",
-      "sources": [],
-      "kind": "ui_static",
-      "values": {
-        "ko": "이전"
-      },
-      "machineTranslations": {
-        "ko": "이전",
-        "en": "Previous",
-        "vi": "trước đó",
-        "th": "ก่อนหน้า",
-        "id": "Sebelumnya",
-        "mn": "Өмнөх",
-        "km": "មុន"
-      }
-    },
-    {
-      "key": "redaction.next",
-      "sources": [],
-      "kind": "ui_static",
-      "values": {
-        "ko": "다음"
-      },
-      "machineTranslations": {
-        "ko": "다음",
-        "en": "next",
-        "vi": "tiếp theo",
-        "th": "ถัดไป",
-        "id": "berikutnya",
-        "mn": "дараагийн",
-        "km": "បន្ទាប់"
-      }
-    },
-    {
-      "key": "redaction.pageNavigation",
-      "sources": [],
-      "kind": "ui_static",
-      "values": {
-        "ko": "문서 페이지 이동"
-      },
-      "machineTranslations": {
-        "ko": "문서 페이지 이동",
-        "en": "Go to document page",
-        "vi": "Tới trang tài liệu",
-        "th": "ไปที่หน้าเอกสาร",
-        "id": "Buka halaman dokumen",
-        "mn": "Баримт бичгийн хуудас руу очно уу",
-        "km": "ចូលទៅកាន់ទំព័រឯកសារ"
-      }
-    },
-    {
-      "key": "redaction.zoom",
-      "sources": [],
-      "kind": "ui_static",
-      "values": {
-        "ko": "확대"
-      },
-      "machineTranslations": {
-        "ko": "확대",
-        "en": "zoom in",
-        "vi": "phóng to",
-        "th": "ซูมเข้า",
-        "id": "memperbesar",
-        "mn": "томруулах",
-        "km": "ពង្រីក"
-      }
-    },
-    {
-      "key": "redaction.pageAlt",
-      "sources": [],
-      "kind": "ui_static",
-      "values": {
-        "ko": "확인 중인 문서 {page}페이지"
-      },
-      "machineTranslations": {
-        "ko": "확인 중인 문서 {page}페이지",
-        "en": "Document being checked Page {page}",
-        "vi": "Tài liệu đang được kiểm tra Trang {page}",
-        "th": "กำลังตรวจสอบเอกสาร หน้า {page}",
-        "id": "Dokumen sedang diperiksa Halaman {page}",
-        "mn": "Баримт бичгийг шалгаж байна Хуудас {page}",
-        "km": "ឯកសារកំពុងពិនិត្យទំព័រ {page}"
-      }
-    },
-    {
-      "key": "redaction.regions.heading",
-      "sources": [],
-      "kind": "ui_static",
-      "values": {
-        "ko": "이 페이지의 가림 영역"
-      },
-      "machineTranslations": {
-        "ko": "이 페이지의 가림 영역",
-        "en": "Masked area on this page",
-        "vi": "Khu vực bị che trên trang này",
-        "th": "พื้นที่สวมหน้ากากในหน้านี้",
-        "id": "Area bertopeng di halaman ini",
-        "mn": "Энэ хуудсан дээрх масктай хэсэг",
-        "km": "របាំងមុខនៅលើទំព័រនេះ។"
-      }
-    },
-    {
-      "key": "redaction.regions.description",
-      "sources": [],
-      "kind": "ui_static",
-      "values": {
-        "ko": "이름, 번호, 개인 주소, 서명과 도장을 문서 위에서 직접 드래그해 가려주세요."
-      },
-      "machineTranslations": {
-        "ko": "이름, 번호, 개인 주소, 서명과 도장을 문서 위에서 직접 드래그해 가려주세요.",
-        "en": "Hide names, numbers, personal addresses, signatures, and stamps by dragging them directly on the document.",
-        "vi": "Ẩn tên, số, địa chỉ cá nhân, chữ ký và tem bằng cách kéo chúng trực tiếp trên tài liệu.",
-        "th": "ซ่อนชื่อ ตัวเลข ที่อยู่ส่วนตัว ลายเซ็น และตราประทับโดยการลากไปบนเอกสารโดยตรง",
-        "id": "Sembunyikan nama, nomor, alamat pribadi, tanda tangan, dan stempel dengan menyeretnya langsung ke dokumen.",
-        "mn": "Нэр, дугаар, хувийн хаяг, гарын үсэг, тамга тэмдгийг шууд баримт дээр чирж нуу.",
-        "km": "លាក់ឈ្មោះ លេខ អាសយដ្ឋានផ្ទាល់ខ្លួន ហត្ថលេខា និងត្រាដោយអូសពួកវាដោយផ្ទាល់នៅលើឯកសារ។"
-      }
-    },
-    {
-      "key": "redaction.regions.add",
-      "sources": [],
-      "kind": "ui_static",
-      "values": {
-        "ko": "가림 영역 추가"
-      },
-      "machineTranslations": {
-        "ko": "가림 영역 추가",
-        "en": "Add blocking area",
-        "vi": "Thêm khu vực chặn",
-        "th": "เพิ่มพื้นที่ปิดกั้น",
-        "id": "Tambahkan area pemblokiran",
-        "mn": "Блоклох хэсгийг нэмнэ үү",
-        "km": "បន្ថែមតំបន់ទប់ស្កាត់"
-      }
-    },
-    {
-      "key": "redaction.regions.empty",
-      "sources": [],
-      "kind": "ui_static",
-      "values": {
-        "ko": "추가된 가림 영역이 없습니다."
-      },
-      "machineTranslations": {
-        "ko": "추가된 가림 영역이 없습니다.",
-        "en": "There are no masking areas added.",
-        "vi": "Không có khu vực mặt nạ nào được thêm vào.",
-        "th": "ไม่มีการเพิ่มพื้นที่กำบัง",
-        "id": "Tidak ada area masking yang ditambahkan.",
-        "mn": "Нэмэгдсэн маск хийх хэсэг байхгүй.",
-        "km": "មិនមានបន្ថែមតំបន់របាំងមុខទេ។"
-      }
-    },
-    {
-      "key": "redaction.regions.item",
-      "sources": [],
-      "kind": "ui_static",
-      "values": {
-        "ko": "영역 {number}"
-      },
-      "machineTranslations": {
-        "ko": "영역 {number}",
-        "en": "Area {number}",
-        "vi": "Diện tích {number}",
-        "th": "พื้นที่ {number}",
-        "id": "Daerah {number}",
-        "mn": "Талбай {number}",
-        "km": "តំបន់ {number}"
-      }
-    },
-    {
-      "key": "redaction.regions.remove",
-      "sources": [],
-      "kind": "ui_static",
-      "values": {
-        "ko": "삭제"
-      },
-      "machineTranslations": {
-        "ko": "삭제",
-        "en": "Delete",
-        "vi": "Xóa",
-        "th": "ลบ",
-        "id": "Hapus",
-        "mn": "Устгах",
-        "km": "លុប"
-      }
-    },
-    {
-      "key": "redaction.pageConfirmed",
-      "sources": [],
-      "kind": "ui_static",
-      "values": {
-        "ko": "✓ 이 페이지 확인됨"
-      },
-      "machineTranslations": {
-        "ko": "✓ 이 페이지 확인됨",
-        "en": "✓ This page is verified",
-        "vi": "✓ Trang này đã được xác minh",
-        "th": "✓ หน้านี้ได้รับการยืนยันแล้ว",
-        "id": "✓ Halaman ini telah diverifikasi",
-        "mn": "✓ Энэ хуудсыг баталгаажуулсан",
-        "km": "✓ ទំព័រនេះត្រូវបានផ្ទៀងផ្ទាត់"
-      }
-    },
-    {
-      "key": "redaction.confirmPage",
-      "sources": [],
-      "kind": "ui_static",
-      "values": {
-        "ko": "이 페이지 확인 완료"
-      },
-      "machineTranslations": {
-        "ko": "이 페이지 확인 완료",
-        "en": "Verified this page",
-        "vi": "Đã xác minh trang này",
-        "th": "ยืนยันหน้านี้แล้ว",
-        "id": "Verifikasi halaman ini",
-        "mn": "Энэ хуудсыг баталгаажуулсан",
-        "km": "បានផ្ទៀងផ្ទាត់ទំព័រនេះ។"
-      }
-    },
-    {
-      "key": "redaction.chooseAgain",
-      "sources": [],
-      "kind": "ui_static",
-      "values": {
-        "ko": "취소하고 파일 다시 선택"
-      },
-      "machineTranslations": {
-        "ko": "취소하고 파일 다시 선택",
-        "en": "Cancel and select file again",
-        "vi": "Hủy và chọn lại tập tin",
-        "th": "ยกเลิกและเลือกไฟล์อีกครั้ง",
-        "id": "Batalkan dan pilih file lagi",
-        "mn": "Цуцлаад дахин файл сонгоно уу",
-        "km": "បោះបង់ ហើយជ្រើសរើសឯកសារម្តងទៀត"
-      }
-    },
-    {
-      "key": "redaction.exporting",
-      "sources": [],
-      "kind": "ui_static",
-      "values": {
-        "ko": "가공본 만드는 중…"
-      },
-      "machineTranslations": {
-        "ko": "가공본 만드는 중…",
-        "en": "Making a processed copy...",
-        "vi": "Tạo một bản sao đã được xử lý...",
-        "th": "กำลังทำสำเนาที่ประมวลผล...",
-        "id": "Membuat salinan yang telah diproses...",
-        "mn": "Боловсруулсан хуулбарыг хийж байна...",
-        "km": "ការធ្វើច្បាប់ចម្លងដែលបានដំណើរការ..."
-      }
-    },
-    {
-      "key": "redaction.start",
-      "sources": [],
-      "kind": "ui_static",
-      "values": {
-        "ko": "가린 문서로 분석 시작"
-      },
-      "machineTranslations": {
-        "ko": "가린 문서로 분석 시작",
-        "en": "Start analysis with hidden document",
-        "vi": "Bắt đầu phân tích với tài liệu ẩn",
-        "th": "เริ่มการวิเคราะห์ด้วยเอกสารที่ซ่อนอยู่",
-        "id": "Mulai analisis dengan dokumen tersembunyi",
-        "mn": "Нуугдсан баримтаас дүн шинжилгээ хийж эхлээрэй",
-        "km": "ចាប់ផ្តើមការវិភាគជាមួយឯកសារលាក់"
+        "ko": "분석 시작",
+        "en": "Start analysis",
+        "vi": "Bắt đầu phân tích",
+        "th": "เริ่มการวิเคราะห์",
+        "id": "Mulai analisis",
+        "mn": "Шинжилгээг эхлүүлэх",
+        "km": "ចាប់ផ្តើមការវិភាគ"
       }
     },
     {
@@ -2389,23 +1896,6 @@
       }
     },
     {
-      "key": "complaint.sensitive",
-      "sources": [],
-      "kind": "ui_static",
-      "values": {
-        "ko": "민감정보가 포함될 수 있습니다. 공용 기기에서는 입력 후 화면을 닫아주세요."
-      },
-      "machineTranslations": {
-        "ko": "민감정보가 포함될 수 있습니다. 공용 기기에서는 입력 후 화면을 닫아주세요.",
-        "en": "It may contain sensitive information. On shared devices, please close the screen after entering.",
-        "vi": "Nó có thể chứa thông tin nhạy cảm. Trên các thiết bị dùng chung, vui lòng đóng màn hình sau khi vào.",
-        "th": "อาจมีข้อมูลที่ละเอียดอ่อน บนอุปกรณ์ที่ใช้ร่วมกันกรุณาปิดหน้าจอหลังจากเข้า",
-        "id": "Ini mungkin berisi informasi sensitif. Pada perangkat bersama, harap tutup layar setelah masuk.",
-        "mn": "Энэ нь эмзэг мэдээллийг агуулж болно. Хуваалцсан төхөөрөмжүүд дээр нэвтэрсний дараа дэлгэцийг хаана уу.",
-        "km": "វាអាចមានព័ត៌មានរសើប។ នៅលើឧបករណ៍ដែលបានចែករំលែក សូមបិទអេក្រង់បន្ទាប់ពីចូល។"
-      }
-    },
-    {
       "key": "complaint.quickReplies",
       "sources": [],
       "kind": "ui_static",
@@ -2733,16 +2223,16 @@
       "sources": [],
       "kind": "ui_static",
       "values": {
-        "ko": "진정서 (SN001)"
+        "ko": "진정서"
       },
       "machineTranslations": {
-        "ko": "진정서 (SN001)",
-        "en": "Petition (SN001)",
-        "vi": "Đơn khởi kiện (SN001)",
-        "th": "คำร้อง (SN001)",
-        "id": "Petisi (SN001)",
-        "mn": "Өргөдөл (SN001)",
-        "km": "ញត្តិ (SN001)"
+        "ko": "진정서",
+        "en": "Petition",
+        "vi": "Đơn khởi kiện",
+        "th": "คำร้อง",
+        "id": "Petisi",
+        "mn": "Өргөдөл",
+        "km": "ញត្តិ"
       }
     },
     {
@@ -4184,108 +3674,6 @@
         "id": "Dokumen itu tidak dikenali. Silakan coba lagi.",
         "mn": "Баримт бичгийг хүлээн зөвшөөрөөгүй. Дахин оролдоно уу.",
         "km": "ឯកសារនេះមិនត្រូវបានទទួលស្គាល់ទេ។ សូមព្យាយាមម្តងទៀត។"
-      }
-    },
-    {
-      "key": "redaction.error.image",
-      "sources": [],
-      "kind": "ui_static",
-      "values": {
-        "ko": "가공 이미지를 만들지 못했습니다."
-      },
-      "machineTranslations": {
-        "ko": "가공 이미지를 만들지 못했습니다.",
-        "en": "Failed to create processed image.",
-        "vi": "Không tạo được hình ảnh đã xử lý.",
-        "th": "ไม่สามารถสร้างอิมเมจที่ประมวลผลแล้ว",
-        "id": "Gagal membuat gambar yang diproses.",
-        "mn": "Боловсруулсан зургийг үүсгэж чадсангүй.",
-        "km": "បរាជ័យក្នុងការបង្កើតរូបភាពដែលបានដំណើរការ។"
-      }
-    },
-    {
-      "key": "redaction.error.display",
-      "sources": [],
-      "kind": "ui_static",
-      "values": {
-        "ko": "브라우저에서 문서를 표시할 수 없습니다."
-      },
-      "machineTranslations": {
-        "ko": "브라우저에서 문서를 표시할 수 없습니다.",
-        "en": "Your browser cannot display the document.",
-        "vi": "Trình duyệt của bạn không thể hiển thị tài liệu.",
-        "th": "เบราว์เซอร์ของคุณไม่สามารถแสดงเอกสารได้",
-        "id": "Browser Anda tidak dapat menampilkan dokumen tersebut.",
-        "mn": "Таны хөтөч баримт бичгийг харуулах боломжгүй.",
-        "km": "កម្មវិធីរុករករបស់អ្នកមិនអាចបង្ហាញឯកសារបានទេ។"
-      }
-    },
-    {
-      "key": "redaction.error.displayPdf",
-      "sources": [],
-      "kind": "ui_static",
-      "values": {
-        "ko": "브라우저에서 PDF를 표시할 수 없습니다."
-      },
-      "machineTranslations": {
-        "ko": "브라우저에서 PDF를 표시할 수 없습니다.",
-        "en": "Your browser cannot display the PDF.",
-        "vi": "Trình duyệt của bạn không thể hiển thị PDF.",
-        "th": "เบราว์เซอร์ของคุณไม่สามารถแสดง PDF ได้",
-        "id": "Browser Anda tidak dapat menampilkan PDF.",
-        "mn": "Таны хөтөч PDF-г харуулах боломжгүй.",
-        "km": "កម្មវិធីរុករករបស់អ្នកមិនអាចបង្ហាញ PDF បានទេ។"
-      }
-    },
-    {
-      "key": "redaction.error.noPages",
-      "sources": [],
-      "kind": "ui_static",
-      "values": {
-        "ko": "확인할 문서 페이지가 없습니다."
-      },
-      "machineTranslations": {
-        "ko": "확인할 문서 페이지가 없습니다.",
-        "en": "There are no document pages to check.",
-        "vi": "Không có trang tài liệu nào để kiểm tra.",
-        "th": "ไม่มีหน้าเอกสารให้ตรวจสอบ",
-        "id": "Tidak ada halaman dokumen yang perlu diperiksa.",
-        "mn": "Шалгах баримт бичгийн хуудас байхгүй байна.",
-        "km": "មិនមានទំព័រឯកសារដែលត្រូវពិនិត្យទេ។"
-      }
-    },
-    {
-      "key": "redaction.error.maskImage",
-      "sources": [],
-      "kind": "ui_static",
-      "values": {
-        "ko": "가림 이미지를 만들 수 없습니다."
-      },
-      "machineTranslations": {
-        "ko": "가림 이미지를 만들 수 없습니다.",
-        "en": "A masked image cannot be created.",
-        "vi": "Không thể tạo hình ảnh bị che.",
-        "th": "ไม่สามารถสร้างภาพที่มาสก์ได้",
-        "id": "Gambar bertopeng tidak dapat dibuat.",
-        "mn": "Масктай зураг үүсгэх боломжгүй.",
-        "km": "រូបភាពបិទមុខមិនអាចបង្កើតបានទេ។"
-      }
-    },
-    {
-      "key": "redaction.error.tooLarge",
-      "sources": [],
-      "kind": "ui_static",
-      "values": {
-        "ko": "가공된 문서가 10MB를 넘습니다. 문서를 나누어 다시 선택해주세요."
-      },
-      "machineTranslations": {
-        "ko": "가공된 문서가 10MB를 넘습니다. 문서를 나누어 다시 선택해주세요.",
-        "en": "The processed document exceeds 10MB. Please divide the document and select it again.",
-        "vi": "Tài liệu được xử lý vượt quá 10 MB. Vui lòng chia tài liệu và chọn lại.",
-        "th": "เอกสารที่ประมวลผลมีขนาดเกิน 10MB โปรดแบ่งเอกสารและเลือกอีกครั้ง",
-        "id": "Dokumen yang diproses melebihi 10MB. Silakan bagi dokumen tersebut dan pilih lagi.",
-        "mn": "Боловсруулсан баримт бичгийн хэмжээ 10 МБ-аас хэтэрсэн байна. Баримт бичгийг хувааж, дахин сонгоно уу.",
-        "km": "ឯកសារដែលបានដំណើរការលើសពី 10MB ។ សូមបែងចែកឯកសារ ហើយជ្រើសរើសវាម្តងទៀត។"
       }
     }
   ]

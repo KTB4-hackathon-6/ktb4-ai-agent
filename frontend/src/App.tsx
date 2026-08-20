@@ -5,9 +5,11 @@ import {
   ContractApiError,
   downloadGeneratedDocument,
   prepareLaborComplaint,
+  requestSubmissionGuidance,
   type ContractAnalysisJob,
   type ContractAnalysisResponse,
   type DocumentPreparationResponse,
+  type GuidanceResponse,
 } from './api/contracts'
 import ChatHeader from './components/chatbot/ChatHeader'
 import ContractFlow from './components/chatbot/ContractFlow'
@@ -31,12 +33,17 @@ function App() {
   const [complaintMessages, setComplaintMessages] = useState<ComplaintChatMessage[]>([])
   const [draftDownloaded, setDraftDownloaded] = useState(false)
   const [freeText, setFreeText] = useState('')
+  const [guidance, setGuidance] = useState<GuidanceResponse | null>(null)
+  const [guidanceLoading, setGuidanceLoading] = useState(false)
+  const [guidanceError, setGuidanceError] = useState<string | null>(null)
   const analysisAbortRef = useRef<AbortController | null>(null)
   const complaintAbortRef = useRef<AbortController | null>(null)
+  const guidanceAbortRef = useRef<AbortController | null>(null)
 
   useEffect(() => () => {
     analysisAbortRef.current?.abort()
     complaintAbortRef.current?.abort()
+    guidanceAbortRef.current?.abort()
   }, [])
 
   const runContractAnalysis = async (files: File[]) => {
@@ -126,9 +133,55 @@ function App() {
     setDraftDownloaded(true)
   }
 
+  const runSubmissionGuidance = async () => {
+    if (!contractResult) return
+    guidanceAbortRef.current?.abort()
+    const abortController = new AbortController()
+    guidanceAbortRef.current = abortController
+    setGuidance(null)
+    setGuidanceLoading(true)
+    setGuidanceError(null)
+
+    try {
+      const result = await requestSubmissionGuidance(
+        contractResult.sessionId,
+        t('agency.heading'),
+        language,
+        abortController.signal,
+      )
+      setGuidance(result)
+    } catch (error) {
+      if (error instanceof DOMException && error.name === 'AbortError') return
+      setGuidanceError(error instanceof ContractApiError ? error.message : t('api.error.invalidResponse'))
+    } finally {
+      if (guidanceAbortRef.current === abortController) {
+        guidanceAbortRef.current = null
+        setGuidanceLoading(false)
+      }
+    }
+  }
+
+  const goTo = (nextState: FlowState) => {
+    setFlowState(nextState)
+    if (nextState !== 'AGENCY') {
+      guidanceAbortRef.current?.abort()
+      setGuidanceLoading(false)
+      return
+    }
+    if (contractResult) {
+      void runSubmissionGuidance()
+      return
+    }
+    guidanceAbortRef.current?.abort()
+    setGuidance(null)
+    setGuidanceLoading(false)
+    setGuidanceError(null)
+  }
+
   const restart = () => {
     analysisAbortRef.current?.abort()
     complaintAbortRef.current?.abort()
+    guidanceAbortRef.current?.abort()
     setFlowState('UPLOAD')
     setContractResult(null)
     setContractProgress(null)
@@ -141,6 +194,9 @@ function App() {
     setComplaintMessages([])
     setDraftDownloaded(false)
     setFreeText('')
+    setGuidance(null)
+    setGuidanceLoading(false)
+    setGuidanceError(null)
   }
 
   const sendFreeText = () => {
@@ -171,6 +227,9 @@ function App() {
           draftDownloaded={draftDownloaded}
           documentState={documentState}
           documentError={documentError}
+          guidance={guidance}
+          guidanceLoading={guidanceLoading}
+          guidanceError={guidanceError}
           chatValue={freeText}
           issue={detectReviewIssue(contractResult)}
           onDocumentFilesChange={setDocumentFiles}
@@ -180,7 +239,7 @@ function App() {
           onSubmitComplaint={(content) => void runComplaintTurn(content, true)}
           onChatChange={setFreeText}
           onChatSubmit={sendFreeText}
-          onGoTo={setFlowState}
+          onGoTo={goTo}
           onDownloadDraft={downloadDraft}
           onRestart={restart}
         />

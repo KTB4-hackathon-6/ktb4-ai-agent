@@ -81,7 +81,6 @@ function UploadPanel({ files, error, onFilesChange, onStart }: UploadPanelProps)
           <strong>{dragging ? t('upload.dropActive') : t('upload.dropPrompt')}</strong>
           <small>{t('upload.formats')}</small>
           <label className="ghost-button" htmlFor="employment-documents">{t('upload.chooseFiles')}</label>
-          <p className="upload-combined-note">{t('upload.combinedFileNote')}</p>
         </div>
       ) : (
         <div
@@ -115,22 +114,14 @@ function UploadPanel({ files, error, onFilesChange, onStart }: UploadPanelProps)
             ))}
           </ul>
 
-          <div className="upload-privacy-callout">
-            <span aria-hidden="true">🔒</span>
-            <div>
-              <strong>{t('upload.privacyHeading')}</strong>
-              <small>{t('upload.privacyNote')}</small>
-            </div>
-          </div>
-
           <motion.button
-            className="primary-button upload-redaction-button"
+            className="primary-button upload-analysis-button"
             type="button"
             onClick={() => onStart(files)}
             whileHover={{ y: -2 }}
             whileTap={{ scale: 0.97 }}
           >
-            {t('upload.redact')}
+            {t('upload.analyze')}
           </motion.button>
         </div>
       )}
