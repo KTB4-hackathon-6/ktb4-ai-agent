@@ -8,7 +8,7 @@ export type ReviewCard = {
   status: ReviewStatus
   title: string
   description: string
-  source: 'AI 분석' | '기준 대조'
+  source: 'ai' | 'rule'
   relatedDocuments: string[]
   legalBasis: string | null
 }
@@ -27,7 +27,7 @@ export function reviewCards(result: ContractAnalysisResponse): ReviewCard[] {
     status: findingStatus(finding.severity),
     title: finding.title,
     description: finding.description,
-    source: 'AI 분석',
+    source: 'ai',
     relatedDocuments: finding.relatedDocumentIds,
     legalBasis: null,
   }))
@@ -37,7 +37,7 @@ export function reviewCards(result: ContractAnalysisResponse): ReviewCard[] {
     status: violation.severity === 'warning' ? 'warn' : 'check',
     title: `${violation.law_name} ${violation.article}`,
     description: violation.message,
-    source: '기준 대조',
+    source: 'rule',
     relatedDocuments: [],
     legalBasis: `${violation.law_name} ${violation.article}`,
   }))

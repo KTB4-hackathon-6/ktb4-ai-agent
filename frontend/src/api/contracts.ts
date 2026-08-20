@@ -1,4 +1,5 @@
 import type { PreferredLanguage } from '../types/chatbot'
+import i18n from '../i18n'
 
 export type ContractFacts = {
   industry: 'manufacturing' | 'agriculture_livestock_fishery' | 'other'
@@ -249,13 +250,13 @@ export async function analyzeContract(
 
   if (job.status === 'FAILED') {
     throw new ContractApiError(
-      job.error?.message ?? '계약서를 분석하지 못했습니다. 다시 시도해주세요.',
+      job.error?.message ?? i18n.t('api.error.contractAnalysisFailed'),
       job.error?.code ?? 'ANALYSIS_FAILED',
       200,
     )
   }
   if (!job.result) {
-    throw new ContractApiError('분석 결과를 확인할 수 없습니다.', 'INVALID_RESPONSE', 200)
+    throw new ContractApiError(i18n.t('api.error.missingAnalysisResult'), 'INVALID_RESPONSE', 200)
   }
   return { ...job.result, sessionId: session.sessionId }
 }
@@ -302,7 +303,7 @@ async function request<T>(path: string, init: RequestInit): Promise<T> {
   } catch (error) {
     if (error instanceof DOMException && error.name === 'AbortError') throw error
     throw new ContractApiError(
-      '서버에 연결할 수 없습니다. 잠시 후 다시 시도해주세요.',
+      i18n.t('api.error.network'),
       'NETWORK_ERROR',
       0,
     )
@@ -312,7 +313,7 @@ async function request<T>(path: string, init: RequestInit): Promise<T> {
   if (!response.ok || envelope.code !== 'SUCCESS') {
     const errorData = envelope.data as ErrorData
     throw new ContractApiError(
-      errorData.message ?? '계약서를 분석하지 못했습니다. 다시 시도해주세요.',
+      errorData.message ?? i18n.t('api.error.contractAnalysisFailed'),
       envelope.code,
       response.status,
     )
@@ -326,7 +327,7 @@ async function readEnvelope<T>(response: Response): Promise<ApiEnvelope<T>> {
     return await response.json() as ApiEnvelope<T>
   } catch {
     throw new ContractApiError(
-      '서버 응답을 확인할 수 없습니다. 잠시 후 다시 시도해주세요.',
+      i18n.t('api.error.invalidResponse'),
       'INVALID_RESPONSE',
       response.status,
     )

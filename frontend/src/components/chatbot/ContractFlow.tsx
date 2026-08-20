@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
+import { useTranslation } from 'react-i18next'
 import type {
   ContractAnalysisJob,
   ContractAnalysisResponse,
@@ -53,6 +54,7 @@ function ContractFlow({
   issue, onDocumentFilesChange, onStartAnalysis, onToggleItem, onToggleEvidence,
   onStartDraft, onSubmitComplaint, onGoTo, onDownloadDraft, onRestart,
 }: ContractFlowProps) {
+  const { t } = useTranslation()
   const [redactionStep, setRedactionStep] = useState<'upload' | 'preparing' | 'review' | 'exporting'>('upload')
   const [redactionPages, setRedactionPages] = useState<RedactionPage[]>([])
   const [redactionError, setRedactionError] = useState<string | null>(null)
@@ -89,7 +91,7 @@ function ContractFlow({
       setRedactionStep('review')
     } catch (error) {
       if (preparationGenerationRef.current !== generation) return
-      setRedactionError(error instanceof Error ? error.message : '문서를 기기에서 준비하지 못했습니다.')
+      setRedactionError(error instanceof Error ? error.message : t('redaction.error.prepare'))
       setRedactionStep('upload')
     }
   }
@@ -115,7 +117,7 @@ function ContractFlow({
       onDocumentFilesChange([])
       onStartAnalysis(files)
     } catch (error) {
-      setRedactionError(error instanceof Error ? error.message : '가린 문서를 만들지 못했습니다.')
+      setRedactionError(error instanceof Error ? error.message : t('redaction.error.export'))
       setRedactionStep('review')
     }
   }
@@ -144,11 +146,11 @@ function ContractFlow({
             >
               <span className="step-spinner" aria-hidden="true" />
               <div>
-                <h2>문서를 기기에서 준비하고 있습니다</h2>
-                <p>서버에는 아직 전송되지 않았습니다.</p>
-                {preparedPageCount > 0 && <small>{preparedPageCount}개 페이지 준비됨</small>}
+                <h2>{t('redaction.preparing.heading')}</h2>
+                <p>{t('redaction.preparing.description')}</p>
+                {preparedPageCount > 0 && <small>{t('redaction.preparing.pages', { count: preparedPageCount })}</small>}
               </div>
-              <button className="ghost-button" type="button" onClick={cancelRedaction}>취소</button>
+              <button className="ghost-button" type="button" onClick={cancelRedaction}>{t('redaction.cancel')}</button>
             </motion.section>
           )}
           {state === 'UPLOAD' && (redactionStep === 'review' || redactionStep === 'exporting') && redactionPages.length > 0 && (

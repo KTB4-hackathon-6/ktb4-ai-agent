@@ -1,3 +1,5 @@
+import i18n from '../i18n'
+
 export type OcrAnalysisResponse = {
   processedAt: string
   fullText: string
@@ -38,7 +40,7 @@ export async function analyzeDocument(file: File): Promise<OcrAnalysisResponse> 
     })
   } catch {
     throw new OcrApiError(
-      '서버에 연결할 수 없습니다. 잠시 후 다시 시도해주세요.',
+      i18n.t('api.error.network'),
       'NETWORK_ERROR',
       0,
     )
@@ -48,7 +50,7 @@ export async function analyzeDocument(file: File): Promise<OcrAnalysisResponse> 
   if (!response.ok || envelope.code !== 'SUCCESS') {
     const errorData = envelope.data as ErrorData
     throw new OcrApiError(
-      errorData.message ?? '문서를 인식하지 못했습니다. 다시 시도해주세요.',
+      errorData.message ?? i18n.t('api.error.ocrFailed'),
       envelope.code,
       response.status,
     )
@@ -62,7 +64,7 @@ async function readEnvelope<T>(response: Response): Promise<ApiEnvelope<T>> {
     return await response.json() as ApiEnvelope<T>
   } catch {
     throw new OcrApiError(
-      '서버 응답을 확인할 수 없습니다. 잠시 후 다시 시도해주세요.',
+      i18n.t('api.error.invalidResponse'),
       'INVALID_RESPONSE',
       response.status,
     )

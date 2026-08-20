@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import {
   analyzeContract,
   ContractApiError,
@@ -11,24 +12,14 @@ import {
 import ChatComposer from './components/chatbot/ChatComposer'
 import ChatHeader from './components/chatbot/ChatHeader'
 import ContractFlow from './components/chatbot/ContractFlow'
-import { languages } from './config/chatbot'
+import { normalizeLanguage } from './i18n'
 import { detectReviewIssue } from './review/presentation'
-import type { ComplaintChatMessage, FlowState, PreferredLanguage, UploadState } from './types/chatbot'
+import type { ComplaintChatMessage, FlowState, UploadState } from './types/chatbot'
 import './App.css'
 
-function detectDeviceLanguage(): PreferredLanguage {
-  if (typeof navigator === 'undefined') return 'en'
-  const supported = languages.map((item) => item.code)
-  const candidates = navigator.languages?.length ? navigator.languages : [navigator.language]
-  for (const candidate of candidates) {
-    const primary = candidate?.toLowerCase().split('-')[0]
-    if (primary && supported.includes(primary as PreferredLanguage)) return primary as PreferredLanguage
-  }
-  return 'en'
-}
-
 function App() {
-  const [language, setLanguage] = useState<PreferredLanguage>(detectDeviceLanguage)
+  const { t, i18n } = useTranslation()
+  const language = normalizeLanguage(i18n.resolvedLanguage ?? i18n.language)
   const [flowState, setFlowState] = useState<FlowState>('UPLOAD')
   const [contractResult, setContractResult] = useState<ContractAnalysisResponse | null>(null)
   const [contractProgress, setContractProgress] = useState<ContractAnalysisJob | null>(null)
@@ -65,7 +56,7 @@ function App() {
     try {
       const result = await analyzeContract(
         files,
-        '근로계약서와 급여명세서를 비교해 주의할 점과 대응 방법을 설명해 주세요.',
+        t('app.analysis.requestPrompt'),
         language,
         setContractProgress,
         abortController.signal,
@@ -74,7 +65,7 @@ function App() {
       setFlowState('REVIEW')
     } catch (error) {
       if (error instanceof DOMException && error.name === 'AbortError') return
-      setUploadError(error instanceof ContractApiError ? error.message : '문서를 비교하지 못했습니다. 다시 시도해주세요.')
+      setUploadError(error instanceof ContractApiError ? error.message : t('app.analysis.compareFailed'))
       setFlowState('UPLOAD')
     } finally {
       if (analysisAbortRef.current === abortController) analysisAbortRef.current = null
@@ -114,7 +105,7 @@ function App() {
       if (ready) setFlowState('DRAFT_READY')
     } catch (error) {
       if (error instanceof DOMException && error.name === 'AbortError') return
-      setDocumentError(error instanceof ContractApiError ? error.message : '진정서를 만들지 못했습니다. 다시 시도해주세요.')
+      setDocumentError(error instanceof ContractApiError ? error.message : t('app.complaint.createFailed'))
       setDocumentState('error')
     } finally {
       if (complaintAbortRef.current === abortController) complaintAbortRef.current = null
@@ -129,7 +120,7 @@ function App() {
     setDocumentError(null)
     setComplaintMessages([])
     setDraftDownloaded(false)
-    void runComplaintTurn('진정서 작성을 시작해줘', false)
+    void runComplaintTurn(t('app.complaint.startPrompt'), false)
   }
 
   const downloadDraft = () => {
@@ -165,7 +156,11 @@ function App() {
 
   return (
     <main className="app-shell">
-      <ChatHeader language={language} state={flowState} onLanguageChange={setLanguage} />
+      <ChatHeader
+        language={language}
+        state={flowState}
+        onLanguageChange={(code) => void i18n.changeLanguage(code)}
+      />
 
       <div className="workspace-stack">
         <ContractFlow

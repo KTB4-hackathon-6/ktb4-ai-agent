@@ -1,4 +1,5 @@
 import { useMemo, useRef, useState, type PointerEvent as ReactPointerEvent } from 'react'
+import { useTranslation } from 'react-i18next'
 import { createNormalizedBox, isUsableBox } from '../../redaction/geometry'
 import type { NormalizedBox, RedactionPage } from '../../redaction/types'
 
@@ -19,6 +20,7 @@ function RedactionReview({
   onCancel,
   onSubmit,
 }: RedactionReviewProps) {
+  const { t } = useTranslation()
   const [pageIndex, setPageIndex] = useState(0)
   const [zoom, setZoom] = useState(1)
   const [draft, setDraft] = useState<NormalizedBox | null>(null)
@@ -101,11 +103,11 @@ function RedactionReview({
     <section className="panel redaction-review" aria-labelledby="redaction-title">
       <header className="redaction-header">
         <div>
-          <span className="privacy-status">기기에서 처리 중 / On-device only</span>
-          <h2 id="redaction-title">서버로 보내기 전에 민감정보를 가려주세요</h2>
-          <p>이 화면을 완료하기 전에는 문서가 서버에 전송되지 않습니다.</p>
+          <span className="privacy-status">{t('redaction.status')}</span>
+          <h2 id="redaction-title">{t('redaction.heading')}</h2>
+          <p>{t('redaction.description')}</p>
         </div>
-        <strong>{confirmedCount}/{pages.length} 페이지 확인</strong>
+        <strong>{t('redaction.confirmedCount', { confirmed: confirmedCount, total: pages.length })}</strong>
       </header>
 
       <div className="redaction-toolbar">
@@ -115,7 +117,7 @@ function RedactionReview({
           disabled={pageIndex === 0 || exporting}
           onClick={() => setPageIndex((current) => current - 1)}
         >
-          이전
+          {t('redaction.previous')}
         </button>
         <strong>{pageLabel}</strong>
         <button
@@ -124,10 +126,10 @@ function RedactionReview({
           disabled={pageIndex === pages.length - 1 || exporting}
           onClick={() => setPageIndex((current) => current + 1)}
         >
-          다음
+          {t('redaction.next')}
         </button>
         <label className="zoom-control">
-          확대
+          {t('redaction.zoom')}
           <input
             type="range"
             min="0.75"
@@ -152,7 +154,7 @@ function RedactionReview({
               setDraft(null)
             }}
           >
-            <img src={page.previewUrl} alt={`확인 중인 문서 ${pageIndex + 1}페이지`} draggable="false" />
+            <img src={page.previewUrl} alt={t('redaction.pageAlt', { page: pageIndex + 1 })} draggable="false" />
             {page.regions.map((region, index) => (
               <span
                 className="redaction-region"
@@ -184,19 +186,19 @@ function RedactionReview({
         </div>
 
         <aside className="redaction-sidebar">
-          <h3>이 페이지의 가림 영역</h3>
-          <p>이름, 번호, 개인 주소, 서명과 도장을 문서 위에서 직접 드래그해 가려주세요.</p>
+          <h3>{t('redaction.regions.heading')}</h3>
+          <p>{t('redaction.regions.description')}</p>
           <button className="ghost-button" type="button" onClick={addKeyboardRegion} disabled={exporting}>
-            가림 영역 추가
+            {t('redaction.regions.add')}
           </button>
           {page.regions.length === 0 ? (
-            <p className="redaction-empty">추가된 가림 영역이 없습니다.</p>
+            <p className="redaction-empty">{t('redaction.regions.empty')}</p>
           ) : (
             <ol className="redaction-region-list">
               {page.regions.map((region, index) => (
                 <li key={region.id}>
-                  <span>영역 {index + 1}</span>
-                  <button type="button" onClick={() => removeRegion(region.id)} disabled={exporting}>삭제</button>
+                  <span>{t('redaction.regions.item', { number: index + 1 })}</span>
+                  <button type="button" onClick={() => removeRegion(region.id)} disabled={exporting}>{t('redaction.regions.remove')}</button>
                 </li>
               ))}
             </ol>
@@ -207,7 +209,7 @@ function RedactionReview({
             onClick={() => updatePage((currentPage) => ({ ...currentPage, confirmed: true }))}
             disabled={exporting}
           >
-            {page.confirmed ? '✓ 이 페이지 확인됨' : '이 페이지 확인 완료'}
+            {page.confirmed ? t('redaction.pageConfirmed') : t('redaction.confirmPage')}
           </button>
         </aside>
       </div>
@@ -215,10 +217,10 @@ function RedactionReview({
       {error && <p className="inline-error" role="alert">{error}</p>}
       <footer className="panel-actions redaction-actions">
         <button className="ghost-button" type="button" onClick={onCancel} disabled={exporting}>
-          취소하고 파일 다시 선택
+          {t('redaction.chooseAgain')}
         </button>
         <button className="primary-button" type="button" onClick={onSubmit} disabled={!allConfirmed || exporting}>
-          {exporting ? '가공본 만드는 중…' : '가린 문서로 분석 시작'}
+          {exporting ? t('redaction.exporting') : t('redaction.start')}
         </button>
       </footer>
     </section>
