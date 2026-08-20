@@ -1,0 +1,183 @@
+from ai_agent.schemas.rules import ContractFacts, IndustryCategory
+from ai_agent.services.rules import check_contract, suppress_unverified
+
+VALID_MANUFACTURING = ContractFacts(
+    industry=IndustryCategory.MANUFACTURING,
+    weekly_working_hours=45,
+    daily_working_hours=8,
+    rest_minutes_per_workday=60,
+    weekly_paid_holidays=1,
+    monthly_wage=2_300_000,
+    hourly_wage=11_000,
+    wage_specified=True,
+    working_hours_specified=True,
+    holiday_specified=True,
+    contract_period_months=36,
+    payment_date_specified=True,
+    payment_method_in_person=False,
+    accommodation_deduction_krw=80_000,
+)
+
+
+def test_valid_contract_has_no_violations() -> None:
+    assert check_contract(VALID_MANUFACTURING) == []
+
+
+def test_flags_underpay_and_missing_rest() -> None:
+    facts = VALID_MANUFACTURING.model_copy(
+        update={
+            "hourly_wage": 9_000,
+            "rest_minutes_per_workday": 30,
+        }
+    )
+
+    violations = check_contract(facts)
+
+    rule_ids = {v.rule_id for v in violations}
+    assert rule_ids == {"below_minimum_wage", "rest_time_insufficient"}
+
+
+def test_defers_minimum_wage_check_when_wage_is_not_specified() -> None:
+    facts = VALID_MANUFACTURING.model_copy(
+        update={
+            "monthly_wage": 0,
+            "hourly_wage": 0,
+            "wage_specified": False,
+        }
+    )
+
+    violations = check_contract(facts)
+
+    assert not any(v.rule_id == "below_minimum_wage" for v in violations)
+    review = [v for v in violations if v.rule_id == "minimum_wage_needs_review"]
+    assert len(review) == 1
+    assert review[0].severity == "review"
+
+
+def test_weekly_working_hours_does_not_produce_a_violation() -> None:
+    # weekly_working_hours는 계약서에 literal하게 없는 추정치라 룰베이스로
+    # 판정하지 않는다 — 아무리 커도 위반이 나오면 안 된다.
+    facts = VALID_MANUFACTURING.model_copy(update={"weekly_working_hours": 90})
+
+    violations = check_contract(facts)
+
+    assert not any(v.rule_id == "weekly_hours_exceeded" for v in violations)
+
+
+def test_flags_missing_required_disclosures() -> None:
+    facts = VALID_MANUFACTURING.model_copy(
+        update={"wage_specified": False, "payment_date_specified": False}
+    )
+
+    violations = check_contract(facts)
+
+    rule_ids = [v.rule_id for v in violations]
+    assert rule_ids.count("required_disclosure_missing") == 2
+
+
+def test_agriculture_industry_is_exempt_from_rest_and_holiday_rules() -> None:
+    facts = VALID_MANUFACTURING.model_copy(
+        update={
+            "industry": IndustryCategory.AGRICULTURE_LIVESTOCK_FISHERY,
+            "rest_minutes_per_workday": 0,
+            "weekly_paid_holidays": 0,
+        }
+    )
+
+    violations = check_contract(facts)
+
+    assert violations == []
+
+
+def test_flags_contract_period_over_three_years_as_review() -> None:
+    # 36~58개월(3년~4년10개월)은 연장허가를 받았으면 합법이라 단정 못하므로 REVIEW
+    facts = VALID_MANUFACTURING.model_copy(update={"contract_period_months": 48})
+
+    violations = check_contract(facts)
+
+    match = [v for v in violations if v.rule_id == "contract_period_review"]
+    assert len(match) == 1
+    assert match[0].severity == "review"
+    assert not any(v.rule_id == "contract_period_exceeded" for v in violations)
+
+
+def test_flags_contract_period_over_extended_max_as_warning() -> None:
+    # 연장허가를 받아도 넘을 수 없는 58개월(4년10개월) 초과는 명확한 위반
+    facts = VALID_MANUFACTURING.model_copy(update={"contract_period_months": 60})
+
+    violations = check_contract(facts)
+
+    match = [v for v in violations if v.rule_id == "contract_period_exceeded"]
+    assert len(match) == 1
+    assert match[0].severity == "warning"
+    assert not any(v.rule_id == "contract_period_review" for v in violations)
+
+
+def test_contract_period_within_three_years_is_not_flagged() -> None:
+    assert VALID_MANUFACTURING.contract_period_months == 36
+    violations = check_contract(VALID_MANUFACTURING)
+
+    assert not any(
+        v.rule_id in ("contract_period_review", "contract_period_exceeded") for v in violations
+    )
+
+
+def test_flags_missing_payment_date_as_required_disclosure() -> None:
+    facts = VALID_MANUFACTURING.model_copy(update={"payment_date_specified": False})
+
+    violations = check_contract(facts)
+
+    assert any(
+        v.rule_id == "required_disclosure_missing" and "임금 지급일" in v.message
+        for v in violations
+    )
+
+
+def test_flags_in_person_payment_as_review_not_warning() -> None:
+    facts = VALID_MANUFACTURING.model_copy(update={"payment_method_in_person": True})
+
+    violations = check_contract(facts)
+
+    match = [v for v in violations if v.rule_id == "in_person_payment_risk"]
+    assert len(match) == 1
+    assert match[0].severity == "review"
+
+
+def test_flags_high_accommodation_deduction_as_review() -> None:
+    facts = VALID_MANUFACTURING.model_copy(
+        update={"accommodation_deduction_krw": 350_000}  # 월급의 약 15%
+    )
+
+    violations = check_contract(facts)
+
+    match = [v for v in violations if v.rule_id == "accommodation_deduction_high"]
+    assert len(match) == 1
+    assert match[0].severity == "review"
+
+
+def test_low_accommodation_deduction_is_not_flagged() -> None:
+    assert VALID_MANUFACTURING.accommodation_deduction_krw == 80_000  # 월급의 약 3.5%
+    violations = check_contract(VALID_MANUFACTURING)
+
+    assert not any(v.rule_id == "accommodation_deduction_high" for v in violations)
+
+
+def test_suppress_unverified_removes_only_the_dependent_violation() -> None:
+    facts = VALID_MANUFACTURING.model_copy(
+        update={"hourly_wage": 9_000, "rest_minutes_per_workday": 30}
+    )
+    violations = check_contract(facts)
+    assert {v.rule_id for v in violations} == {"below_minimum_wage", "rest_time_insufficient"}
+
+    kept = suppress_unverified(violations, unverified_fields=["monthly_wage"])
+
+    # monthly_wage를 못 믿으면 그걸로 계산한 최저임금 위반만 빠지고,
+    # 별개 필드(휴게시간)로 판정한 위반은 그대로 남는다.
+    assert {v.rule_id for v in kept} == {"rest_time_insufficient"}
+
+
+def test_suppress_unverified_is_noop_when_nothing_unverified() -> None:
+    facts = VALID_MANUFACTURING.model_copy(update={"hourly_wage": 9_000})
+    violations = check_contract(facts)
+
+    assert suppress_unverified(violations, unverified_fields=[]) == violations

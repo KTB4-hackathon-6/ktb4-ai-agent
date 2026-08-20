@@ -52,6 +52,8 @@ app.include_router(ocr.router)
 app.include_router(rag.router)
 app.include_router(document_authoring.router)
 app.include_router(guidance.router)
+# contracts.router, payslips.router: OCR·룰 판정은 Java 백엔드가 담당하게 되면서
+# 미사용. 파일은 참고용으로 남겨두되 실제로 호출되지 않도록 등록만 뺀다.
 
 
 def main() -> None:

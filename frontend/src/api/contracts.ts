@@ -165,6 +165,20 @@ export type GuidanceResponse = {
   notes: string | null
 }
 
+export type CrossCheckFinding = {
+  rule_id: string
+  law_name: string
+  message: string
+  severity: 'WARNING' | 'REVIEW'
+}
+
+export type CrossCheckResult = {
+  contract_employee_name: string
+  payslip_employee_name: string
+  pay_period: string
+  findings: CrossCheckFinding[]
+}
+
 export type ContractAnalysisStage = 'OCR' | 'STRUCTURING' | 'GENERATING_RESPONSE' | 'COMPLETED'
 
 export type ContractAnalysisJob = {
@@ -259,6 +273,21 @@ export async function analyzeContract(
     throw new ContractApiError(i18n.t('api.error.missingAnalysisResult'), 'INVALID_RESPONSE', 200)
   }
   return { ...job.result, sessionId: session.sessionId }
+}
+
+export async function crossCheckDocuments(
+  contractFiles: File[],
+  payslipFiles: File[],
+  signal?: AbortSignal,
+): Promise<CrossCheckResult> {
+  const formData = new FormData()
+  contractFiles.forEach((file) => formData.append('contractFiles', file))
+  payslipFiles.forEach((file) => formData.append('payslipFiles', file))
+  return request<CrossCheckResult>('/api/employment-documents/cross-check', {
+    method: 'POST',
+    body: formData,
+    signal,
+  })
 }
 
 export async function prepareLaborComplaint(

@@ -59,6 +59,9 @@ class CheckId(StrEnum):
 class LegalCheck(ContractModel):
     checkId: CheckId
     result: Literal["DETECTED", "REVIEW_REQUIRED"]
+    lawName: str
+    article: str
+    message: str
 
 
 class AnalyzeRequest(ContractModel):

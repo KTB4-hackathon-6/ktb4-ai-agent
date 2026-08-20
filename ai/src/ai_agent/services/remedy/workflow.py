@@ -15,6 +15,7 @@ from pydantic import BaseModel, Field
 
 from ai_agent.schemas.document_authoring import LaborComplaintFormData
 from ai_agent.services.remedy.guides import (
+    COMPLAINT_DETAILS_COMPOSER_PROMPT,
     DOCUMENT_AUTHORING_SYSTEM_PROMPT,
     DOCUMENT_FORM_EXTRACTION_PROMPT,
     DOCUMENT_QUESTION_ANSWER_PROMPT,
@@ -132,6 +133,12 @@ class RemedyTurn(BaseModel):
     form_updates: list[FormFieldUpdate] = Field(default_factory=list)
 
 
+class ComplaintDetailsDraft(BaseModel):
+    """진정 내용(complaint.details) 한 항목만 담는 전용 구조화 출력."""
+
+    details: str
+
+
 class RemedyState(TypedDict, total=False):
     messages: Annotated[list[AnyMessage], add_messages]
     issues: list[dict]
@@ -161,6 +168,13 @@ def get_document_extraction_model():
     from ai_agent.services.agent import get_model
 
     return get_model().with_structured_output(LaborComplaintFormData)
+
+
+@lru_cache
+def get_details_composer_model():
+    from ai_agent.services.agent import get_model
+
+    return get_model().with_structured_output(ComplaintDetailsDraft)
 
 
 async def invoke_structured(model, messages: list[AnyMessage]):
@@ -321,6 +335,39 @@ async def answer_authoring_question(state: RemedyState) -> str:
     return result.text.strip()
 
 
+async def compose_complaint_details(state: RemedyState) -> str | None:
+    """detectedIssues/reviewResult에 사실이 있으면 사용자에게 묻지 않고 바로 진정 내용을 작성한다.
+
+    확인된 사실이 전혀 없으면 None을 반환해 호출자가 대화로 사실을 되묻게 한다.
+    """
+    review_result = state.get("review_result") or {}
+    issues = state.get("issues") or []
+    # review_result.answer는 issues/summary가 비어 있어도 리뷰어가 실제로 답한 자연어
+    # 내용을 담고 있을 수 있어, 이것까지 없을 때만 쓸 근거가 전혀 없다고 본다.
+    if not issues and not review_result.get("summary") and not review_result.get("answer"):
+        return None
+
+    context = {
+        "detectedIssues": issues,
+        "reviewResult": review_result,
+        "legalChecks": state.get("legal_checks") or [],
+        "formData": (state.get("form_drafts") or {}).get("LABOR_COMPLAINT_001", {}),
+    }
+    try:
+        result = await invoke_structured(
+            get_details_composer_model(),
+            [
+                SystemMessage(COMPLAINT_DETAILS_COMPOSER_PROMPT),
+                HumanMessage(json.dumps(context, ensure_ascii=False)),
+            ],
+        )
+    except ValueError:
+        logger.exception("진정 내용 자동 작성에 실패해 사실 확인 질문으로 넘어갑니다.")
+        return None
+    details = (result.details if result else "").strip()
+    return details or None
+
+
 async def remedy(state: RemedyState) -> dict:
     existing_form = (state.get("form_drafts") or {}).get("LABOR_COMPLAINT_001", {})
     initialized_now = False
@@ -342,6 +389,26 @@ async def remedy(state: RemedyState) -> dict:
         }
         initialized_now = True
 
+    missing_ids = LaborComplaintFormData(**existing_form).required_missing_field_ids()
+
+    if missing_ids and missing_ids[0] == "complaint.details":
+        details = await compose_complaint_details(state)
+        if details:
+            form = apply_form_updates(
+                existing_form,
+                [FormFieldUpdate(field_id="complaint.details", value=details)],
+            )
+            return {
+                "form_drafts": {"LABOR_COMPLAINT_001": form.model_dump(mode="json")},
+                "authoring_intent": AuthoringIntent.FORM_INPUT.value,
+                "question_answer": None,
+                "field_questions": {},
+                "input_error": None,
+                "form_initialized": True,
+            }
+        # 사실이 전혀 없으면(문서 진단을 거치지 않은 경우 등) 기존 대화 흐름대로
+        # 사용자에게 사실을 되묻는다.
+
     if initialized_now and last_user_text(state).strip().casefold() in START_REQUESTS:
         return {
             "form_drafts": {"LABOR_COMPLAINT_001": existing_form},
@@ -352,7 +419,6 @@ async def remedy(state: RemedyState) -> dict:
             "form_initialized": True,
         }
 
-    missing_ids = LaborComplaintFormData(**existing_form).required_missing_field_ids()
     if missing_ids and not initialized_now:
         status, value = parse_pending_value(missing_ids[0], last_user_text(state))
         if status == "accepted" and value is not None:
