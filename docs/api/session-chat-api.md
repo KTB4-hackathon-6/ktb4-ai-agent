@@ -1,6 +1,6 @@
 # 세션 채팅 API와 AI 연동 계약
 
-이 문서는 Spring 백엔드의 세션 채팅 API와 FastAPI `POST /analyze` 사이에서 동기화해야 하는 값을 정의한다. FastAPI 구현 자체는 이 변경 범위에 포함하지 않는다.
+이 문서는 Spring 백엔드의 세션 채팅 API와 FastAPI `POST /review` 사이에서 동기화해야 하는 값을 정의한다.
 
 ## 1. 처리 흐름
 
@@ -8,7 +8,7 @@
 클라이언트
   → Spring POST /api/sessions/{sessionId}/chat
   → Spring이 USER 메시지 저장
-  → Spring이 FastAPI POST /analyze 호출
+  → Spring이 FastAPI POST /review 호출
   → FastAPI가 AI 응답 반환
   → Spring이 AI 메시지 저장
   → Spring이 USER/AI 메시지를 클라이언트에 반환
@@ -68,7 +68,7 @@
 
 ## 3. Spring에서 FastAPI로 보내는 값
 
-Spring은 현재 FastAPI 계약에 맞춰 다음 요청을 `POST /analyze`로 보낸다.
+Spring은 현재 FastAPI 계약에 맞춰 다음 요청을 `POST /review`로 보낸다.
 
 ```json
 {
@@ -114,10 +114,10 @@ Frontend는 `POST /api/sessions/{sessionId}/contract-analyses`로 비동기 작�
 |---|---|
 | 클라이언트 화면 복구용 메시지 | Spring 인메모리 메시지 저장소 |
 | 세션 유효성 및 30분 TTL | Spring 인메모리 세션 저장소 |
-| AI 멀티턴 대화 문맥 | FastAPI에서 `sessionId` 기반으로 구현 예정 |
+| AI 멀티턴 대화 문맥 | FastAPI SQLite 체크포인터, `sessionId`가 스레드 키 |
 | 계약서 분석 작업 상태 | Spring 인메모리 작업 저장소, 30분 TTL |
 
-FastAPI의 세션 메모리가 추가되면 Spring과 동일한 `sessionId`를 사용해야 한다. FastAPI 측 TTL은 최소한 Spring 세션 TTL과 맞추고, Spring 세션이 만료된 뒤 AI 문맥이 불필요하게 남지 않도록 정리 정책을 함께 정해야 한다.
+Spring과 FastAPI는 동일한 `sessionId`를 사용한다. 현재 SQLite 체크포인트에는 TTL 정리 정책이 없다.
 
 FastAPI가 재시작되거나 여러 워커로 실행될 때도 문맥을 유지해야 한다면 프로세스 메모리가 아닌 Redis 또는 데이터베이스 기반 체크포인터가 필요하다.
 
@@ -147,7 +147,7 @@ AI 요청이 실패하면 사용자가 보낸 사실을 복구할 수 있도록 
 
 ## 8. 현재 제한사항
 
-- FastAPI의 `sessionId` 기반 대화 메모리는 아직 구현되지 않았다.
+- FastAPI SQLite 체크포인트의 TTL 정리 정책은 아직 없다.
 - Spring 메시지 저장소는 인메모리이므로 서버 재시작 시 복구되지 않는다.
 - 같은 세션에서 여러 채팅 요청을 동시에 처리하는 순서 보장은 아직 정의하지 않았다.
 - 규칙 위반의 정확한 원문 페이지 위치는 아직 추적하지 않아 각 `legalCheck`가 요청의 모든 문서 ID를 참조한다.

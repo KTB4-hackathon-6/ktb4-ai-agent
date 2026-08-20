@@ -1,6 +1,6 @@
-# FastAPI 분석 API 계약
+# FastAPI 검토 API 계약
 
-이 문서는 AI 서버에 현재 구현된 `POST /analyze` 요청·응답 계약을 정의한다. 백엔드가 프론트엔드에 반환하는 `{ "code": string, "data": object }` 공통 응답은 `AGENTS.md`의 백엔드 규칙을 따르며 이 문서의 범위에 포함하지 않는다.
+이 문서는 AI 서버에 구현된 `POST /review` 요청·응답 계약을 정의한다. 백엔드가 프론트엔드에 반환하는 `{ "code": string, "data": object }` 공통 응답은 `AGENTS.md`의 백엔드 규칙을 따르며 이 문서의 범위에 포함하지 않는다.
 
 > **계약 상태:** `legalChecks`와 `LegalCheck` 세부 스키마는 관련 법령과 판정 기준을 확인한 뒤 확정할 예정인 초안(TBD)이다. 나머지 필드는 현재 FastAPI 구현을 기준으로 한다.
 
@@ -9,13 +9,13 @@
 | 항목 | 값 |
 |---|---|
 | Method | `POST` |
-| Path | `/analyze` |
+| Path | `/review` |
 | Content-Type | `application/json` |
 | 기본 서버 주소 | `http://localhost:8000` |
 | OpenAPI | `http://localhost:8000/openapi.json` |
 | Swagger UI | `http://localhost:8000/docs` |
 
-현재 `/analyze`는 텍스트 기반 최소 채팅 API다. `input.text`는 반드시 공백이 아닌 문자열이어야 한다. `documents`와 `legalChecks`는 요청 스키마로 받지만 아직 채팅 모델 입력에는 사용하지 않는다.
+`/review`는 사용자 질문과 OCR 문서, deterministic validator 결과를 검토 에이전트에 전달한다. 질문 없이 문서나 검증 결과만 전달해도 요청할 수 있다.
 
 ## 2. Request
 
@@ -48,10 +48,10 @@
 
 | 필드 | 타입 | 필수 | 빈 값 | 설명 |
 |---|---|---:|---|---|
-| `text` | `string \| null` | O | `null`, `""`, 공백 문자열은 400 오류 | 현재 채팅 모델에 전달할 사용자 텍스트. 최대 4,000자 |
+| `text` | `string \| null` | O | 문서 또는 검증 결과가 있으면 빈 값 가능 | 사용자 질문. 최대 4,000자 |
 | `documentIds` | `string[]` | O | 문서가 없으면 `[]` | 현재 요청에 포함된 문서 ID 목록 |
 
-Pydantic 스키마는 `text`에 `null`을 허용하지만 현재 라우트는 텍스트를 필수로 검사한다. 문서가 있더라도 `text`가 `null`이거나 공백이면 `TEXT_INPUT_REQUIRED`를 반환한다.
+`input.text`, `documents`, `legalChecks`가 모두 비어 있을 때만 `TEXT_INPUT_REQUIRED`를 반환한다.
 
 ### 2.3 Document 스키마
 
@@ -103,7 +103,7 @@ Pydantic 스키마는 `text`에 `null`을 허용하지만 현재 라우트는 �
 
 ### 2.5 문서를 포함한 Request 예시
 
-문서를 포함하더라도 현재는 `input.text`가 반드시 필요하다.
+문서 검토 요청에서는 `input.text`를 `null`로 보낼 수 있다.
 
 ```json
 {
@@ -179,7 +179,7 @@ Pydantic 스키마는 `text`에 `null`을 허용하지만 현재 라우트는 �
 | 필드 | 타입 | 필수 | 빈 값 | 설명 |
 |---|---|---:|---|---|
 | `answer` | `string` | O | 빈 문자열 불가 | 사용자에게 반환할 채팅 답변 |
-| `analysis` | `Analysis \| null` | X | 현재 구현에서는 `null` | 향후 구조화된 분석 결과 |
+| `analysis` | `Analysis \| null` | X | 텍스트 채팅이면 `null` | 문서 검토의 구조화된 분석 결과 |
 
 ### 3.3 Analysis 스키마
 
@@ -208,9 +208,9 @@ Pydantic 스키마는 `text`에 `null`을 허용하지만 현재 라우트는 �
 
 ## 4. 현재 처리 동작
 
-### 4.1 정상 채팅
+### 4.1 텍스트 채팅
 
-`input.text`가 공백이 아닌 문자열이면 해당 텍스트만 채팅 에이전트에 전달한다. 현재 `documents`와 `legalChecks`는 모델 프롬프트에 포함하지 않는다.
+문서와 검증 결과가 없으면 `input.text`를 채팅 에이전트에 전달한다.
 
 ```json
 {
@@ -225,9 +225,11 @@ Pydantic 스키마는 `text`에 `null`을 허용하지만 현재 라우트는 �
 }
 ```
 
-### 4.2 텍스트 누락
+문서나 검증 결과가 있으면 이를 검토 에이전트에 전달하고 `analysis`를 채운다. 검토 결과는 같은 `sessionId`의 체크포인트에 저장되어 `/docs`가 이어서 사용한다.
 
-`input.text`가 `null`, 빈 문자열 또는 공백 문자열이면 문서 존재 여부와 관계없이 `400 Bad Request`를 반환한다.
+### 4.2 빈 요청
+
+질문, 문서, 검증 결과가 모두 비어 있으면 `400 Bad Request`를 반환한다.
 
 ```json
 {
@@ -237,7 +239,7 @@ Pydantic 스키마는 `text`에 `null`을 허용하지만 현재 라우트는 �
   "result": null,
   "error": {
     "code": "TEXT_INPUT_REQUIRED",
-    "message": "현재는 input.text가 필요합니다."
+    "message": "input.text 또는 검토할 문서가 필요합니다."
   }
 }
 ```
@@ -283,15 +285,12 @@ Pydantic 스키마는 `text`에 `null`을 허용하지만 현재 라우트는 �
 
 | HTTP 상태 | status 또는 code | 설명 |
 |---:|---|---|
-| `200 OK` | `COMPLETED` | 텍스트 채팅 완료 |
-| `400 Bad Request` | `TEXT_INPUT_REQUIRED` | `input.text`가 없거나 공백 |
+| `200 OK` | `COMPLETED` | 채팅 또는 문서 검토 완료 |
+| `400 Bad Request` | `TEXT_INPUT_REQUIRED` | 질문, 문서, 검증 결과가 모두 없음 |
 | `422 Unprocessable Content` | FastAPI 기본 검증 오류 | Pydantic 요청 스키마 위반 |
 | `502 Bad Gateway` | `MODEL_REQUEST_FAILED` | 채팅 모델 호출 실패 |
 
 ## 6. 현재 제한사항
 
-- 문서만으로는 분석을 요청할 수 없다.
-- `documents`의 OCR 텍스트는 아직 채팅 모델에 전달하지 않는다.
-- `legalChecks`는 현재 채팅 모델에 전달하지 않는다.
-- 구조화된 `analysis`는 항상 `null`이다.
 - `legalChecks` 세부 계약은 법령 검토 후 변경될 수 있다.
+- `/review`는 문서작성 에이전트를 실행하지 않는다. 작성은 `/docs`에서 시작한다.
