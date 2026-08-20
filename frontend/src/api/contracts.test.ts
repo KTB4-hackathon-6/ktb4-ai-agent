@@ -12,6 +12,9 @@ describe('requestSubmissionGuidance', () => {
       agencyCode: 'MOEL' as const,
       agencyName: '고용노동부',
       jurisdictionOfficeName: '고용노동부 안산지청',
+      jurisdictionOfficeUrl: 'https://www.moel.go.kr/ansan/',
+      helplinePhone: '1350',
+      foreignWorkerHelplinePhone: '1577-0071',
       submissionOptions: [{
         channel: 'ONLINE' as const,
         label: '노동포털 온라인 제출',

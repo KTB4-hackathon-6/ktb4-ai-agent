@@ -48,6 +48,16 @@ function AgencyPanel({ issue, guidance, loading, error, onFinish, onBack }: Agen
         <section className="agency-guidance-summary">
           <strong>{guidance.agencyName} · {guidance.jurisdictionOfficeName}</strong>
           <p>{guidance.answer}</p>
+          {guidance.jurisdictionOfficeUrl && (
+            <a
+              className="agency-office-link"
+              href={guidance.jurisdictionOfficeUrl}
+              target="_blank"
+              rel="noreferrer"
+            >
+              {t('agency.channel.localOffice.name')} · {t('agency.open')}
+            </a>
+          )}
         </section>
       )}
 
@@ -66,6 +76,28 @@ function AgencyPanel({ issue, guidance, loading, error, onFinish, onBack }: Agen
             )}
           </li>
         ))}
+        {guidance && (
+          <li className="agency-card primary">
+            <div>
+              <strong>{t('agency.channel.moel1350.name')}</strong>
+              <p>{t('agency.channel.moel1350.detail')}</p>
+            </div>
+            <a className="ghost-button" href={`tel:${guidance.helplinePhone}`}>
+              {t('agency.call')}
+            </a>
+          </li>
+        )}
+        {guidance && (
+          <li className="agency-card primary">
+            <div>
+              <strong>{t('agency.channel.foreignCentre.name')}</strong>
+              <p>{t('agency.channel.foreignCentre.detail')}</p>
+            </div>
+            <a className="ghost-button" href={`tel:${guidance.foreignWorkerHelplinePhone}`}>
+              {t('agency.call')}
+            </a>
+          </li>
+        )}
       </ul>
 
       {guidance?.notes && <p className="agency-note">{guidance.notes}</p>}

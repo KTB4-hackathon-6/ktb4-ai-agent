@@ -1320,6 +1320,7 @@ button { -webkit-tap-highlight-color: transparent; }
 .agency-guidance-status p,
 .agency-guidance-summary p { margin: 0; color: var(--color-text-secondary); font-size: 12.5px; }
 .agency-guidance-summary { display: block; }
+.agency-office-link { display: inline-block; margin-top: 10px; color: var(--color-primary); font-size: 12.5px; text-decoration: underline; }
 .agency-guidance-summary strong { display: block; margin-bottom: 5px; color: var(--color-navy); font-size: 14px; }
 .agency-note { margin: 16px 0 0; color: var(--color-text-muted); font-size: 12px; }
 .agency-actions { align-items: stretch; }

@@ -53,6 +53,9 @@ class GuidanceResult(ContractModel):
     agencyCode: AgencyCode
     agencyName: str = Field(min_length=1)
     jurisdictionOfficeName: str = Field(min_length=1)
+    jurisdictionOfficeUrl: str | None
+    helplinePhone: str = Field(min_length=1)
+    foreignWorkerHelplinePhone: str = Field(min_length=1)
     submissionOptions: list[SubmissionOption] = Field(min_length=1)
     requiredAttachments: list[str]
     steps: list[str] = Field(min_length=1)
