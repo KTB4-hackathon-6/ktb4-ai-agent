@@ -9,15 +9,10 @@ import {
   type DocumentPreparationResponse,
 } from './api/contracts'
 import ChatComposer from './components/chatbot/ChatComposer'
-import ContractFlow from './components/chatbot/ContractFlow'
 import ChatHeader from './components/chatbot/ChatHeader'
-import { type ChatMessageItem } from './components/chatbot/ChatMessage'
-import { type ResultTab } from './components/chatbot/ResultsPanel'
-import {
-  chatScript,
-  languages,
-} from './mocks/chatbot'
-import type { PreferredLanguage, UploadState } from './types/chatbot'
+import ContractFlow from './components/chatbot/ContractFlow'
+import { complaintGroups, languages, reviewItems } from './mocks/chatbot'
+import type { FlowState, PreferredLanguage, UploadState } from './types/chatbot'
 import './App.css'
 
 function detectDeviceLanguage(): PreferredLanguage {
@@ -31,36 +26,42 @@ function detectDeviceLanguage(): PreferredLanguage {
   return 'en'
 }
 
+function initialDraftValues(): Record<string, string> {
+  return Object.fromEntries(complaintGroups.flatMap((group) => group.rows.map((row) => [row.key, row.value])))
+}
+
+function detectIssue() {
+  const attention = reviewItems.filter((item) => item.status !== 'ok')
+  return attention.some((item) => ['job', 'place'].includes(item.id)) ? 'condition' : 'wage'
+}
+
 function App() {
   const [language, setLanguage] = useState<PreferredLanguage>(detectDeviceLanguage)
-  const [uploadState, setUploadState] = useState<UploadState>('idle')
+  const [flowState, setFlowState] = useState<FlowState>('UPLOAD')
   const [contractResult, setContractResult] = useState<ContractAnalysisResponse | null>(null)
   const [contractProgress, setContractProgress] = useState<ContractAnalysisJob | null>(null)
   const [uploadError, setUploadError] = useState<string | null>(null)
   const [documentPreparation, setDocumentPreparation] = useState<DocumentPreparationResponse | null>(null)
   const [documentState, setDocumentState] = useState<UploadState>('idle')
   const [documentError, setDocumentError] = useState<string | null>(null)
-  const [openClause, setOpenClause] = useState<string | null>(null)
-  const [chatStep, setChatStep] = useState(0)
-  const [chatMessages, setChatMessages] = useState<ChatMessageItem[]>([
-    { who: 'bot', ko: chatScript[0].ko, en: chatScript[0].en },
-  ])
-  const [resultsShown, setResultsShown] = useState(false)
-  const [resultTab, setResultTab] = useState<ResultTab>('letter')
+  const [documentFiles, setDocumentFiles] = useState<File[]>([])
+  const [openItem, setOpenItem] = useState<string | null>('holiday')
+  const [answers, setAnswers] = useState<Record<string, string>>({})
   const [checkedEvidence, setCheckedEvidence] = useState<string[]>([])
+  const [draftValues, setDraftValues] = useState<Record<string, string>>(initialDraftValues)
+  const [draftDownloaded, setDraftDownloaded] = useState(false)
   const [freeText, setFreeText] = useState('')
-  const chatEndRef = useRef<HTMLDivElement>(null)
   const analysisAbortRef = useRef<AbortController | null>(null)
+  const updateTimerRef = useRef<number | null>(null)
 
-  useEffect(() => {
-    chatEndRef.current?.scrollIntoView({ behavior: 'smooth', block: 'end' })
-  }, [uploadState, chatMessages, resultsShown, documentPreparation])
-
-  useEffect(() => () => analysisAbortRef.current?.abort(), [])
+  useEffect(() => () => {
+    analysisAbortRef.current?.abort()
+    if (updateTimerRef.current) window.clearTimeout(updateTimerRef.current)
+  }, [])
 
   const runContractAnalysis = async (files: File[]) => {
     analysisAbortRef.current?.abort()
-    setUploadState('processing')
+    setFlowState('ANALYZING')
     setContractResult(null)
     setContractProgress(null)
     setUploadError(null)
@@ -79,90 +80,112 @@ function App() {
         abortController.signal,
       )
       setContractResult(result)
-      setUploadState('done')
+      setFlowState('REVIEW')
     } catch (error) {
       if (error instanceof DOMException && error.name === 'AbortError') return
       setUploadError(error instanceof ContractApiError ? error.message : '문서를 비교하지 못했습니다. 다시 시도해주세요.')
-      setUploadState('error')
+      setFlowState('UPLOAD')
     } finally {
       if (analysisAbortRef.current === abortController) analysisAbortRef.current = null
     }
   }
 
-  const prepareDocument = async (content: string) => {
+  const answerQuestion = (id: string, answer: string) => {
+    setAnswers((previous) => {
+      const next = { ...previous }
+      if (answer) next[id] = answer
+      else delete next[id]
+      return next
+    })
+    if (!answer) return
+    setFlowState('REVIEW_UPDATING')
+    if (updateTimerRef.current) window.clearTimeout(updateTimerRef.current)
+    updateTimerRef.current = window.setTimeout(() => {
+      updateTimerRef.current = null
+      setFlowState('REVIEW')
+    }, 600)
+  }
+
+  const downloadDraft = async () => {
     if (!contractResult) return
     setDocumentState('processing')
     setDocumentError(null)
     try {
-      const result = await prepareLaborComplaint(
+      const preparation = documentPreparation ?? await prepareLaborComplaint(
         contractResult.sessionId,
-        content,
+        '진정서 작성을 시작해줘',
         language,
       )
-      setDocumentPreparation(result)
+      setDocumentPreparation(preparation)
+      downloadGeneratedDocument(preparation.document)
       setDocumentState('done')
+      setDraftDownloaded(true)
     } catch (error) {
       setDocumentError(error instanceof ContractApiError ? error.message : '진정서를 만들지 못했습니다. 다시 시도해주세요.')
       setDocumentState('error')
     }
   }
-  const pickChatOption = (ko: string, en: string) => {
-    const next = chatStep + 1
-    setChatMessages((messages) => [
-      ...messages,
-      { who: 'user', ko, en },
-      ...(chatScript[next] ? [{ who: 'bot' as const, ko: chatScript[next].ko, en: chatScript[next].en }] : []),
-    ])
-    setChatStep(next)
+
+  const restart = () => {
+    analysisAbortRef.current?.abort()
+    setFlowState('UPLOAD')
+    setContractResult(null)
+    setContractProgress(null)
+    setUploadError(null)
+    setDocumentPreparation(null)
+    setDocumentState('idle')
+    setDocumentError(null)
+    setDocumentFiles([])
+    setOpenItem('holiday')
+    setAnswers({})
+    setCheckedEvidence([])
+    setDraftValues(initialDraftValues())
+    setDraftDownloaded(false)
+    setFreeText('')
   }
 
   const sendFreeText = () => {
     const value = freeText.trim()
     if (!value) return
-    setChatMessages((messages) => [...messages, { who: 'user', ko: value, en: '직접 입력 / Free text' }])
     setFreeText('')
+    setDraftValues((previous) => ({
+      ...previous,
+      contractGap: [previous.contractGap, value].filter(Boolean).join('\n'),
+    }))
   }
 
   return (
     <main className="app-shell">
-      <ChatHeader language={language} onLanguageChange={setLanguage} />
+      <ChatHeader language={language} state={flowState} onLanguageChange={setLanguage} />
 
-      <section className="chat" aria-live="polite">
+      <div className="workspace-stack">
         <ContractFlow
-          uploadState={uploadState}
+          state={flowState}
           contractResult={contractResult}
           contractProgress={contractProgress}
           uploadError={uploadError}
-          openClause={openClause}
-          messages={chatMessages}
-          currentStep={chatStep}
-          resultsShown={resultsShown}
-          activeResultTab={resultTab}
+          documentFiles={documentFiles}
+          openItem={openItem}
+          answers={answers}
           checkedEvidence={checkedEvidence}
-          onStartAnalysis={runContractAnalysis}
-          onResetUpload={() => {
-            analysisAbortRef.current?.abort()
-            setUploadState('idle')
-            setContractProgress(null)
-            setUploadError(null)
-          }}
-          onToggleClause={setOpenClause}
-          onPickOption={pickChatOption}
-          onShowResults={() => setResultsShown(true)}
-          onResultTabChange={setResultTab}
-          onToggleEvidence={(id) => setCheckedEvidence((items) => items.includes(id) ? items.filter((item) => item !== id) : [...items, id])}
-          documentPreparation={documentPreparation}
+          draftValues={draftValues}
+          draftDownloaded={draftDownloaded}
           documentState={documentState}
           documentError={documentError}
-          onPrepareDocument={prepareDocument}
-          onDownloadDocument={() => {
-            if (documentPreparation) downloadGeneratedDocument(documentPreparation.document)
-          }}
+          issue={detectIssue()}
+          onDocumentFilesChange={setDocumentFiles}
+          onStartAnalysis={runContractAnalysis}
+          onToggleItem={setOpenItem}
+          onAnswer={answerQuestion}
+          onToggleEvidence={(id) => setCheckedEvidence((items) => items.includes(id) ? items.filter((item) => item !== id) : [...items, id])}
+          onDraftChange={(key, value) => setDraftValues((previous) => ({ ...previous, [key]: value }))}
+          onGoTo={setFlowState}
+          onDownloadDraft={downloadDraft}
+          onRestart={restart}
         />
-        <div ref={chatEndRef} />
-      </section>
 
-      <ChatComposer value={freeText} onChange={setFreeText} onSubmit={sendFreeText} />
+        <ChatComposer state={flowState} value={freeText} onChange={setFreeText} onSubmit={sendFreeText} />
+      </div>
     </main>
   )
 }

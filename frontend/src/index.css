@@ -1,7 +1,7 @@
 :root {
   font-family: 'Noto Sans KR', 'Noto Sans', 'Apple SD Gothic Neo', system-ui, sans-serif;
-  color: #22261f;
-  background: #f5f4f0;
+  color: #10203c;
+  background: #f3f7ff;
   font-synthesis: none;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
@@ -14,4 +14,13 @@ html,
 body,
 #root { min-width: 320px; min-height: 100%; }
 
-body { margin: 0; background: #f5f4f0; }
+/* 파스텔 하늘색과 노란색이 옅게 섞인 배경 */
+body {
+  margin: 0;
+  background:
+    radial-gradient(circle at 12% 0%, rgba(79, 179, 245, .22) 0%, rgba(79, 179, 245, 0) 46%),
+    radial-gradient(circle at 92% 8%, rgba(249, 178, 51, .2) 0%, rgba(249, 178, 51, 0) 42%),
+    radial-gradient(circle at 78% 96%, rgba(22, 104, 240, .12) 0%, rgba(22, 104, 240, 0) 50%),
+    #f3f7ff;
+  background-attachment: fixed;
+}
