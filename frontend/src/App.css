@@ -230,6 +230,40 @@ button { -webkit-tap-highlight-color: transparent; }
 .secondary-button:hover,
 .secondary-button:focus-visible { color: #fff; background: var(--color-primary); }
 
+.primary-button:disabled,
+.secondary-button:disabled {
+  cursor: wait;
+  opacity: .6;
+  transform: none;
+  box-shadow: none;
+}
+
+.document-download-panel { display: grid; gap: 14px; }
+.document-download-panel .primary-button { justify-self: start; }
+.document-status { margin: 0; color: #343a34; line-height: 1.6; }
+.document-badge {
+  justify-self: start;
+  padding: 6px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 700;
+}
+.document-badge.ready { color: #17634f; background: #e3f2ec; }
+.document-badge.partial { color: #795514; background: #fff2d5; }
+.document-answer-form { display: grid; gap: 7px; padding: 14px; background: #f7f6f2; border-radius: 10px; }
+.document-answer-form label { font-weight: 700; }
+.document-answer-form small { color: #6b706a; }
+.document-answer-form div { display: flex; gap: 8px; }
+.document-answer-form input {
+  min-width: 0;
+  flex: 1;
+  padding: 11px 12px;
+  border: 1px solid #c9c5ba;
+  border-radius: 9px;
+  background: #fff;
+}
+.document-error { margin: 0; color: #a32929; font-weight: 600; }
+
 .upload-panel,
 .processing-panel {
   margin-left: 34px;

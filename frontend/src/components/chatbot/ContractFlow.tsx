@@ -4,6 +4,7 @@ import type {
   ContractAnalysisJob,
   ContractAnalysisStage,
   ContractAnalysisResponse,
+  DocumentPreparationResponse,
 } from '../../api/contracts'
 import { contractClauses } from '../../mocks/chatbot'
 import type { UploadState } from '../../types/chatbot'
@@ -22,6 +23,9 @@ type ContractFlowProps = {
   resultsShown: boolean
   activeResultTab: ResultTab
   checkedEvidence: string[]
+  documentPreparation: DocumentPreparationResponse | null
+  documentState: UploadState
+  documentError: string | null
   onStartAnalysis: (files: File[]) => void
   onResetUpload: () => void
   onToggleClause: (clauseId: string | null) => void
@@ -29,6 +33,8 @@ type ContractFlowProps = {
   onShowResults: () => void
   onResultTabChange: (tab: ResultTab) => void
   onToggleEvidence: (id: string) => void
+  onPrepareDocument: (content: string) => void
+  onDownloadDocument: () => void
 }
 
 const panelMotion = {
@@ -48,6 +54,9 @@ function ContractFlow({
   resultsShown,
   activeResultTab,
   checkedEvidence,
+  documentPreparation,
+  documentState,
+  documentError,
   onStartAnalysis,
   onResetUpload,
   onToggleClause,
@@ -55,6 +64,8 @@ function ContractFlow({
   onShowResults,
   onResultTabChange,
   onToggleEvidence,
+  onPrepareDocument,
+  onDownloadDocument,
 }: ContractFlowProps) {
   const [documentFiles, setDocumentFiles] = useState<File[]>([])
   const uploadReady = documentFiles.length > 0
@@ -130,8 +141,13 @@ function ContractFlow({
             visible={resultsShown}
             activeTab={activeResultTab}
             checkedEvidence={checkedEvidence}
+            documentPreparation={documentPreparation}
+            documentState={documentState}
+            documentError={documentError}
             onTabChange={onResultTabChange}
             onToggleEvidence={onToggleEvidence}
+            onPrepareDocument={onPrepareDocument}
+            onDownloadDocument={onDownloadDocument}
           />
         </>
       )}
