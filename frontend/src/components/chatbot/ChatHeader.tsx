@@ -37,7 +37,7 @@ function ChatHeader({ language, onLanguageChange }: ChatHeaderProps) {
             <path d="M12 3l7 4v5c0 4.5-3 8-7 9-4-1-7-4.5-7-9V7l7-4z" />
           </svg>
         </div>
-        <span className="brand-name">근로계약서 진단</span>
+        <span className="brand-name">ILLO</span>
       </div>
 
       <div className="lang-switcher" ref={switcherRef}>
