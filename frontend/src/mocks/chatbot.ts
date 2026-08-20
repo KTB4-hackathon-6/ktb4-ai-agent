@@ -7,6 +7,7 @@ export const languages = [
   { code: 'id', native: 'Bahasa Indonesia', ko: '인도네시아어' },
   { code: 'mn', native: 'Монгол хэл', ko: '몽골어' },
   { code: 'km', native: 'ភាសាខ្មែរ', ko: '캄보디아어' },
+  { code: 'ko', native: '한국어', ko: '한국어' },
 ] satisfies ReadonlyArray<{ code: PreferredLanguage; native: string; ko: string }>
 
 export const services = [
