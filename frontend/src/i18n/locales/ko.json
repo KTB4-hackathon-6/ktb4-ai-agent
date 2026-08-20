@@ -59,7 +59,6 @@
   "upload.selectedFiles": "선택한 문서 파일",
   "upload.addFiles": "파일 추가",
   "upload.chooseFiles": "파일 선택",
-  "upload.combinedFileNote": "근로계약서와 급여명세서가 한 파일에 함께 있어도 괜찮습니다.",
   "upload.remove": "삭제",
   "upload.removeFile": "파일 삭제: {file}",
   "upload.analyze": "분석 시작",

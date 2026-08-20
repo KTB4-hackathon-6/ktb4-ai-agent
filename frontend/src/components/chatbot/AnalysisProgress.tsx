@@ -56,7 +56,7 @@ function AnalysisProgress({ job }: AnalysisProgressProps) {
                     exit={{ scale: 0.5, opacity: 0 }}
                     transition={{ duration: 0.15 }}
                   >
-                    {completed ? '✓' : failed ? '!' : active ? <span className="step-spinner" /> : index + 1}
+                    {completed ? '✓' : failed ? '!' : index + 1}
                   </motion.span>
                 </AnimatePresence>
               </span>

@@ -12,8 +12,6 @@ import StageMascot from './StageMascot'
  */
 type ReviewPanelProps = {
   result: ContractAnalysisResponse | null
-  openItem: string | null
-  onToggleItem: (itemId: string | null) => void
   onStartDraft: () => void
   onSkipToAgency: () => void
 }
@@ -26,8 +24,6 @@ const panelMotion = {
 
 function ReviewPanel({
   result,
-  openItem,
-  onToggleItem,
   onStartDraft,
   onSkipToAgency,
 }: ReviewPanelProps) {
@@ -38,52 +34,17 @@ function ReviewPanel({
   const attentionCount = counts.check + counts.warn
   const [showNormal, setShowNormal] = useState(false)
 
-  const renderCard = (card: ReviewCard) => {
-    const open = openItem === card.id
-    return (
-      <motion.div className={`review-item ${card.status}`} key={card.id} layout>
-        <button
-          className="review-item-head"
-          type="button"
-          aria-expanded={open}
-          onClick={() => onToggleItem(open ? null : card.id)}
-        >
-          <span className={`status-pill ${card.status}`}>{t(`review.status.${card.status}`)}</span>
-          <span className="review-item-title">
-            <b>{card.title}</b>
-            <small>{card.description}</small>
-          </span>
-          <motion.span className="chevron" animate={{ rotate: open ? 180 : 0 }} transition={{ duration: 0.2 }} aria-hidden="true">⌄</motion.span>
-        </button>
-        <AnimatePresence initial={false}>
-          {open && (
-            <motion.dl
-              className="review-item-body"
-              initial={{ height: 0, opacity: 0 }}
-              animate={{ height: 'auto', opacity: 1 }}
-              exit={{ height: 0, opacity: 0 }}
-              transition={{ duration: 0.2 }}
-            >
-              <dt>{t('review.source.label')}</dt>
-              <dd>{t(`review.source.${card.source}`)}</dd>
-              {card.relatedDocuments.length > 0 && (
-                <>
-                  <dt>{t('review.relatedDocuments')}</dt>
-                  <dd>{card.relatedDocuments.join(' · ')}</dd>
-                </>
-              )}
-              {card.legalBasis && (
-                <>
-                  <dt>{t('review.legalBasis')}</dt>
-                  <dd>{card.legalBasis}</dd>
-                </>
-              )}
-            </motion.dl>
-          )}
-        </AnimatePresence>
-      </motion.div>
-    )
-  }
+  const renderCard = (card: ReviewCard) => (
+    <motion.div className={`review-item ${card.status}`} key={card.id} layout>
+      <div className="review-item-head">
+        <span className={`status-pill ${card.status}`}>{t(`review.status.${card.status}`)}</span>
+        <span className="review-item-title">
+          <b>{card.title}</b>
+          <small>{card.description}</small>
+        </span>
+      </div>
+    </motion.div>
+  )
 
   return (
     <motion.section className="panel review-panel" {...panelMotion}>

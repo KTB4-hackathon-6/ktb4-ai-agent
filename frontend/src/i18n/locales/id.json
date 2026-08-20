@@ -59,7 +59,6 @@
   "upload.selectedFiles": "file dokumen yang dipilih",
   "upload.addFiles": "Tambahkan berkas",
   "upload.chooseFiles": "Pilih file",
-  "upload.combinedFileNote": "Tidak apa-apa jika kontrak kerja dan potongan gaji digabungkan dalam satu file.",
   "upload.remove": "Hapus",
   "upload.removeFile": "Hapus berkas: {file}",
   "upload.analyze": "Mulai analisis",

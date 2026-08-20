@@ -59,7 +59,6 @@
   "upload.selectedFiles": "сонгосон баримт бичгийн файл",
   "upload.addFiles": "Файл нэмэх",
   "upload.chooseFiles": "Файл сонгох",
-  "upload.combinedFileNote": "Хөдөлмөрийн гэрээ, тооцооны мөнгийг хамтад нь нэг файлд хийвэл зүгээр.",
   "upload.remove": "Устгах",
   "upload.removeFile": "Файл устгах: {file}",
   "upload.analyze": "Шинжилгээг эхлүүлэх",

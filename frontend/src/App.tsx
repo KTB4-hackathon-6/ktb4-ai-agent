@@ -29,7 +29,6 @@ function App() {
   const [documentState, setDocumentState] = useState<UploadState>('idle')
   const [documentError, setDocumentError] = useState<string | null>(null)
   const [documentFiles, setDocumentFiles] = useState<File[]>([])
-  const [openItem, setOpenItem] = useState<string | null>(null)
   const [complaintMessages, setComplaintMessages] = useState<ComplaintChatMessage[]>([])
   const [draftDownloaded, setDraftDownloaded] = useState(false)
   const [freeText, setFreeText] = useState('')
@@ -190,7 +189,6 @@ function App() {
     setDocumentState('idle')
     setDocumentError(null)
     setDocumentFiles([])
-    setOpenItem(null)
     setComplaintMessages([])
     setDraftDownloaded(false)
     setFreeText('')
@@ -221,7 +219,6 @@ function App() {
           contractProgress={contractProgress}
           uploadError={uploadError}
           documentFiles={documentFiles}
-          openItem={openItem}
           documentPreparation={documentPreparation}
           complaintMessages={complaintMessages}
           draftDownloaded={draftDownloaded}
@@ -234,7 +231,6 @@ function App() {
           issue={detectReviewIssue(contractResult)}
           onDocumentFilesChange={setDocumentFiles}
           onStartAnalysis={runContractAnalysis}
-          onToggleItem={setOpenItem}
           onStartDraft={startComplaintDraft}
           onSubmitComplaint={(content) => void runComplaintTurn(content, true)}
           onChatChange={setFreeText}

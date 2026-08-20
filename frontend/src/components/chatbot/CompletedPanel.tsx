@@ -20,11 +20,13 @@ const panelMotion = {
 
 function CompletedPanel({ draftDownloaded, onRestart }: CompletedPanelProps) {
   const { t } = useTranslation()
+  const description = t('completed.description').replaceAll('. ', '.\n')
+
   return (
     <motion.section className="panel completed-panel" {...panelMotion}>
       <StageMascot variant="completed" large />
       <h2>{t('completed.heading')}</h2>
-      <p className="panel-lead">{t('completed.description')}</p>
+      <p className="panel-lead completed-description">{description}</p>
 
       <ul className="done-summary">
         <li><b>{t('completed.document.label')}</b>{t('completed.document.value')}</li>

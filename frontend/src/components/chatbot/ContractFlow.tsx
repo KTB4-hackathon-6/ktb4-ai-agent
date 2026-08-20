@@ -21,7 +21,6 @@ type ContractFlowProps = {
   contractProgress: ContractAnalysisJob | null
   uploadError: string | null
   documentFiles: File[]
-  openItem: string | null
   documentPreparation: DocumentPreparationResponse | null
   complaintMessages: ComplaintChatMessage[]
   draftDownloaded: boolean
@@ -34,7 +33,6 @@ type ContractFlowProps = {
   issue: keyof typeof issueLabels
   onDocumentFilesChange: (files: File[]) => void
   onStartAnalysis: (files: File[]) => void
-  onToggleItem: (itemId: string | null) => void
   onStartDraft: () => void
   onSubmitComplaint: (content: string) => void
   onChatChange: (content: string) => void
@@ -45,10 +43,10 @@ type ContractFlowProps = {
 }
 
 function ContractFlow({
-  state, contractResult, contractProgress, uploadError, documentFiles, openItem,
+  state, contractResult, contractProgress, uploadError, documentFiles,
   documentPreparation, complaintMessages, draftDownloaded, documentState, documentError,
   guidance, guidanceLoading, guidanceError, chatValue,
-  issue, onDocumentFilesChange, onStartAnalysis, onToggleItem,
+  issue, onDocumentFilesChange, onStartAnalysis,
   onStartDraft, onSubmitComplaint, onChatChange, onChatSubmit, onGoTo, onDownloadDraft, onRestart,
 }: ContractFlowProps) {
   return (
@@ -66,7 +64,7 @@ function ContractFlow({
           )}
           {state === 'ANALYZING' && <AnalysisProgress key="analyzing" job={contractProgress} />}
           {state === 'REVIEW' && (
-            <ReviewPanel key="review" result={contractResult} openItem={openItem} onToggleItem={onToggleItem} onStartDraft={onStartDraft} onSkipToAgency={() => onGoTo('AGENCY')} />
+            <ReviewPanel key="review" result={contractResult} onStartDraft={onStartDraft} onSkipToAgency={() => onGoTo('AGENCY')} />
           )}
           {state === 'DRAFTING' && (
             <ComplaintDraftPanel

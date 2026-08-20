@@ -104,7 +104,6 @@ function UploadPanel({ files, error, onFilesChange, onStart }: UploadPanelProps)
           <header className="upload-file-manager-head">
             <div>
               <strong>{t('upload.selectedCount', { count: files.length })}</strong>
-              <small>{t('upload.combinedFileNote')}</small>
               <small className="upload-size-limit">{t('upload.sizeLimit')}</small>
             </div>
             <label className="ghost-button" htmlFor="employment-documents">{t('upload.addFiles')}</label>
