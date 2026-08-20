@@ -11,6 +11,10 @@ function file(name: string, type: string, lastModified = 1, size = 6) {
 }
 
 describe('mergeUploadFiles', () => {
+  it('allows up to 20MB across the selected files', () => {
+    expect(MAX_SELECTED_FILES_BYTES).toBe(20 * 1024 * 1024)
+  })
+
   it('accepts JPG, PNG and PDF files from either picker or drop', () => {
     const result = mergeUploadFiles([], [
       file('contract.jpg', 'image/jpeg'),
@@ -43,13 +47,8 @@ describe('mergeUploadFiles', () => {
   })
 
   it('accepts files at the backend request-size boundary', () => {
-    const first = file('front.jpg', 'image/jpeg', 1, 6 * 1024 * 1024)
-    const second = file(
-      'back.jpg',
-      'image/jpeg',
-      2,
-      MAX_SELECTED_FILES_BYTES - first.size,
-    )
+    const first = file('front.jpg', 'image/jpeg', 1, MAX_FILE_BYTES)
+    const second = file('back.jpg', 'image/jpeg', 2, MAX_FILE_BYTES)
 
     const result = mergeUploadFiles([], [first, second])
 
@@ -58,18 +57,14 @@ describe('mergeUploadFiles', () => {
   })
 
   it('rejects files that would exceed the backend request limit', () => {
-    const first = file('front.jpg', 'image/jpeg', 1, 6 * 1024 * 1024)
-    const second = file(
-      'back.jpg',
-      'image/jpeg',
-      2,
-      MAX_SELECTED_FILES_BYTES - first.size + 1,
-    )
+    const first = file('front.jpg', 'image/jpeg', 1, MAX_FILE_BYTES)
+    const second = file('back.jpg', 'image/jpeg', 2, MAX_FILE_BYTES)
+    const third = file('extra.jpg', 'image/jpeg', 3, 1)
 
-    const result = mergeUploadFiles([first], [second])
+    const result = mergeUploadFiles([first, second], [third])
 
-    expect(result.files).toEqual([first])
-    expect(result.rejected).toEqual([{ file: second, reason: 'request_too_large' }])
+    expect(result.files).toEqual([first, second])
+    expect(result.rejected).toEqual([{ file: third, reason: 'request_too_large' }])
   })
 
   it('removes only the selected file identity', () => {

@@ -952,16 +952,16 @@
       ],
       "kind": "error",
       "values": {
-        "ko": "선택한 파일의 전체 용량이 11MB를 초과해 추가할 수 없습니다: {files}"
+        "ko": "선택한 파일의 전체 용량이 20MB를 초과해 추가할 수 없습니다: {files}"
       },
       "machineTranslations": {
-        "ko": "선택한 파일의 전체 용량이 11MB를 초과해 추가할 수 없습니다: {files}",
-        "en": "These files would exceed the 11MB total limit: {files}",
-        "vi": "Các tệp này sẽ vượt quá giới hạn tổng cộng 11 MB: {files}",
-        "th": "ไฟล์เหล่านี้จะเกินขีดจำกัดรวม 11MB: {files}",
-        "id": "File ini akan melebihi batas total 11MB: {files}",
-        "mn": "Эдгээр файл нийт 11 МБ-ын хязгаараас хэтэрнэ: {files}",
-        "km": "ឯកសារទាំងនេះនឹងលើសដែនកំណត់សរុប 11MB៖ {files}"
+        "ko": "선택한 파일의 전체 용량이 20MB를 초과해 추가할 수 없습니다: {files}",
+        "en": "These files would exceed the 20MB total limit: {files}",
+        "vi": "Các tệp này sẽ vượt quá giới hạn tổng cộng 20 MB: {files}",
+        "th": "ไฟล์เหล่านี้จะเกินขีดจำกัดรวม 20MB: {files}",
+        "id": "File ini akan melebihi batas total 20MB: {files}",
+        "mn": "Эдгээр файл нийт 20 МБ-ын хязгаараас хэтэрнэ: {files}",
+        "km": "ឯកសារទាំងនេះនឹងលើសដែនកំណត់សរុប 20MB៖ {files}"
       }
     },
     {
@@ -971,16 +971,16 @@
       ],
       "kind": "ui_static",
       "values": {
-        "ko": "파일당 최대 10MB · 선택 파일 전체 최대 11MB"
+        "ko": "파일당 최대 10MB"
       },
       "machineTranslations": {
-        "ko": "파일당 최대 10MB · 선택 파일 전체 최대 11MB",
-        "en": "Maximum 10MB per file · 11MB total",
-        "vi": "Tối đa 10 MB mỗi tệp · tổng cộng 11 MB",
-        "th": "สูงสุด 10MB ต่อไฟล์ · รวม 11MB",
-        "id": "Maksimum 10MB per file · total 11MB",
-        "mn": "Файл бүр дээд тал нь 10 МБ · нийт 11 МБ",
-        "km": "អតិបរមា 10MB ក្នុងមួយឯកសារ · សរុប 11MB"
+        "ko": "파일당 최대 10MB",
+        "en": "Maximum 10MB per file",
+        "vi": "Tối đa 10 MB mỗi tệp",
+        "th": "สูงสุด 10MB ต่อไฟล์",
+        "id": "Maksimum 10MB per file",
+        "mn": "Файл бүр дээд тал нь 10 МБ",
+        "km": "អតិបរមា 10MB ក្នុងមួយឯកសារ"
       }
     },
     {
