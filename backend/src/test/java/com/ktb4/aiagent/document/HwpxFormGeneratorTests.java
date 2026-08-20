@@ -168,6 +168,25 @@ class HwpxFormGeneratorTests {
 			.isEqualTo("연락 가능한 휴대전화번호를 입력해 주세요.");
 	}
 
+	@Test
+	void generatesCurrentPartialDraftWithMissingValuesLeftBlank() throws Exception {
+		JsonNode fixture = readFixture();
+		ObjectNode data = (ObjectNode) firstDraft(fixture).path("data");
+		((ObjectNode) data.path("complainant")).putNull("address");
+		((ObjectNode) data.path("submission")).putNull("recipientLaborOfficeName");
+		AnalysisOutcome.LaborComplaintFormData formData = objectMapper.treeToValue(
+			data,
+			AnalysisOutcome.LaborComplaintFormData.class
+		);
+
+		GeneratedDocument document = generator.generatePartial(formData);
+
+		Document section = parseXml(unzip(document.bytes()).get("Contents/section0.xml"));
+		assertThat(tableCellText(section, 0, 0, 1)).isEqualTo("NGUYEN VAN TEST");
+		assertThat(tableCellText(section, 0, 1, 1)).isEmpty();
+		assertThat(allText(section)).doesNotContain("{{");
+	}
+
 	private AnalysisOutcome.DocumentDraft readyDraft(JsonNode fixture) throws IOException {
 		com.ktb4.aiagent.analysis.DocumentPreparationOutcome outcome = objectMapper.treeToValue(
 			fixture.path("result"),
