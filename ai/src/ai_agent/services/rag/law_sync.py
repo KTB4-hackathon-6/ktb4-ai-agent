@@ -2,6 +2,7 @@
 
 import json
 import os
+import re
 import tempfile
 from collections.abc import Callable
 from dataclasses import dataclass
@@ -21,6 +22,7 @@ LAW_NAMES = (
     "근로자퇴직급여 보장법",
     "임금채권보장법",
 )
+_ARTICLE_HEAD = re.compile(r"^제\d+조(?:의\d+)?(?:\([^)]*\))?\s*")
 
 
 class LawSyncError(Exception):
@@ -72,7 +74,8 @@ class GovernmentLawClient:
     def _to_article(law_name: str, effective_date: str, unit: dict) -> dict | None:
         body = str(unit.get("조문내용") or "").strip()
         paragraphs = GovernmentLawClient._paragraph_texts(unit)
-        if (not body and not paragraphs) or "삭제" in body[:30]:
+        remainder = _ARTICLE_HEAD.sub("", body).strip()
+        if (not paragraphs and (not remainder or remainder.startswith("삭제"))):
             return None
         number = str(unit.get("조문번호") or "").strip()
         branch = str(unit.get("조문가지번호") or "").strip()
