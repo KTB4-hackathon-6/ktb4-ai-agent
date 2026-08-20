@@ -1,4 +1,5 @@
 import type { FormEvent } from 'react'
+import { motion } from 'framer-motion'
 
 type ChatComposerProps = {
   value: string
@@ -21,7 +22,9 @@ function ChatComposer({ value, onChange, onSubmit }: ChatComposerProps) {
         onChange={(event) => onChange(event.target.value)}
         placeholder="직접 입력 (선택사항) / Type your own message (optional)"
       />
-      <button type="submit">전송 / Send</button>
+      <motion.button type="submit" whileHover={{ y: -2 }} whileTap={{ scale: 0.96 }}>
+        전송 / Send
+      </motion.button>
     </form>
   )
 }

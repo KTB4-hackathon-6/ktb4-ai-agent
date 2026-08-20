@@ -5,13 +5,13 @@ export const languages = [
   { code: 'id', native: 'Bahasa Indonesia', ko: '인도네시아어' },
   { code: 'mn', native: 'Монгол хэл', ko: '몽골어' },
   { code: 'km', native: 'ភាសាខ្មែរ', ko: '캄보디아어' },
+  { code: 'ko', native: '한국어', ko: '한국어' },
 ]
 
 export const services = [
   { id: 'contract', label: '📄 근로계약서 분석하기 / Analyze my contract' },
   { id: 'work', label: '🔍 현재 근무 실태 체크하기 / Check my current working conditions' },
   { id: 'admin', label: '🗂 행정문서 확인하기 / Check an admin document' },
-  { id: 'agencies', label: '☎ 상담기관 바로 연결 / Connect to a counselor' },
 ] as const
 
 export type ServiceView = (typeof services)[number]['id']
@@ -109,11 +109,4 @@ export const adminDocumentItems = [
   { label: '담당기관 / Agency', value: '관할 출입국·외국인청' },
   { label: '필요서류 / Required documents', value: '여권, 외국인등록증, 표준근로계약서, 재직증명서' },
   { label: '제출방법 / How to submit', value: '하이코리아 온라인 신청 또는 관할청 방문' },
-]
-
-export const agencyItems = [
-  { ko: '외국인노동자지원센터', en: 'Migrant Worker Support Center', description: '다국어 상담 / Multilingual counseling', phone: '1577-0071', href: 'tel:15770071' },
-  { ko: '고용노동부 고객상담센터', en: 'Ministry of Employment & Labor', description: '노동 신고·상담 / Labor complaints', phone: '국번없이 1350', href: 'tel:1350' },
-  { ko: '관할 지방고용노동청', en: 'Regional Labor Office', description: '근로감독관 신고 / File with a labor inspector', phone: '홈페이지 안내', href: 'tel:1350' },
-  { ko: '이주민센터 (NGO)', en: 'Migrant Center (NGO)', description: '현장 지원·통역 / On-site support & interpreting', phone: '문의하기', href: 'tel:15772270' },
 ]
