@@ -1,15 +1,10 @@
 # ai
 
-근로계약서 OCR 추출 및 근로기준법·외국인고용법 RAG 검색 모듈입니다.
+외국인근로자 상담·법령 검색 AI 모듈입니다. 근로계약서 OCR·구조화·룰 판정은 Java 백엔드의
+`POST /api/contracts/diagnose`가 단일하게 담당합니다.
 
-- OCR (계약서 이미지/PDF → 텍스트)
-- 경량 LLM으로 OCR 원문을 구조화된 근로조건 값(`ContractFacts`)으로 추출 — 판단은 하지 않고 읽어내기만 함
-- 룰 기반 근로조건 위반 판정 (최저임금·주 52시간·휴게시간·주휴일·필수 명시사항) — LLM 미개입
+- OCR (이미지/PDF → 텍스트)
 - RAG 기반 근로기준법·외국인고용법 조항 검색
-
-`POST /contracts/diagnose`가 OCR → 구조화 → 룰 판정을 한 번에 실행해 `{facts, violations}`를 반환한다.
-이 결과를 넘겨받아 RAG·의미검색으로 추가 문제를 찾고, 번역·가이드·문서 초안을 만드는 에이전트 오케스트레이션은
-별도 팀원이 LangChain으로 구현한다.
 
 ## 구조
 
@@ -21,17 +16,12 @@ src/ai_agent/
     health.py
     ocr.py               # POST /ocr/extract
     rag.py                # GET /rag/search
-    contracts.py           # POST /contracts/diagnose (OCR -> 구조화 -> 룰 판정)
   schemas/
     ocr.py
     rag.py
-    rules.py              # ContractFacts, RuleViolation
-    diagnosis.py           # ContractDiagnosis (facts + violations)
   services/
     ocr.py               # OCR 클라이언트 (Naver Clova OCR)
-    extraction.py          # OCR raw_text -> ContractFacts (경량 LLM + 숫자 근거 검증)
     rag/retriever.py       # 법령 조항 검색 (embedding/vector store TBD)
-    rules.py               # 근로조건 위반 판정 (룰 기반, LLM 미개입)
 tests/
 ```
 

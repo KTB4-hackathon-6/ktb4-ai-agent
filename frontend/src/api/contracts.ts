@@ -3,6 +3,7 @@ export type ContractFacts = {
   weekly_working_hours: number
   daily_working_hours: number
   rest_minutes_per_workday: number
+  rest_time_specified: boolean
   weekly_paid_holidays: number
   monthly_wage: number
   hourly_wage: number

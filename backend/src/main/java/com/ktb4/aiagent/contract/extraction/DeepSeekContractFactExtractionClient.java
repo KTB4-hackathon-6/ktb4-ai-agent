@@ -28,20 +28,23 @@ public class DeepSeekContractFactExtractionClient implements ContractFactExtract
 		너는 대한민국 표준근로계약서 OCR 결과에서 정해진 필드를 그대로 읽어 JSON으로 구조화하는 도구다.
 		법 위반 여부는 절대 판단하지 않는다. 계약서에 없는 항목은 관련 *_specified를 false, 수치를 0으로 둔다.
 		monthly_wage는 계산하지 말고 계약서에 적힌 월급을 그대로 읽는다.
-		휴게시간이 시와 분으로 나뉘면 합산해 분 단위로 반환한다.
+		휴게시간이 명시되었으면 rest_time_specified를 true로 하고, 시와 분으로 나뉘면 합산해 분 단위로 반환한다.
+		휴게시간이 명시되지 않았으면 rest_time_specified를 false, rest_minutes_per_workday를 0으로 둔다.
 		payment_method_in_person은 통장 입금이 아니라 현금 직접 지급에 체크된 경우에만 true다.
+		employee_name은 근로자 성명을 그대로 읽고, contract_start_date와 contract_end_date는 YYYY-MM-DD 형식으로 반환한다. 확인할 수 없으면 빈 문자열이다.
 		반드시 아래 키만 가진 유효한 json 객체를 반환한다.
 		{"industry":"manufacturing|agriculture_livestock_fishery|other","weekly_working_hours":0,
-		"daily_working_hours":0,"rest_minutes_per_workday":0,"weekly_paid_holidays":0,
+		"daily_working_hours":0,"rest_minutes_per_workday":0,"rest_time_specified":false,"weekly_paid_holidays":0,
 		"monthly_wage":0,"wage_specified":false,"working_hours_specified":false,
 		"holiday_specified":false,"contract_period_months":0,"payment_date_specified":false,
-		"payment_method_in_person":false,"accommodation_deduction_krw":0}
+		"payment_method_in_person":false,"accommodation_deduction_krw":0,"employee_name":"","contract_start_date":"","contract_end_date":""}
 		""";
 	private static final Set<String> REQUIRED_FIELDS = Set.of(
 		"industry",
 		"weekly_working_hours",
 		"daily_working_hours",
 		"rest_minutes_per_workday",
+		"rest_time_specified",
 		"weekly_paid_holidays",
 		"monthly_wage",
 		"wage_specified",
@@ -50,7 +53,7 @@ public class DeepSeekContractFactExtractionClient implements ContractFactExtract
 		"contract_period_months",
 		"payment_date_specified",
 		"payment_method_in_person",
-		"accommodation_deduction_krw"
+		"accommodation_deduction_krw", "employee_name", "contract_start_date", "contract_end_date"
 	);
 
 	private final RestClient restClient;

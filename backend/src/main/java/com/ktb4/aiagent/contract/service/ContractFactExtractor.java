@@ -43,6 +43,7 @@ public class ContractFactExtractor {
 			extracted.weeklyWorkingHours(),
 			extracted.dailyWorkingHours(),
 			extracted.restMinutesPerWorkday(),
+			extracted.restTimeSpecified(),
 			extracted.weeklyPaidHolidays(),
 			extracted.monthlyWage(),
 			hourlyWage,
@@ -52,7 +53,7 @@ public class ContractFactExtractor {
 			extracted.contractPeriodMonths(),
 			extracted.paymentDateSpecified(),
 			extracted.paymentMethodInPerson(),
-			extracted.accommodationDeductionKrw()
+			extracted.accommodationDeductionKrw(), extracted.employeeName(), extracted.contractStartDate(), extracted.contractEndDate()
 		);
 	}
 
@@ -116,6 +117,9 @@ public class ContractFactExtractor {
 		boolean exempt = facts.industry() == IndustryCategory.AGRICULTURE_LIVESTOCK_FISHERY;
 		if (facts.workingHoursSpecified() && facts.dailyWorkingHours() <= 0 && !exempt) {
 			warnings.add("daily_working_hours");
+		}
+		if (facts.restTimeSpecified() && facts.restMinutesPerWorkday() <= 0 && !exempt) {
+			warnings.add("rest_minutes_per_workday");
 		}
 		if (facts.holidaySpecified() && facts.weeklyPaidHolidays() <= 0 && !exempt) {
 			warnings.add("weekly_paid_holidays");

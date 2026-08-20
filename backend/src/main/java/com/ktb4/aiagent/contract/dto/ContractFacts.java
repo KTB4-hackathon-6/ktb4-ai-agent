@@ -12,6 +12,7 @@ public record ContractFacts(
 	@JsonProperty("daily_working_hours") double dailyWorkingHours,
 	@Schema(description = "하루 휴게시간(분)", example = "60")
 	@JsonProperty("rest_minutes_per_workday") int restMinutesPerWorkday,
+	@JsonProperty("rest_time_specified") boolean restTimeSpecified,
 	@Schema(description = "주당 유급휴일 수", example = "1")
 	@JsonProperty("weekly_paid_holidays") int weeklyPaidHolidays,
 	@Schema(description = "계약서에 기재된 월급(원)", example = "2300000")
@@ -24,6 +25,19 @@ public record ContractFacts(
 	@JsonProperty("contract_period_months") int contractPeriodMonths,
 	@JsonProperty("payment_date_specified") boolean paymentDateSpecified,
 	@JsonProperty("payment_method_in_person") boolean paymentMethodInPerson,
-	@JsonProperty("accommodation_deduction_krw") int accommodationDeductionKrw
+	@JsonProperty("accommodation_deduction_krw") int accommodationDeductionKrw,
+	@JsonProperty("employee_name") String employeeName,
+	@JsonProperty("contract_start_date") String contractStartDate,
+	@JsonProperty("contract_end_date") String contractEndDate
 ) {
+	public ContractFacts(IndustryCategory industry, double weeklyWorkingHours, double dailyWorkingHours,
+			int restMinutesPerWorkday, boolean restTimeSpecified, int weeklyPaidHolidays, int monthlyWage,
+			int hourlyWage, boolean wageSpecified, boolean workingHoursSpecified, boolean holidaySpecified,
+			int contractPeriodMonths, boolean paymentDateSpecified, boolean paymentMethodInPerson,
+			int accommodationDeductionKrw) {
+		this(industry, weeklyWorkingHours, dailyWorkingHours, restMinutesPerWorkday, restTimeSpecified,
+			weeklyPaidHolidays, monthlyWage, hourlyWage, wageSpecified, workingHoursSpecified, holidaySpecified,
+			contractPeriodMonths, paymentDateSpecified, paymentMethodInPerson, accommodationDeductionKrw,
+			"", "", "");
+	}
 }
