@@ -1,7 +1,8 @@
+import json
 from types import SimpleNamespace
 
 import pytest
-from langchain_core.messages import AIMessage
+from langchain_core.messages import AIMessage, HumanMessage
 from langgraph.checkpoint.sqlite.aio import AsyncSqliteSaver
 
 from ai_agent.schemas.document_authoring import (
@@ -32,6 +33,11 @@ def run_turn(monkeypatch, tmp_path):
         agent_service, "get_settings", lambda: SimpleNamespace(checkpoint_db_path=path)
     )
 
+    async def empty_document_form(_documents):
+        return LaborComplaintFormData()
+
+    monkeypatch.setattr(workflow, "extract_document_form", empty_document_form)
+
     async def turn(text: str, session_id: str = "session-1", injected: dict | None = None) -> str:
         return await agent_service.answer_question(text, session_id, "ko", injected)
 
@@ -50,6 +56,8 @@ def run_turn(monkeypatch, tmp_path):
             review_result={"answer": "임금체불 가능성", "issues": ["housing-1"]},
             issues=[housing_issue().model_dump(mode="json")],
             preferred_language="ko",
+            user_message="계약서를 검토해줘",
+            assistant_message="임금체불 가능성",
         )
 
     async def docs(text: str, session_id: str = "session-1"):
@@ -97,6 +105,40 @@ async def test_document_authoring_uses_review_state_and_fixed_sn001(run_turn, mo
 
 
 @pytest.mark.asyncio
+async def test_first_authoring_turn_extracts_document_fields_once(run_turn, monkeypatch) -> None:
+    extracted = 0
+
+    async def extract(documents):
+        nonlocal extracted
+        extracted += 1
+        assert documents[0]["documentId"] == "doc-1"
+        return LaborComplaintFormData(
+            complainant=ComplainantData(fullName="응우옌 반 남"),
+            respondent=RespondentData(
+                workplaceName="대한농장",
+                actualWorkplaceAddress="충남 논산시",
+            ),
+        )
+
+    async def decide(state):
+        form = state["form_drafts"]["LABOR_COMPLAINT_001"]
+        assert form["complainant"]["fullName"] == "응우옌 반 남"
+        assert form["respondent"]["workplaceName"] == "대한농장"
+        return RemedyTurn(
+            intent=AuthoringIntent.FORM_INPUT,
+            form_data=LaborComplaintFormData(**form),
+        )
+
+    monkeypatch.setattr(workflow, "extract_document_form", extract)
+    monkeypatch.setattr(workflow, "run_remedy_agent", decide)
+    await run_turn.save()
+    await run_turn.docs("진정서를 작성해줘")
+    await run_turn.docs("계속 작성해줘")
+
+    assert extracted == 1
+
+
+@pytest.mark.asyncio
 async def test_free_talk_updates_multiple_fields_without_losing_state(
     run_turn, monkeypatch
 ) -> None:
@@ -137,6 +179,69 @@ async def test_free_talk_updates_multiple_fields_without_losing_state(
 
 
 @pytest.mark.asyncio
+async def test_review_refresh_preserves_existing_form_draft(run_turn, monkeypatch) -> None:
+    async def decide(state):
+        return RemedyTurn(
+            intent=AuthoringIntent.FORM_INPUT,
+            form_data=LaborComplaintFormData(complainant=ComplainantData(fullName="응우옌 반 남")),
+        )
+
+    monkeypatch.setattr(workflow, "run_remedy_agent", decide)
+    await run_turn.save()
+    await run_turn.docs("진정서를 작성해줘")
+    await run_turn.save()
+
+    state = await run_turn.read()
+    assert state["form_drafts"]["LABOR_COMPLAINT_001"]["complainant"]["fullName"] == "응우옌 반 남"
+
+
+def test_recent_conversation_excludes_current_user_message() -> None:
+    state = {
+        "messages": [
+            HumanMessage("제 이름은 응우옌 반 남입니다."),
+            AIMessage("확인했습니다."),
+            HumanMessage("진정서를 작성해줘"),
+        ]
+    }
+
+    assert workflow.recent_conversation(state) == [
+        {"role": "user", "content": "제 이름은 응우옌 반 남입니다."},
+        {"role": "assistant", "content": "확인했습니다."},
+    ]
+
+
+@pytest.mark.asyncio
+async def test_remedy_agent_includes_pending_field_context(monkeypatch) -> None:
+    captured = {}
+
+    class Agent:
+        async def ainvoke(self, request):
+            captured.update(json.loads(request["messages"][0].text))
+            return {
+                "structured_response": RemedyTurn(
+                    intent=AuthoringIntent.FORM_INPUT,
+                    form_data=LaborComplaintFormData(
+                        complainant=ComplainantData(
+                            fullName="응우옌 반 남", address="배곧 1로 27-16"
+                        )
+                    ),
+                )
+            }
+
+    monkeypatch.setattr(workflow, "get_remedy_agent", lambda: Agent())
+    await workflow.run_remedy_agent(
+        {
+            "messages": [HumanMessage("배곧 1로 27-16")],
+            "form_drafts": {"LABOR_COMPLAINT_001": {"complainant": {"fullName": "응우옌 반 남"}}},
+            "field_questions": {"complainant.address": "거주지를 알려주세요."},
+        }
+    )
+
+    assert captured["pendingFieldId"] == "complainant.address"
+    assert captured["pendingQuestion"] == "거주지를 알려주세요."
+
+
+@pytest.mark.asyncio
 async def test_document_authoring_requires_same_session_review(run_turn) -> None:
     with pytest.raises(LookupError):
         await run_turn.docs("작성해줘", session_id="other-session")
@@ -145,3 +250,31 @@ async def test_document_authoring_requires_same_session_review(run_turn) -> None
 def test_document_authoring_prompt_uses_integrated_form_contract() -> None:
     assert "complainant" in DOCUMENT_AUTHORING_SYSTEM_PROMPT
     assert "LABOR_COMPLAINT_001" not in DOCUMENT_AUTHORING_SYSTEM_PROMPT
+    assert "이미 채워진 필드는 다시 묻지 않는다" in DOCUMENT_AUTHORING_SYSTEM_PROMPT
+    assert "사용자에게 관할 관서를" in DOCUMENT_AUTHORING_SYSTEM_PROMPT
+
+
+def test_labor_office_is_not_user_required_form_input() -> None:
+    form = LaborComplaintFormData(
+        complainant=ComplainantData(
+            fullName="응우옌 반 남",
+            address="경기도 안산시",
+            mobilePhone="010-1234-5678",
+        ),
+        respondent=RespondentData(
+            fullName="김사업",
+            workplaceType="WORKPLACE",
+            workplaceName="테스트산업",
+            actualWorkplaceAddress="경기도 안산시 단원구 공단로 1",
+        ),
+        complaint={
+            "employmentStartDate": "2025-01-01",
+            "employmentStatus": "EMPLOYED",
+            "jobDescription": "생산직",
+            "contractMethod": "WRITTEN",
+            "details": "임금 일부가 지급되지 않았다.",
+        },
+    )
+
+    assert form.submission.recipientLaborOfficeName is None
+    assert form.required_missing_field_ids() == []

@@ -105,11 +105,6 @@ public record AnalysisOutcome(
 			addIfBlank(missing, "complaint.jobDescription", complaint.jobDescription());
 			addIfNull(missing, "complaint.contractMethod", complaint.contractMethod());
 			addIfBlank(missing, "complaint.details", complaint.details());
-			addIfBlank(
-				missing,
-				"submission.recipientLaborOfficeName",
-				submission.recipientLaborOfficeName()
-			);
 			return List.copyOf(missing);
 		}
 	}

@@ -1,6 +1,7 @@
 from functools import lru_cache
 
 from langchain.agents import create_agent
+from langchain_core.messages import AIMessage, HumanMessage
 from langchain_deepseek import ChatDeepSeek
 from langgraph.checkpoint.sqlite.aio import AsyncSqliteSaver
 
@@ -98,24 +99,29 @@ async def save_review_context(
     review_result: dict,
     issues: list[dict],
     preferred_language: str,
+    user_message: str | None = None,
+    assistant_message: str | None = None,
 ) -> None:
     """검토 결과를 같은 sessionId의 문서작성 state에 저장한다."""
     checkpoint_path = get_settings().checkpoint_db_path
     checkpoint_path.parent.mkdir(parents=True, exist_ok=True)
     config = {"configurable": {"thread_id": session_id}}
     async with AsyncSqliteSaver.from_conn_string(str(checkpoint_path)) as checkpointer:
-        await get_agent(checkpointer).aupdate_state(
-            config,
-            {
-                "documents": documents,
-                "legal_checks": legal_checks,
-                "review_result": review_result,
-                "issues": issues,
-                "preferred_language": preferred_language,
-                "authoring_started": False,
-                "form_drafts": {},
-            },
-        )
+        update = {
+            "documents": documents,
+            "legal_checks": legal_checks,
+            "review_result": review_result,
+            "issues": issues,
+            "preferred_language": preferred_language,
+        }
+        messages = []
+        if user_message:
+            messages.append(HumanMessage(user_message))
+        if assistant_message:
+            messages.append(AIMessage(assistant_message))
+        if messages:
+            update["messages"] = messages
+        await get_agent(checkpointer).aupdate_state(config, update)
 
 
 async def get_document_form(session_id: str) -> dict | None:
