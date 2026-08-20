@@ -46,6 +46,9 @@ def test_analyze_contract_accepts_rest_time_review_check() -> None:
                 {
                     "checkId": "REST_TIME_NEEDS_REVIEW",
                     "result": "REVIEW_REQUIRED",
+                    "lawName": "근로기준법",
+                    "article": "제54조",
+                    "message": "휴게시간이 계약서에 명시되어 있는지 확인되지 않았습니다.",
                 }
             ],
         }
