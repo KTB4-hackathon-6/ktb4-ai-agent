@@ -1,11 +1,13 @@
 import json
 
 import httpx
+import pytest
 
 from ai_agent.config import Settings
 from ai_agent.services.rag.law_sync import (
     LAW_NAMES,
     GovernmentLawClient,
+    LawSyncError,
     LawSynchronizer,
     sync_configured_laws,
 )
@@ -177,3 +179,15 @@ def test_government_client_keeps_paragraphs_in_article_search_text() -> None:
     article = client.fetch_articles("근로기준법")[0]
 
     assert "4시간인 경우" in article["text"]
+
+
+def test_government_client_ignores_article_number_only_stubs() -> None:
+    payload = _law_response(content="")
+    payload["법령"]["조문"]["조문단위"][0]["조문내용"] = "제54조"
+    client = GovernmentLawClient(
+        oc="test-key",
+        transport=httpx.MockTransport(lambda request: httpx.Response(200, json=payload)),
+    )
+
+    with pytest.raises(LawSyncError, match="유효 조문이 없습니다"):
+        client.fetch_articles("근로기준법")

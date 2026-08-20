@@ -47,14 +47,24 @@ def _payload() -> dict:
     return json.loads(get_corpus_path().read_text(encoding="utf-8"))
 
 
+def _searchable_articles(payload: dict) -> tuple[dict, ...]:
+    """번호만 남은 이동·삭제 조문은 이전 스냅샷에 있어도 검색에서 제외한다."""
+    return tuple(
+        article
+        for article in payload["articles"]
+        if len(str(article.get("text") or "").strip()) >= 40
+    )
+
+
 def snapshot_version() -> str:
     """코퍼스 판본 식별자. 이 값이 바뀌면 인덱스를 다시 만들어야 한다."""
     payload = _payload()
+    articles = _searchable_articles(payload)
     canonical = json.dumps(
-        payload["articles"], ensure_ascii=False, sort_keys=True, separators=(",", ":")
+        articles, ensure_ascii=False, sort_keys=True, separators=(",", ":")
     )
     content_hash = hashlib.sha256(canonical.encode("utf-8")).hexdigest()
-    return f"{payload['snapshot_date']}:{len(payload['articles'])}:{content_hash}"
+    return f"{payload['snapshot_date']}:{len(articles)}:{content_hash}"
 
 
 @lru_cache
@@ -71,7 +81,7 @@ def load_documents() -> tuple[Document, ...]:
                 "chunk": article.get("chunk") or "",
             },
         )
-        for article in payload["articles"]
+        for article in _searchable_articles(payload)
     )
 
 

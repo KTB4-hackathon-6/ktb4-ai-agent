@@ -12,6 +12,8 @@ EXPECTED_LAWS = {
     "외국인근로자의 고용 등에 관한 법률 시행규칙",
     "고용노동부 숙식비·기숙사 관련 기준",
     "4대보험 및 퇴직급여 관련 법령",
+    "근로자퇴직급여 보장법",
+    "임금채권보장법",
 }
 
 def test_corpus_covers_expected_laws() -> None:
@@ -21,17 +23,18 @@ def test_corpus_covers_expected_laws() -> None:
     assert {document.metadata["law_name"] for document in documents} == EXPECTED_LAWS
 
 
-def test_corpus_contains_only_latest_law_documents() -> None:
+def test_corpus_contains_only_supported_law_sources() -> None:
     assert {document.metadata["source_type"] for document in load_documents()} == {
-        "latest_law"
+        "latest_law",
+        "government_open_api",
     }
 
 
 def test_snapshot_version_includes_content_hash() -> None:
     date, count, content_hash = snapshot_version().split(":")
 
-    assert date == "2026-08-19"
-    assert count == "48"
+    assert date == "2026-08-20"
+    assert count == "329"
     assert len(content_hash) == 64
 
 
