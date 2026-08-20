@@ -1,7 +1,7 @@
 import { motion } from 'framer-motion'
 import { useTranslation } from 'react-i18next'
 import type { DocumentPreparationResponse } from '../../api/contracts'
-import { complaintPreviewGroups } from '../../complaint/presentation'
+import LaborComplaintPreview from './LaborComplaintPreview'
 import StageMascot from './StageMascot'
 
 type DraftReadyPanelProps = {
@@ -27,7 +27,6 @@ function DraftReadyPanel({
 }: DraftReadyPanelProps) {
   const { t } = useTranslation()
   const draft = preparation.documentDrafts[0]
-  const groups = complaintPreviewGroups(draft.data)
 
   return (
     <motion.section className="panel draft-ready-panel" {...panelMotion}>
@@ -42,22 +41,9 @@ function DraftReadyPanel({
         </div>
       </header>
 
-      <article className="draft-preview">
-        <h3 className="draft-preview-title">{t('draftReady.title')}</h3>
-        {groups.map((group) => (
-          <section className="draft-preview-group" key={group.id}>
-            <h4>{group.label}</h4>
-            <dl>
-              {group.rows.map((row) => (
-                <div key={row.fieldId}>
-                  <dt>{row.label}</dt>
-                  <dd>{row.value ?? '—'}</dd>
-                </div>
-              ))}
-            </dl>
-          </section>
-        ))}
-      </article>
+      <div className="draft-ready-preview">
+        <LaborComplaintPreview data={draft.data} />
+      </div>
 
       <aside className="draft-notice">
         <strong>{t('draftReady.notice.heading')}</strong>
