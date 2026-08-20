@@ -1329,6 +1329,7 @@ button { -webkit-tap-highlight-color: transparent; }
 .completed-panel { text-align: center; }
 .completed-panel > .stage-mascot-card { margin: 0 auto 10px; }
 .completed-panel .panel-lead { margin-inline: auto; max-width: 54ch; }
+.completed-description { white-space: pre-line; }
 .completed-panel .panel-actions { justify-content: center; }
 
 .done-summary { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; margin: 26px 0 0; padding: 0; list-style: none; }
