@@ -1,6 +1,6 @@
 const acceptedTypes = new Set(['image/jpeg', 'image/png', 'application/pdf'])
 export const MAX_FILE_BYTES = 10 * 1024 * 1024
-export const MAX_SELECTED_FILES_BYTES = 11 * 1024 * 1024
+export const MAX_SELECTED_FILES_BYTES = 20 * 1024 * 1024
 export const MAX_PROCESSED_UPLOAD_BYTES = MAX_FILE_BYTES
 
 export type UploadRejectionReason = 'unsupported_type' | 'file_too_large' | 'request_too_large'
