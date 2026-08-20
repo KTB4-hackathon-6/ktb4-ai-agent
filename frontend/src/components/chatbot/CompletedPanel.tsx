@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion'
-import { evidenceToKeep } from '../../mocks/chatbot'
+import { evidenceToKeep } from '../../config/chatbot'
 import StageMascot from './StageMascot'
 
 /**
@@ -7,8 +7,6 @@ import StageMascot from './StageMascot'
  * 진행한 내용을 요약하고, 다음에 무엇을 준비하면 되는지만 남긴다.
  */
 type CompletedPanelProps = {
-  answered: number
-  totalQuestions: number
   draftDownloaded: boolean
   onRestart: () => void
 }
@@ -19,7 +17,7 @@ const panelMotion = {
   transition: { duration: 0.28, ease: 'easeOut' as const },
 }
 
-function CompletedPanel({ answered, totalQuestions, draftDownloaded, onRestart }: CompletedPanelProps) {
+function CompletedPanel({ draftDownloaded, onRestart }: CompletedPanelProps) {
   return (
     <motion.section className="panel completed-panel" {...panelMotion}>
       <StageMascot variant="completed" large />
@@ -31,7 +29,7 @@ function CompletedPanel({ answered, totalQuestions, draftDownloaded, onRestart }
 
       <ul className="done-summary">
         <li><b>문서 확인</b>계약서 · 급여명세서 비교 완료</li>
-        <li><b>추가 확인</b>{answered}/{totalQuestions}개 답변 반영</li>
+        <li><b>분석 결과</b>AI 응답과 기준 대조 결과 확인</li>
         <li><b>진정서</b>{draftDownloaded ? '초안 내려받기 완료' : '초안 작성 완료'}</li>
       </ul>
 

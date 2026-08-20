@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion'
-import { issueLabels, supportChannels } from '../../mocks/chatbot'
+import { issueLabels, supportChannels } from '../../config/chatbot'
 import StageMascot from './StageMascot'
 
 /**

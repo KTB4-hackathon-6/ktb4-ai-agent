@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
 import illoLogo from '../../assets/illo-logo.png'
-import { languages } from '../../mocks/chatbot'
+import { languages } from '../../config/chatbot'
 import type { FlowState, PreferredLanguage } from '../../types/chatbot'
 import StageBar from './StageBar'
 
