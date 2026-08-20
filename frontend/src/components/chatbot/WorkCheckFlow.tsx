@@ -12,7 +12,6 @@ type WorkCheckFlowProps = {
   onShowResults: () => void
   onResultTabChange: (tab: ResultTab) => void
   onToggleEvidence: (id: string) => void
-  onConnect: () => void
 }
 
 function WorkCheckFlow({
@@ -25,7 +24,6 @@ function WorkCheckFlow({
   onShowResults,
   onResultTabChange,
   onToggleEvidence,
-  onConnect,
 }: WorkCheckFlowProps) {
   return (
     <>
@@ -47,7 +45,6 @@ function WorkCheckFlow({
         checkedEvidence={checkedEvidence}
         onTabChange={onResultTabChange}
         onToggleEvidence={onToggleEvidence}
-        onConnect={onConnect}
       />
     </>
   )

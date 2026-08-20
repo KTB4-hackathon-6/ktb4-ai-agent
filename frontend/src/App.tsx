@@ -5,34 +5,35 @@ import {
   type ContractAnalysisJob,
   type ContractAnalysisResponse,
 } from './api/contracts'
-import AdminFlow from './components/chatbot/AdminFlow'
-import AgencyFlow from './components/chatbot/AgencyFlow'
 import ChatComposer from './components/chatbot/ChatComposer'
 import ContractFlow from './components/chatbot/ContractFlow'
 import ChatHeader from './components/chatbot/ChatHeader'
-import ChatMessage, { type ChatMessageItem } from './components/chatbot/ChatMessage'
-import LanguageSelector from './components/chatbot/LanguageSelector'
+import { type ChatMessageItem } from './components/chatbot/ChatMessage'
 import { type ResultTab } from './components/chatbot/ResultsPanel'
-import ServiceMenu from './components/chatbot/ServiceMenu'
-import WorkCheckFlow from './components/chatbot/WorkCheckFlow'
 import {
   chatScript,
-  type ServiceView,
+  languages,
 } from './mocks/chatbot'
-import type { UploadState } from './types/chatbot'
+import type { PreferredLanguage, UploadState } from './types/chatbot'
 import './App.css'
 
-type View = ServiceView | null
+function detectDeviceLanguage(): PreferredLanguage {
+  if (typeof navigator === 'undefined') return 'en'
+  const supported = languages.map((item) => item.code)
+  const candidates = navigator.languages?.length ? navigator.languages : [navigator.language]
+  for (const candidate of candidates) {
+    const primary = candidate?.toLowerCase().split('-')[0]
+    if (primary && supported.includes(primary as PreferredLanguage)) return primary as PreferredLanguage
+  }
+  return 'en'
+}
 
 function App() {
-  const [language, setLanguage] = useState('vi')
-  const [languageChosen, setLanguageChosen] = useState(false)
-  const [view, setView] = useState<View>(null)
+  const [language, setLanguage] = useState<PreferredLanguage>(detectDeviceLanguage)
   const [uploadState, setUploadState] = useState<UploadState>('idle')
   const [contractResult, setContractResult] = useState<ContractAnalysisResponse | null>(null)
   const [contractProgress, setContractProgress] = useState<ContractAnalysisJob | null>(null)
   const [uploadError, setUploadError] = useState<string | null>(null)
-  const [adminState, setAdminState] = useState<UploadState>('idle')
   const [openClause, setOpenClause] = useState<string | null>(null)
   const [chatStep, setChatStep] = useState(0)
   const [chatMessages, setChatMessages] = useState<ChatMessageItem[]>([
@@ -41,47 +42,30 @@ function App() {
   const [resultsShown, setResultsShown] = useState(false)
   const [resultTab, setResultTab] = useState<ResultTab>('letter')
   const [checkedEvidence, setCheckedEvidence] = useState<string[]>([])
-  const [consent, setConsent] = useState(false)
   const [freeText, setFreeText] = useState('')
   const chatEndRef = useRef<HTMLDivElement>(null)
   const analysisAbortRef = useRef<AbortController | null>(null)
 
   useEffect(() => {
     chatEndRef.current?.scrollIntoView({ behavior: 'smooth', block: 'end' })
-  }, [view, uploadState, adminState, chatMessages, resultsShown])
+  }, [uploadState, chatMessages, resultsShown])
 
   useEffect(() => () => analysisAbortRef.current?.abort(), [])
 
-  const selectView = (nextView: ServiceView) => {
-    if (nextView !== 'contract') analysisAbortRef.current?.abort()
-    setView(nextView)
-    if (nextView === 'contract') {
-      setUploadState('idle')
-      setContractResult(null)
-      setContractProgress(null)
-      setUploadError(null)
-    }
-    if (nextView === 'admin') setAdminState('idle')
-  }
-
-  const runContractAnalysis = async (files?: File[]) => {
+  const runContractAnalysis = async (files: File[]) => {
     analysisAbortRef.current?.abort()
     setUploadState('processing')
     setContractResult(null)
     setContractProgress(null)
     setUploadError(null)
 
-    if (!files) {
-      window.setTimeout(() => setUploadState('done'), 1100)
-      return
-    }
-
     const abortController = new AbortController()
     analysisAbortRef.current = abortController
     try {
       const result = await analyzeContract(
         files,
-        '이 근로계약서에서 주의할 점과 대응 방법을 설명해 주세요.',
+        '근로계약서와 급여명세서를 비교해 주의할 점과 대응 방법을 설명해 주세요.',
+        language,
         setContractProgress,
         abortController.signal,
       )
@@ -89,16 +73,11 @@ function App() {
       setUploadState('done')
     } catch (error) {
       if (error instanceof DOMException && error.name === 'AbortError') return
-      setUploadError(error instanceof ContractApiError ? error.message : '계약서를 분석하지 못했습니다. 다시 시도해주세요.')
+      setUploadError(error instanceof ContractApiError ? error.message : '문서를 비교하지 못했습니다. 다시 시도해주세요.')
       setUploadState('error')
     } finally {
       if (analysisAbortRef.current === abortController) analysisAbortRef.current = null
     }
-  }
-
-  const runAdminDemoAnalysis = () => {
-    setAdminState('processing')
-    window.setTimeout(() => setAdminState('done'), 1100)
   }
 
   const pickChatOption = (ko: string, en: string) => {
@@ -118,81 +97,36 @@ function App() {
     setFreeText('')
   }
 
-  const analysisDone = uploadState === 'done' || adminState === 'done'
-  const pipelineDone = [true, view !== null, analysisDone, chatStep === chatScript.length - 1, resultsShown, view === 'agencies']
   return (
     <main className="app-shell">
-      <ChatHeader completedSteps={pipelineDone} />
+      <ChatHeader language={language} onLanguageChange={setLanguage} />
 
       <section className="chat" aria-live="polite">
-        <ChatMessage who="bot" ko="안녕하세요! 먼저 언어를 선택해주세요." en="Hi! Please choose your language first." />
-        <LanguageSelector
-          selectedLanguage={language}
-          onSelect={(selectedLanguage) => {
-            setLanguage(selectedLanguage)
-            setLanguageChosen(true)
+        <ContractFlow
+          uploadState={uploadState}
+          contractResult={contractResult}
+          contractProgress={contractProgress}
+          uploadError={uploadError}
+          openClause={openClause}
+          messages={chatMessages}
+          currentStep={chatStep}
+          resultsShown={resultsShown}
+          activeResultTab={resultTab}
+          checkedEvidence={checkedEvidence}
+          onStartAnalysis={runContractAnalysis}
+          onResetUpload={() => {
+            analysisAbortRef.current?.abort()
+            setUploadState('idle')
+            setContractProgress(null)
+            setUploadError(null)
           }}
+          onToggleClause={setOpenClause}
+          onPickOption={pickChatOption}
+          onShowResults={() => setResultsShown(true)}
+          onResultTabChange={setResultTab}
+          onToggleEvidence={(id) => setCheckedEvidence((items) => items.includes(id) ? items.filter((item) => item !== id) : [...items, id])}
         />
 
-        {languageChosen && (
-          <>
-            <ChatMessage who="bot" ko="무엇을 도와드릴까요? 아래에서 선택해주세요." en="What can I help you with? Pick an option below." />
-            <ServiceMenu onSelect={selectView} />
-          </>
-        )}
-
-        {view === 'work' && (
-          <WorkCheckFlow
-            messages={chatMessages}
-            currentStep={chatStep}
-            resultsShown={resultsShown}
-            activeResultTab={resultTab}
-            checkedEvidence={checkedEvidence}
-            onPickOption={pickChatOption}
-            onShowResults={() => setResultsShown(true)}
-            onResultTabChange={setResultTab}
-            onToggleEvidence={(id) => setCheckedEvidence((items) => items.includes(id) ? items.filter((item) => item !== id) : [...items, id])}
-            onConnect={() => selectView('agencies')}
-          />
-        )}
-
-        {view === 'contract' && (
-          <ContractFlow
-            uploadState={uploadState}
-            contractResult={contractResult}
-            contractProgress={contractProgress}
-            uploadError={uploadError}
-            openClause={openClause}
-            messages={chatMessages}
-            currentStep={chatStep}
-            resultsShown={resultsShown}
-            activeResultTab={resultTab}
-            checkedEvidence={checkedEvidence}
-            onStartAnalysis={runContractAnalysis}
-            onResetUpload={() => {
-              analysisAbortRef.current?.abort()
-              setUploadState('idle')
-              setContractProgress(null)
-              setUploadError(null)
-            }}
-            onToggleClause={setOpenClause}
-            onPickOption={pickChatOption}
-            onShowResults={() => setResultsShown(true)}
-            onResultTabChange={setResultTab}
-            onToggleEvidence={(id) => setCheckedEvidence((items) => items.includes(id) ? items.filter((item) => item !== id) : [...items, id])}
-            onConnect={() => selectView('agencies')}
-          />
-        )}
-
-        {view === 'admin' && (
-          <AdminFlow
-            state={adminState}
-            onStartAnalysis={runAdminDemoAnalysis}
-            onConnect={() => selectView('agencies')}
-          />
-        )}
-
-        {view === 'agencies' && <AgencyFlow consent={consent} onConsentChange={setConsent} />}
         <div ref={chatEndRef} />
       </section>
 

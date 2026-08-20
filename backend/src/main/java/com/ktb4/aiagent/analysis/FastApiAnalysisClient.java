@@ -37,48 +37,83 @@ public class FastApiAnalysisClient implements AnalysisClient {
 	}
 
 	@Override
-	public String analyze(String requestId, String sessionId, String content) {
-		AnalyzeRequest body = new AnalyzeRequest(
+	public AnalysisOutcome review(
+		String requestId,
+		String sessionId,
+		PreferredLanguage preferredLanguage,
+		String content
+	) {
+		ReviewRequest body = new ReviewRequest(
 			requestId,
 			sessionId,
-			new AnalyzeInput(content, List.of()),
+			preferredLanguage,
+			new ReviewInput(content, List.of()),
 			List.of(),
 			List.of()
 		);
-		AnalyzeResponse response = request(body, requestId, sessionId);
-		return response.result().answer();
+		ReviewResponse response = requestReview(body, requestId, sessionId);
+		return response.result();
 	}
 
 	@Override
-	public DocumentAnalysisResult analyzeDocuments(DocumentAnalysisRequest request) {
-		AnalyzeRequest body = new AnalyzeRequest(
+	public AnalysisOutcome reviewDocuments(DocumentAnalysisRequest request) {
+		ReviewRequest body = new ReviewRequest(
 			request.requestId(),
 			request.sessionId(),
-			new AnalyzeInput(request.text(), request.documentIds()),
+			request.preferredLanguage(),
+			new ReviewInput(request.text(), request.documentIds()),
 			request.documents(),
 			request.legalChecks()
 		);
-		AnalyzeResponse response = request(body, request.requestId(), request.sessionId());
+		ReviewResponse response = requestReview(body, request.requestId(), request.sessionId());
 		if (response.result().analysis() == null) {
-			log.warn("FastAPI document analysis response had no structured analysis for requestId={}", request.requestId());
+			log.warn("FastAPI document review response had no structured analysis for requestId={}", request.requestId());
 			throw new ApplicationException(ErrorCode.AI_REQUEST_FAILED);
 		}
-		return new DocumentAnalysisResult(response.result().answer(), response.result().analysis());
+		return response.result();
 	}
 
-	private AnalyzeResponse request(AnalyzeRequest request, String requestId, String sessionId) {
-		AnalyzeResponse response;
+	@Override
+	public DocumentPreparationOutcome prepareDocuments(DocumentPreparationRequest request) {
+		DocsRequest body = new DocsRequest(
+			request.requestId(),
+			request.sessionId(),
+			request.preferredLanguage(),
+			request.input()
+		);
+		DocsResponse response = requestDocs(body, request.requestId(), request.sessionId());
+		return response.result();
+	}
+
+	@Override
+	public GuidanceOutcome guide(GuidanceRequest request) {
+		GuideRequest body = new GuideRequest(
+			request.requestId(),
+			request.sessionId(),
+			request.preferredLanguage(),
+			request.input()
+		);
+		GuideResponse response = requestGuide(body, request.requestId(), request.sessionId());
+		return response.result();
+	}
+
+	private ReviewResponse requestReview(
+		ReviewRequest request,
+		String requestId,
+		String sessionId
+	) {
+		ReviewResponse response;
 		try {
 			response = restClient.post()
-				.uri("/analyze")
+				.uri("/review")
 				.contentType(MediaType.APPLICATION_JSON)
 				.body(request)
 				.retrieve()
-				.body(AnalyzeResponse.class);
+				.body(ReviewResponse.class);
 		}
 		catch (RestClientException exception) {
 			log.warn(
-				"FastAPI analysis request failed for requestId={} sessionId={}",
+				"FastAPI review request failed for requestId={} sessionId={}",
 				requestId,
 				sessionId,
 				exception
@@ -86,7 +121,59 @@ public class FastApiAnalysisClient implements AnalysisClient {
 			throw new ApplicationException(ErrorCode.AI_REQUEST_FAILED);
 		}
 		if (!isValid(response, requestId, sessionId)) {
-			log.warn("FastAPI analysis response was invalid for requestId={} sessionId={}", requestId, sessionId);
+			log.warn("FastAPI review response was invalid for requestId={} sessionId={}", requestId, sessionId);
+			throw new ApplicationException(ErrorCode.AI_REQUEST_FAILED);
+		}
+		return response;
+	}
+
+	private DocsResponse requestDocs(DocsRequest request, String requestId, String sessionId) {
+		DocsResponse response;
+		try {
+			response = restClient.post()
+				.uri("/docs")
+				.contentType(MediaType.APPLICATION_JSON)
+				.body(request)
+				.retrieve()
+				.body(DocsResponse.class);
+		}
+		catch (RestClientException exception) {
+			log.warn("FastAPI docs request failed for requestId={} sessionId={}", requestId, sessionId, exception);
+			throw new ApplicationException(ErrorCode.AI_REQUEST_FAILED);
+		}
+		if (response == null
+			|| !Objects.equals(requestId, response.requestId())
+			|| !Objects.equals(sessionId, response.sessionId())
+			|| response.status() != AnalyzeStatus.COMPLETED
+			|| response.result() == null
+			|| response.error() != null) {
+			log.warn("FastAPI docs response was invalid for requestId={} sessionId={}", requestId, sessionId);
+			throw new ApplicationException(ErrorCode.AI_REQUEST_FAILED);
+		}
+		return response;
+	}
+
+	private GuideResponse requestGuide(GuideRequest request, String requestId, String sessionId) {
+		GuideResponse response;
+		try {
+			response = restClient.post()
+				.uri("/guide")
+				.contentType(MediaType.APPLICATION_JSON)
+				.body(request)
+				.retrieve()
+				.body(GuideResponse.class);
+		}
+		catch (RestClientException exception) {
+			log.warn("FastAPI guide request failed for requestId={} sessionId={}", requestId, sessionId, exception);
+			throw new ApplicationException(ErrorCode.AI_REQUEST_FAILED);
+		}
+		if (response == null
+			|| !Objects.equals(requestId, response.requestId())
+			|| !Objects.equals(sessionId, response.sessionId())
+			|| response.status() != AnalyzeStatus.COMPLETED
+			|| response.result() == null
+			|| response.error() != null) {
+			log.warn("FastAPI guide response was invalid for requestId={} sessionId={}", requestId, sessionId);
 			throw new ApplicationException(ErrorCode.AI_REQUEST_FAILED);
 		}
 		return response;
@@ -119,7 +206,7 @@ public class FastApiAnalysisClient implements AnalysisClient {
 			.build();
 	}
 
-	private boolean isValid(AnalyzeResponse response, String requestId, String sessionId) {
+	private boolean isValid(ReviewResponse response, String requestId, String sessionId) {
 		return response != null
 			&& Objects.equals(requestId, response.requestId())
 			&& Objects.equals(sessionId, response.sessionId())
@@ -130,16 +217,39 @@ public class FastApiAnalysisClient implements AnalysisClient {
 			&& response.error() == null;
 	}
 
-	private record AnalyzeRequest(
+	private record ReviewRequest(
 		String requestId,
 		String sessionId,
-		AnalyzeInput input,
+		PreferredLanguage preferredLanguage,
+		ReviewInput input,
 		List<?> documents,
 		List<?> legalChecks
 	) {
 	}
 
-	private record AnalyzeInput(String text, List<String> documentIds) {
+	private record ReviewInput(String text, List<String> documentIds) {
+		private ReviewInput {
+			if (text == null || text.isBlank() || text.length() > 4_000) {
+				throw new IllegalArgumentException("Review text must be between 1 and 4000 characters");
+			}
+			documentIds = List.copyOf(Objects.requireNonNull(documentIds, "Document IDs must not be null"));
+		}
+	}
+
+	private record DocsRequest(
+		String requestId,
+		String sessionId,
+		PreferredLanguage preferredLanguage,
+		DocumentPreparationRequest.Input input
+	) {
+	}
+
+	private record GuideRequest(
+		String requestId,
+		String sessionId,
+		PreferredLanguage preferredLanguage,
+		GuidanceRequest.Input input
+	) {
 	}
 
 	private enum AnalyzeStatus {
@@ -148,16 +258,31 @@ public class FastApiAnalysisClient implements AnalysisClient {
 		FAILED
 	}
 
-	private record AnalyzeResponse(
+	private record ReviewResponse(
 		String requestId,
 		String sessionId,
 		AnalyzeStatus status,
-		AnalyzeResult result,
+		AnalysisOutcome result,
 		AnalyzeError error
 	) {
 	}
 
-	private record AnalyzeResult(String answer, DocumentAnalysisResult.Analysis analysis) {
+	private record DocsResponse(
+		String requestId,
+		String sessionId,
+		AnalyzeStatus status,
+		DocumentPreparationOutcome result,
+		AnalyzeError error
+	) {
+	}
+
+	private record GuideResponse(
+		String requestId,
+		String sessionId,
+		AnalyzeStatus status,
+		GuidanceOutcome result,
+		AnalyzeError error
+	) {
 	}
 
 	private record AnalyzeError(String code, String message) {

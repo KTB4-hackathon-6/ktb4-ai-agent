@@ -7,8 +7,9 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.ktb4.aiagent.analysis.AnalysisClient;
+import com.ktb4.aiagent.analysis.AnalysisOutcome;
 import com.ktb4.aiagent.analysis.DocumentAnalysisRequest;
-import com.ktb4.aiagent.analysis.DocumentAnalysisResult;
+import com.ktb4.aiagent.analysis.PreferredLanguage;
 import com.ktb4.aiagent.contract.dto.ContractDiagnosis;
 import com.ktb4.aiagent.contract.dto.ContractFacts;
 import com.ktb4.aiagent.contract.dto.IndustryCategory;
@@ -42,15 +43,14 @@ class ContractAnalysisServiceTests {
 		));
 		when(messageService.addUserMessage("session-001", "계약서 문제를 설명해줘"))
 			.thenReturn(message("user-message", MessageRole.USER, "계약서 문제를 설명해줘"));
-		when(analysisClient.analyzeDocuments(any())).thenReturn(new DocumentAnalysisResult(
+		when(analysisClient.reviewDocuments(any())).thenReturn(new AnalysisOutcome(
 			"최저임금과 계약기간을 확인하세요.",
-			new DocumentAnalysisResult.Analysis(
+			new AnalysisOutcome.Analysis(
 				"계약서 문제 두 건",
-				List.of(new DocumentAnalysisResult.Finding(
+				List.of(new AnalysisOutcome.Finding(
 					"MINIMUM_WAGE",
 					"최저임금 미달",
-					"HIGH",
-					List.of("below_minimum_wage"),
+					AnalysisOutcome.FindingSeverity.HIGH,
 					List.of("request-001-document-1", "request-001-document-2")
 				)),
 				List.of("임금 조정을 요청합니다.")
@@ -65,13 +65,19 @@ class ContractAnalysisServiceTests {
 			() -> "request-001"
 		);
 
-		var result = service.analyze("session-001", "계약서 문제를 설명해줘", files);
+		var result = service.analyze(
+			"session-001",
+			"계약서 문제를 설명해줘",
+			PreferredLanguage.VI,
+			files
+		);
 
 		ArgumentCaptor<DocumentAnalysisRequest> requestCaptor = ArgumentCaptor.forClass(
 			DocumentAnalysisRequest.class
 		);
-		verify(analysisClient).analyzeDocuments(requestCaptor.capture());
+		verify(analysisClient).reviewDocuments(requestCaptor.capture());
 		DocumentAnalysisRequest request = requestCaptor.getValue();
+		assertThat(request.preferredLanguage()).isEqualTo(PreferredLanguage.VI);
 		assertThat(request.documentIds())
 			.containsExactly("request-001-document-1", "request-001-document-2");
 		assertThat(request.documents())
@@ -83,14 +89,17 @@ class ContractAnalysisServiceTests {
 			.containsExactly(1, 1);
 		assertThat(request.documents().getFirst().pages().getFirst().text()).isEqualTo("앞면 OCR");
 		assertThat(request.legalChecks())
+			.extracting(DocumentAnalysisRequest.LegalCheck::checkId)
+			.containsExactly(
+				DocumentAnalysisRequest.CheckId.BELOW_MINIMUM_WAGE,
+				DocumentAnalysisRequest.CheckId.CONTRACT_PERIOD_REVIEW
+			);
+		assertThat(request.legalChecks())
 			.extracting(DocumentAnalysisRequest.LegalCheck::result)
 			.containsExactly(
-				DocumentAnalysisRequest.CheckResult.VIOLATION,
-				DocumentAnalysisRequest.CheckResult.POSSIBLE_VIOLATION
+				DocumentAnalysisRequest.CheckResult.DETECTED,
+				DocumentAnalysisRequest.CheckResult.REVIEW_REQUIRED
 			);
-		assertThat(request.legalChecks().getFirst().values())
-			.containsEntry("hourly_wage", 9_000)
-			.containsEntry("unverified_fields", List.of("weekly_working_hours"));
 		assertThat(result.requestId()).isEqualTo("request-001");
 		assertThat(result.diagnosis()).isEqualTo(diagnosis);
 		assertThat(result.analysis().summary()).isEqualTo("계약서 문제 두 건");

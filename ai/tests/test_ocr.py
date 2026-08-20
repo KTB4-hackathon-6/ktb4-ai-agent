@@ -29,7 +29,13 @@ def test_extract_text_joins_fields_from_clova_response(
                             {"inferText": "2,000,000원", "lineBreak": True},
                             {"inferText": "근무지", "lineBreak": False},
                         ]
-                    }
+                    },
+                    {
+                        "fields": [
+                            {"inferText": "계약일", "lineBreak": False},
+                            {"inferText": "2026.01.01", "lineBreak": True},
+                        ]
+                    },
                 ]
             },
             request=httpx.Request("POST", url),
@@ -39,7 +45,7 @@ def test_extract_text_joins_fields_from_clova_response(
 
     result = extract_text(b"fake-image-bytes", "image/jpeg")
 
-    assert result == "임금 2,000,000원\n근무지"
+    assert result == "임금 2,000,000원\n근무지\n\n계약일 2026.01.01"
     get_settings.cache_clear()
 
 
