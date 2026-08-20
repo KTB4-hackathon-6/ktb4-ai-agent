@@ -86,6 +86,13 @@ ANSWERS = {
     "ko": "관할 지방고용노동관서에 진정서를 제출할 수 있습니다.",
 }
 
+FALLBACK_OFFICE_NAME = "관할 지방고용노동관서"
+LOOKUP_SUCCESS_NOTE = "실제 근무지 주소를 기준으로 노동포털 공식 관할관서 정보를 조회했습니다."
+LOOKUP_FALLBACK_NOTE = (
+    "관할관서를 자동 확인하지 못했습니다. 노동포털 관할관서 찾기에서 실제 근무지 주소로 "
+    "확인해 주세요."
+)
+
 
 def document_not_ready(request: GuidanceRequest) -> JSONResponse:
     response = GuidanceResponse(
@@ -101,24 +108,10 @@ def document_not_ready(request: GuidanceRequest) -> JSONResponse:
     return JSONResponse(status_code=400, content=response.model_dump(mode="json"))
 
 
-def guidance_error(request: GuidanceRequest) -> JSONResponse:
-    response = GuidanceResponse(
-        requestId=request.requestId,
-        sessionId=request.sessionId,
-        status=AnalyzeStatus.FAILED,
-        result=None,
-        error=AnalyzeError(
-            code="JURISDICTION_LOOKUP_FAILED",
-            message="관할 노동관서를 확인하지 못했습니다.",
-        ),
-    )
-    return JSONResponse(status_code=502, content=response.model_dump(mode="json"))
-
-
 @router.post(
     "",
     response_model=GuidanceResponse,
-    responses={400: {"model": GuidanceResponse}, 502: {"model": GuidanceResponse}},
+    responses={400: {"model": GuidanceResponse}},
 )
 async def guide(request: GuidanceRequest) -> GuidanceResponse | JSONResponse:
     if not request.input.text:
@@ -139,11 +132,21 @@ async def guide(request: GuidanceRequest) -> GuidanceResponse | JSONResponse:
     if data.required_missing_field_ids():
         return document_not_ready(request)
 
-    try:
-        jurisdiction = await resolve_jurisdiction(data)
-    except Exception:
-        logger.exception("관할 노동관서 조회 실패 sessionId=%s", request.sessionId)
-        return guidance_error(request)
+    office_name = data.submission.recipientLaborOfficeName
+    note = LOOKUP_SUCCESS_NOTE
+    if not office_name:
+        try:
+            office_name = (await resolve_jurisdiction(data)).officeName
+        except Exception:
+            # 관할관서 검색은 외부 노동포털에 의존한다. 검색 장애가 기관 안내 전체를
+            # 막지 않도록 공식 제출 경로는 제공하고 관할관서만 사용자가 확인하게 한다.
+            logger.warning(
+                "관할 노동관서 자동 조회 실패, 일반 안내로 대체 sessionId=%s",
+                request.sessionId,
+                exc_info=True,
+            )
+            office_name = FALLBACK_OFFICE_NAME
+            note = LOOKUP_FALLBACK_NOTE
 
     attachments = data.complaint.attachmentFileNames or ["근로계약서", "임금 지급 내역 등 증빙자료"]
     return GuidanceResponse(
@@ -154,7 +157,7 @@ async def guide(request: GuidanceRequest) -> GuidanceResponse | JSONResponse:
             answer=ANSWERS[request.preferredLanguage],
             agencyCode=AgencyCode.MOEL,
             agencyName="고용노동부",
-            jurisdictionOfficeName=jurisdiction.officeName,
+            jurisdictionOfficeName=office_name,
             submissionOptions=[
                 SubmissionOption(
                     channel=SubmissionChannel.ONLINE,
@@ -166,7 +169,7 @@ async def guide(request: GuidanceRequest) -> GuidanceResponse | JSONResponse:
             ],
             requiredAttachments=attachments,
             steps=["작성 내용을 확인합니다.", "증빙자료를 준비합니다.", "민원실에 제출합니다."],
-            notes="실제 근무지 주소를 기준으로 노동포털 공식 관할관서 정보를 조회했습니다.",
+            notes=note,
         ),
         error=None,
     )
