@@ -226,6 +226,9 @@ class FastApiAnalysisClientTests {
 				    "agencyCode": "MOEL",
 				    "agencyName": "고용노동부",
 				    "jurisdictionOfficeName": "관할 지방고용노동관서",
+				    "jurisdictionOfficeUrl": "https://www.moel.go.kr/",
+				    "helplinePhone": "1350",
+				    "foreignWorkerHelplinePhone": "1577-0071",
 				    "submissionOptions": [{
 				      "channel": "ONLINE",
 				      "label": "온라인 제출",

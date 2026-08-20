@@ -8,6 +8,9 @@ public record GuidanceOutcome(
 	AgencyCode agencyCode,
 	String agencyName,
 	String jurisdictionOfficeName,
+	String jurisdictionOfficeUrl,
+	String helplinePhone,
+	String foreignWorkerHelplinePhone,
 	List<SubmissionOption> submissionOptions,
 	List<String> requiredAttachments,
 	List<String> steps,
@@ -20,6 +23,11 @@ public record GuidanceOutcome(
 		jurisdictionOfficeName = requireText(
 			jurisdictionOfficeName,
 			"Jurisdiction office name must not be blank"
+		);
+		helplinePhone = requireText(helplinePhone, "Helpline phone must not be blank");
+		foreignWorkerHelplinePhone = requireText(
+			foreignWorkerHelplinePhone,
+			"Foreign worker helpline phone must not be blank"
 		);
 		submissionOptions = List.copyOf(submissionOptions);
 		requiredAttachments = List.copyOf(requiredAttachments);

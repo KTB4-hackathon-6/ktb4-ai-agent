@@ -153,6 +153,9 @@ export type GuidanceResponse = {
   agencyCode: 'MOEL'
   agencyName: string
   jurisdictionOfficeName: string
+  jurisdictionOfficeUrl: string | null
+  helplinePhone: string
+  foreignWorkerHelplinePhone: string
   submissionOptions: Array<{
     channel: 'ONLINE' | 'VISIT' | 'MAIL'
     label: string

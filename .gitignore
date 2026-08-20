@@ -33,3 +33,6 @@ dist/
 ai/data/
 
 /ai/.chroma/
+
+# 로컬 개발용 법령 동기화 런타임 스냅샷 (data/laws.json 원본을 덮어쓰지 않도록 분리)
+/ai/.dev-runtime/

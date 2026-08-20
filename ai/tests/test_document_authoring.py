@@ -276,9 +276,9 @@ def test_guide_returns_generic_guidance_when_document_was_skipped(monkeypatch) -
 
     assert response.status_code == 200
     result = response.json()["result"]
-    assert result["jurisdictionOfficeName"] == "관할 지방고용노동관서"
+    assert result["jurisdictionOfficeName"] == "Local Employment and Labor Office"
+    assert result["jurisdictionOfficeUrl"] == guidance.OFFICE_SEARCH_URL
     assert result["submissionOptions"][0]["url"].startswith("https://labor.moel.go.kr/")
-    assert "진정서 작성 전" in result["notes"]
     resolve.assert_not_awaited()
 
 
@@ -290,6 +290,7 @@ def test_guide_returns_contract_response_for_ready_document(monkeypatch) -> None
     resolve = AsyncMock(
         return_value=JurisdictionDecision(
             officeName="고용노동부 안산지청",
+            homepageUrl="https://www.moel.go.kr/ansan/",
         )
     )
     monkeypatch.setattr(guidance, "resolve_jurisdiction", resolve)
@@ -308,6 +309,9 @@ def test_guide_returns_contract_response_for_ready_document(monkeypatch) -> None
     result = response.json()["result"]
     assert result["agencyCode"] == "MOEL"
     assert result["jurisdictionOfficeName"] == "고용노동부 안산지청"
+    assert result["jurisdictionOfficeUrl"] == "https://www.moel.go.kr/ansan/"
+    assert result["helplinePhone"] == "1350"
+    assert result["foreignWorkerHelplinePhone"] == "1577-0071"
     assert result["submissionOptions"][0]["channel"] == "ONLINE"
     assert result["submissionOptions"][0]["url"].startswith("https://labor.moel.go.kr/")
     assert result["answer"].startswith("You can submit")
@@ -318,6 +322,7 @@ def test_guide_returns_contract_response_for_ready_document(monkeypatch) -> None
 
 
 def test_guide_falls_back_when_jurisdiction_lookup_fails(monkeypatch) -> None:
+    """주소가 모호해 관할관서를 못 찾아도, 주소와 무관한 채널은 여전히 응답해야 한다."""
     fixture = Path(__file__).parents[2] / "test-fixtures/analysis/labor-complaint-ready.json"
     data = json.loads(fixture.read_text())["result"]["documentDrafts"][0]["data"]
     data["submission"]["recipientLaborOfficeName"] = None
@@ -341,8 +346,16 @@ def test_guide_falls_back_when_jurisdiction_lookup_fails(monkeypatch) -> None:
     assert response.status_code == 200
     result = response.json()["result"]
     assert result["jurisdictionOfficeName"] == "관할 지방고용노동관서"
+    assert result["jurisdictionOfficeUrl"] == guidance.OFFICE_SEARCH_URL
+    assert result["helplinePhone"] == "1350"
+    assert result["foreignWorkerHelplinePhone"] == "1577-0071"
+    assert result["submissionOptions"][0]["channel"] == "ONLINE"
     assert result["submissionOptions"][0]["url"].startswith("https://labor.moel.go.kr/")
-    assert "관할관서 찾기" in result["notes"]
+    # 데모 중 노출되면 안 되는 실패성 문구가 사용자에게 보이지 않아야 한다.
+    for text in (result["jurisdictionOfficeName"], result["notes"], result["answer"]):
+        assert "못" not in text
+        assert "실패" not in text
+        assert "확인하지" not in text
 
 
 def test_parse_official_labor_office_results() -> None:
