@@ -21,6 +21,16 @@ from ai_agent.services.agent import run_document_authoring
 router = APIRouter(prefix="/docs", tags=["docs"])
 logger = logging.getLogger(__name__)
 
+READY_MESSAGES = {
+    "vi": "Đơn khiếu nại đã sẵn sàng. Vui lòng kiểm tra nội dung trước khi nộp.",
+    "en": "The complaint form is ready. Please review it before submission.",
+    "th": "แบบคำร้องพร้อมแล้ว โปรดตรวจสอบเนื้อหาก่อนยื่น",
+    "id": "Formulir pengaduan sudah siap. Periksa isinya sebelum diajukan.",
+    "mn": "Өргөдлийн маягт бэлэн боллоо. Илгээхийн өмнө агуулгыг шалгана уу.",
+    "km": "ពាក្យបណ្ដឹងបានរួចរាល់។ សូមពិនិត្យមាតិកាមុនពេលដាក់ស្នើ។",
+    "ko": "진정서가 준비되었습니다. 제출 전에 내용을 확인해 주세요.",
+}
+
 FIELD_SPECS = {
     "complainant.fullName": ("성명", MissingFieldInputType.TEXT, True, 100, []),
     "complainant.address": ("주소", MissingFieldInputType.TEXT, True, 300, []),
@@ -129,7 +139,7 @@ async def document_authoring(
         state = await run_document_authoring(
             request.input.text,
             request.sessionId,
-            request.preferredLanguage,
+            request.preferredLanguage.value,
         )
     except LookupError:
         return error_response(
@@ -151,12 +161,27 @@ async def document_authoring(
             message="AI 모델 요청에 실패했습니다.",
         )
 
-    answer = state["messages"][-1].text
     data = LaborComplaintFormData(
         **(state.get("form_drafts") or {}).get("LABOR_COMPLAINT_001", {})
     )
     missing_ids = data.required_missing_field_ids()
-    missing_fields = [build_missing_field(missing_ids[0], answer)] if missing_ids else []
+    if missing_ids:
+        field_id = missing_ids[0]
+        display_name = FIELD_SPECS[field_id][0]
+        progress_answer = (state.get("field_questions") or {}).get(
+            field_id, f"Please provide {display_name}."
+        )
+        missing_fields = [build_missing_field(field_id, progress_answer)]
+    else:
+        progress_answer = READY_MESSAGES[request.preferredLanguage]
+        missing_fields = []
+
+    question_answer = (state.get("question_answer") or "").strip()
+    answer = (
+        f"{question_answer}\n\n{progress_answer}"
+        if state.get("authoring_intent") in {"QUESTION", "MIXED"} and question_answer
+        else progress_answer
+    )
     draft = DocumentDraft(
         status=DocumentDraftStatus.NEEDS_INPUT if missing_ids else DocumentDraftStatus.READY,
         data=data,

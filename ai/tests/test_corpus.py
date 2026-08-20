@@ -1,34 +1,18 @@
 """법령 코퍼스 스냅샷 검증. 네트워크·API 키 없이 돈다."""
 
-from ai_agent.services.rag.corpus import load_documents
+import json
+
+from ai_agent.services.rag.corpus import ensure_corpus_exists, load_documents, snapshot_version
 
 EXPECTED_LAWS = {
     "근로기준법",
+    "근로기준법 주요 적용 조건",
     "최저임금법",
     "외국인근로자의 고용 등에 관한 법률",
-    "근로자퇴직급여 보장법",
-    "임금채권보장법",
+    "외국인근로자의 고용 등에 관한 법률 시행규칙",
+    "고용노동부 숙식비·기숙사 관련 기준",
+    "4대보험 및 퇴직급여 관련 법령",
 }
-
-# docs/외국인근로자_관련법령_정리.md와 services/rules.py가 근거로 삼는 조항들.
-# 코퍼스에서 빠지면 agent가 근거를 못 찾는다.
-REQUIRED_ARTICLES = [
-    ("근로기준법", "제17조"),
-    ("근로기준법", "제36조"),
-    ("근로기준법", "제43조"),
-    ("근로기준법", "제54조"),
-    ("근로기준법", "제55조"),
-    ("근로기준법", "제56조"),
-    ("근로기준법", "제63조"),
-    ("최저임금법", "제6조"),
-    ("근로자퇴직급여 보장법", "제8조"),
-    ("임금채권보장법", "제7조"),
-    ("외국인근로자의 고용 등에 관한 법률", "제13조"),
-    ("외국인근로자의 고용 등에 관한 법률", "제18조의2"),
-    ("외국인근로자의 고용 등에 관한 법률", "제22조"),
-    ("외국인근로자의 고용 등에 관한 법률", "제25조"),
-]
-
 
 def test_corpus_covers_expected_laws() -> None:
     documents = load_documents()
@@ -37,13 +21,18 @@ def test_corpus_covers_expected_laws() -> None:
     assert {document.metadata["law_name"] for document in documents} == EXPECTED_LAWS
 
 
-def test_required_articles_are_present() -> None:
-    present = {
-        (document.metadata["law_name"], document.metadata["article_number"])
-        for document in load_documents()
+def test_corpus_contains_only_latest_law_documents() -> None:
+    assert {document.metadata["source_type"] for document in load_documents()} == {
+        "latest_law"
     }
 
-    assert not [article for article in REQUIRED_ARTICLES if article not in present]
+
+def test_snapshot_version_includes_content_hash() -> None:
+    date, count, content_hash = snapshot_version().split(":")
+
+    assert date == "2026-08-19"
+    assert count == "48"
+    assert len(content_hash) == 64
 
 
 def test_document_ids_are_unique() -> None:
@@ -61,3 +50,15 @@ def test_documents_carry_searchable_text_and_metadata() -> None:
         assert document.metadata["effective_date"]
         # Chroma 메타데이터는 None을 못 받는다.
         assert isinstance(document.metadata["chunk"], str)
+
+
+def test_empty_runtime_corpus_is_seeded_once_without_overwriting_existing_data(tmp_path) -> None:
+    source = tmp_path / "source.json"
+    runtime = tmp_path / "runtime" / "laws.json"
+    source.write_text('{"snapshot_date":"seed","articles":[]}', encoding="utf-8")
+
+    ensure_corpus_exists(source_path=source, runtime_path=runtime)
+    runtime.write_text('{"snapshot_date":"updated","articles":[]}', encoding="utf-8")
+    ensure_corpus_exists(source_path=source, runtime_path=runtime)
+
+    assert json.loads(runtime.read_text(encoding="utf-8"))["snapshot_date"] == "updated"

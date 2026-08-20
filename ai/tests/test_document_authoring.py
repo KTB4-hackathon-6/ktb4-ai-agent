@@ -17,7 +17,7 @@ from ai_agent.schemas.document_authoring import (
 from ai_agent.services import agent as agent_service
 from ai_agent.services.remedy import workflow
 from ai_agent.services.remedy.models import DetectedIssue
-from ai_agent.services.remedy.workflow import RemedyTurn
+from ai_agent.services.remedy.workflow import AuthoringIntent, RemedyTurn
 from ai_agent.services.reviewer import DocumentReview
 
 
@@ -39,6 +39,9 @@ def test_docs_returns_one_missing_field(monkeypatch) -> None:
                     "complainant": {"fullName": "NGUYEN VAN TEST"}
                 }
             },
+            "authoring_intent": "FORM_INPUT",
+            "question_answer": None,
+            "field_questions": {"complainant.address": "주소를 알려주세요."},
         }
     )
     monkeypatch.setattr(document_authoring, "run_document_authoring", run)
@@ -53,6 +56,38 @@ def test_docs_returns_one_missing_field(monkeypatch) -> None:
     assert draft["missingFields"][0]["fieldId"] == "complainant.address"
     assert draft["missingFields"][0]["question"] == "주소를 알려주세요."
     run.assert_awaited_once_with("진정서 작성을 시작해줘", "session-1", "vi")
+
+
+def test_docs_answers_question_then_repeats_current_missing_field(monkeypatch) -> None:
+    monkeypatch.setattr(
+        document_authoring,
+        "run_document_authoring",
+        AsyncMock(
+            return_value={
+                "form_drafts": {
+                    "LABOR_COMPLAINT_001": {
+                        "complainant": {"fullName": "NGUYEN VAN TEST"}
+                    }
+                },
+                "authoring_intent": "QUESTION",
+                "question_answer": "주소는 진정인 확인을 위해 필요합니다.",
+                "field_questions": {"complainant.address": "현재 주소를 알려주세요."},
+            }
+        ),
+    )
+
+    response = TestClient(app).post(
+        "/docs", json=docs_request("주소는 왜 필요한가요?")
+    )
+
+    assert response.status_code == 200
+    result = response.json()["result"]
+    assert result["answer"] == (
+        "주소는 진정인 확인을 위해 필요합니다.\n\n현재 주소를 알려주세요."
+    )
+    draft = result["documentDrafts"][0]
+    assert draft["missingFields"][0]["fieldId"] == "complainant.address"
+    assert draft["missingFields"][0]["question"] == "현재 주소를 알려주세요."
 
 
 def test_docs_requires_review_context(monkeypatch) -> None:
@@ -120,10 +155,11 @@ def test_review_and_docs_share_state_by_session_id(monkeypatch, tmp_path) -> Non
     async def write_form(state):
         assert state["issues"][0]["issue_id"] == "wage-1"
         return RemedyTurn(
-            answer="주소를 알려주세요.",
+            intent=AuthoringIntent.FORM_INPUT,
             form_data=LaborComplaintFormData(
                 complainant=ComplainantData(fullName="NGUYEN VAN TEST")
             ),
+            field_questions={"complainant.address": "주소를 알려주세요."},
         )
 
     monkeypatch.setattr(workflow, "run_remedy_agent", write_form)

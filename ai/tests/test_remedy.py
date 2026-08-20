@@ -13,7 +13,7 @@ from ai_agent.services import agent as agent_service
 from ai_agent.services.remedy import workflow
 from ai_agent.services.remedy.guides import DOCUMENT_AUTHORING_SYSTEM_PROMPT
 from ai_agent.services.remedy.models import DetectedIssue
-from ai_agent.services.remedy.workflow import RemedyTurn
+from ai_agent.services.remedy.workflow import AuthoringIntent, RemedyTurn
 
 
 def housing_issue() -> DetectedIssue:
@@ -77,7 +77,7 @@ async def test_document_authoring_uses_review_state_and_fixed_sn001(run_turn, mo
         assert state["review_result"]["answer"] == "임금체불 가능성"
         assert state["documents"][0]["documentId"] == "doc-1"
         return RemedyTurn(
-            answer="근로자 연락처를 알려주세요.",
+            intent=AuthoringIntent.FORM_INPUT,
             remedy_plan=["SN001 작성"],
             form_data=LaborComplaintFormData(
                 complainant=ComplainantData(fullName="응우옌 반 남"),
@@ -87,10 +87,10 @@ async def test_document_authoring_uses_review_state_and_fixed_sn001(run_turn, mo
     monkeypatch.setattr(workflow, "run_remedy_agent", decide)
 
     await run_turn.save()
-    result = await run_turn.docs("")
+    await run_turn.docs("")
     state = await run_turn.read()
 
-    assert result["messages"][-1].text == "근로자 연락처를 알려주세요."
+    assert state["authoring_intent"] == "FORM_INPUT"
     assert state["form_drafts"]["LABOR_COMPLAINT_001"]["complainant"]["fullName"] == (
         "응우옌 반 남"
     )
@@ -103,14 +103,14 @@ async def test_free_talk_updates_multiple_fields_without_losing_state(
     turns = iter(
         [
             RemedyTurn(
-                answer="사업장 정보를 알려주세요.",
+                intent=AuthoringIntent.FORM_INPUT,
                 remedy_plan=["임금체불 진정"],
                 form_data=LaborComplaintFormData(
                     complainant=ComplainantData(fullName="응우옌 반 남")
                 ),
             ),
             RemedyTurn(
-                answer="두 항목을 반영했습니다.",
+                intent=AuthoringIntent.FORM_INPUT,
                 form_data=LaborComplaintFormData(
                     complainant=ComplainantData(
                         fullName="응우옌 반 남", mobilePhone="010-1234-5678"

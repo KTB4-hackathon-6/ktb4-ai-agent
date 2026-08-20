@@ -52,11 +52,20 @@ cp ../.env.example ../.env  # 프로젝트 루트에 생성 후 값 채워넣기
 | 임금채권보장법 | 체불 대지급금 |
 
 원문은 국가법령정보센터에서 받아 고정한다. **조문을 손으로 고쳐 쓰지 않는다** — 인용이
-틀리면 agent가 잘못된 법적 근거를 제시하게 된다. 법 개정으로 갱신할 때만 재실행한다.
+틀리면 agent가 잘못된 법적 근거를 제시하게 된다. `LAW_OPEN_API_OC`를 설정하면 AI 서버는
+시작 시와 이후 `LAW_SYNC_INTERVAL_HOURS`(기본 24시간)마다 관리 대상 법령을 확인한다.
+정부 조문이 변경된 경우에만 `laws.json`을 교체하고 Chroma 인덱스를 다시 만든다. API 응답이
+유효하지 않거나 인증키가 없으면 기존 코퍼스와 인덱스를 유지한다.
 
 ```bash
-uv run python scripts/build_law_corpus.py
+# 프로젝트 루트 .env
+LAW_OPEN_API_OC=발급받은_OC_인증키
+LAW_SYNC_ENABLED=true
+LAW_SYNC_INTERVAL_HOURS=24
 ```
+
+관리 대상은 근로기준법, 최저임금법, 외국인근로자의 고용 등에 관한 법률,
+근로자퇴직급여 보장법, 임금채권보장법이다.
 
 인덱스는 첫 검색 때 Chroma(`ai/.chroma`)에 만들어지고 이후 재사용된다. `laws.json`의
 판본(`snapshot_date` + 조문 수)이 인덱스와 다르면 자동으로 다시 색인하므로, 코퍼스를
