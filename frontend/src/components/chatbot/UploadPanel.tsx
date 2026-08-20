@@ -28,9 +28,19 @@ function UploadPanel({ files, error, onFilesChange, onStart }: UploadPanelProps)
   const addFiles = (incomingFiles: File[]) => {
     const merged = mergeUploadFiles(files, incomingFiles)
     onFilesChange(merged.files)
-    setFileError(merged.rejected.length > 0
-      ? t('upload.unsupportedFiles', { files: merged.rejected.map((file) => file.name).join(', ') })
-      : null)
+    const namesFor = (reason: (typeof merged.rejected)[number]['reason']) => merged.rejected
+      .filter((rejection) => rejection.reason === reason)
+      .map((rejection) => rejection.file.name)
+      .join(', ')
+    const unsupportedFiles = namesFor('unsupported_type')
+    const oversizedFiles = namesFor('file_too_large')
+    const requestOverflowFiles = namesFor('request_too_large')
+    const errors = [
+      unsupportedFiles && t('upload.unsupportedFiles', { files: unsupportedFiles }),
+      oversizedFiles && t('upload.fileTooLarge', { files: oversizedFiles }),
+      requestOverflowFiles && t('upload.requestTooLarge', { files: requestOverflowFiles }),
+    ].filter(Boolean)
+    setFileError(errors.length > 0 ? errors.join(' ') : null)
   }
 
   const handleDragEnter = (event: DragEvent<HTMLDivElement>) => {
@@ -80,6 +90,7 @@ function UploadPanel({ files, error, onFilesChange, onStart }: UploadPanelProps)
         >
           <strong>{dragging ? t('upload.dropActive') : t('upload.dropPrompt')}</strong>
           <small>{t('upload.formats')}</small>
+          <small className="upload-size-limit">{t('upload.sizeLimit')}</small>
           <label className="ghost-button" htmlFor="employment-documents">{t('upload.chooseFiles')}</label>
           <p className="upload-combined-note">{t('upload.combinedFileNote')}</p>
         </div>
@@ -95,6 +106,7 @@ function UploadPanel({ files, error, onFilesChange, onStart }: UploadPanelProps)
             <div>
               <strong>{t('upload.selectedCount', { count: files.length })}</strong>
               <small>{t('upload.combinedFileNote')}</small>
+              <small className="upload-size-limit">{t('upload.sizeLimit')}</small>
             </div>
             <label className="ghost-button" htmlFor="employment-documents">{t('upload.addFiles')}</label>
           </header>

@@ -1,11 +1,11 @@
 import pdfWorkerUrl from 'pdfjs-dist/build/pdf.worker.min.mjs?url'
 import i18n from '../i18n'
+import { MAX_PROCESSED_UPLOAD_BYTES } from '../upload/files'
 import { toPixelBox } from './geometry'
 import type { RedactionPage, RedactionPreparationProgress } from './types'
 
 const MAX_LONG_EDGE = 2500
 const JPEG_QUALITY = 0.92
-const MAX_UPLOAD_BYTES = 10 * 1024 * 1024
 
 function canvasToBlob(canvas: HTMLCanvasElement, type = 'image/jpeg', quality = JPEG_QUALITY) {
   return new Promise<Blob>((resolve, reject) => {
@@ -136,7 +136,7 @@ export async function exportRedactedFiles(pages: RedactionPage[]) {
       })
       const blob = await canvasToBlob(canvas)
       totalBytes += blob.size
-      if (totalBytes > MAX_UPLOAD_BYTES) {
+      if (totalBytes > MAX_PROCESSED_UPLOAD_BYTES) {
         throw new Error(i18n.t('redaction.error.tooLarge'))
       }
       files.push(new File([blob], `document-page-${index + 1}.jpg`, {

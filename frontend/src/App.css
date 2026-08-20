@@ -530,6 +530,8 @@ button { -webkit-tap-highlight-color: transparent; }
 
 .drop-zone strong { display: block; font-size: 16px; }
 .drop-zone small { display: block; margin-top: 5px; color: var(--color-text-secondary); font-size: 12px; }
+.drop-zone .upload-size-limit,
+.upload-file-manager-head .upload-size-limit { color: var(--color-primary); font-weight: 700; }
 
 .upload-combined-note {
   margin: 13px 0 0;
