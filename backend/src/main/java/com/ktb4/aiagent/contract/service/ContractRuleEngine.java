@@ -49,17 +49,31 @@ public class ContractRuleEngine {
 
 	private List<RuleViolation> checkRequiredDisclosures(ContractFacts facts) {
 		List<RuleViolation> violations = new ArrayList<>();
-		addMissingDisclosure(violations, "임금", facts.wageSpecified());
-		addMissingDisclosure(violations, "근로시간", facts.workingHoursSpecified());
-		addMissingDisclosure(violations, "휴일", facts.holidaySpecified());
-		addMissingDisclosure(violations, "임금 지급일", facts.paymentDateSpecified());
+		addMissingDisclosure(violations, "wage_disclosure_missing", "임금", facts.wageSpecified());
+		addMissingDisclosure(
+			violations,
+			"working_hours_disclosure_missing",
+			"근로시간",
+			facts.workingHoursSpecified()
+		);
+		addMissingDisclosure(violations, "holiday_disclosure_missing", "휴일", facts.holidaySpecified());
+		addMissingDisclosure(
+			violations,
+			"payment_date_disclosure_missing",
+			"임금 지급일",
+			facts.paymentDateSpecified()
+		);
 		return violations;
 	}
 
-	private void addMissingDisclosure(List<RuleViolation> violations, String label, boolean specified) {
+	private void addMissingDisclosure(
+			List<RuleViolation> violations,
+			String ruleId,
+			String label,
+			boolean specified) {
 		if (!specified) {
 			violations.add(new RuleViolation(
-				"required_disclosure_missing",
+				ruleId,
 				"근로기준법",
 				"제17조",
 				label + " 항목이 계약서에 명시되어 있지 않습니다.",
@@ -85,6 +99,18 @@ public class ContractRuleEngine {
 	private List<RuleViolation> checkRestTime(ContractFacts facts) {
 		int requiredMinutes = facts.dailyWorkingHours() >= 8 ? 60
 			: facts.dailyWorkingHours() >= 4 ? 30 : 0;
+		if (requiredMinutes == 0) {
+			return List.of();
+		}
+		if (!facts.restTimeSpecified()) {
+			return List.of(new RuleViolation(
+				"rest_time_needs_review",
+				"근로기준법",
+				"제54조",
+				"휴게시간이 계약서에 명시되어 있는지 확인되지 않아 법정 휴게시간 충족 여부를 판정할 수 없습니다.",
+				Severity.REVIEW
+			));
+		}
 		if (facts.restMinutesPerWorkday() >= requiredMinutes) {
 			return List.of();
 		}
@@ -171,7 +197,8 @@ public class ContractRuleEngine {
 	private static Map<String, Set<String>> dependentRuleIds() {
 		Map<String, Set<String>> mapping = new HashMap<>();
 		mapping.put("monthly_wage", Set.of("below_minimum_wage"));
-		mapping.put("rest_minutes_per_workday", Set.of("rest_time_insufficient"));
+		mapping.put("rest_minutes_per_workday", Set.of("rest_time_insufficient", "rest_time_needs_review"));
+		mapping.put("rest_time_specified", Set.of("rest_time_needs_review"));
 		mapping.put("weekly_paid_holidays", Set.of("weekly_holiday_missing"));
 		mapping.put("contract_period_months", Set.of("contract_period_exceeded", "contract_period_review"));
 		mapping.put("accommodation_deduction_krw", Set.of("accommodation_deduction_high"));

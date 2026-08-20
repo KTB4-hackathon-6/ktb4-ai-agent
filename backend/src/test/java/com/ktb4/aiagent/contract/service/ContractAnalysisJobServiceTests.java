@@ -7,7 +7,8 @@ import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-import com.ktb4.aiagent.analysis.DocumentAnalysisResult;
+import com.ktb4.aiagent.analysis.AnalysisOutcome;
+import com.ktb4.aiagent.analysis.PreferredLanguage;
 import com.ktb4.aiagent.common.exception.ApplicationException;
 import com.ktb4.aiagent.common.exception.ErrorCode;
 import com.ktb4.aiagent.contract.dto.ContractAnalysisJobResponse;
@@ -36,8 +37,8 @@ class ContractAnalysisJobServiceTests {
 		ContractAnalysisService analysisService = mock(ContractAnalysisService.class);
 		SessionMessageService messageService = mock(SessionMessageService.class);
 		InMemoryContractAnalysisJobStore store = store();
-		when(analysisService.analyze(any(), any(), anyList(), any())).thenAnswer(invocation -> {
-			ContractAnalysisProgressListener listener = invocation.getArgument(3);
+		when(analysisService.analyze(any(), any(), any(), anyList(), any())).thenAnswer(invocation -> {
+			ContractAnalysisProgressListener listener = invocation.getArgument(4);
 			listener.onOcrProgress(1, 2);
 			listener.onOcrProgress(2, 2);
 			listener.onStructuring();
@@ -57,6 +58,7 @@ class ContractAnalysisJobServiceTests {
 		ContractAnalysisJobResponse started = service.start(
 			"session-001",
 			"계약서를 설명해줘",
+			PreferredLanguage.VI,
 			List.of(file("front.pdf"), file("back.pdf"))
 		);
 		ContractAnalysisJobResponse completed = service.get("session-001", started.analysisId());
@@ -73,8 +75,8 @@ class ContractAnalysisJobServiceTests {
 	void preservesFailedStageAndApplicationError() {
 		ContractAnalysisService analysisService = mock(ContractAnalysisService.class);
 		SessionMessageService messageService = mock(SessionMessageService.class);
-		when(analysisService.analyze(any(), any(), anyList(), any())).thenAnswer(invocation -> {
-			ContractAnalysisProgressListener listener = invocation.getArgument(3);
+		when(analysisService.analyze(any(), any(), any(), anyList(), any())).thenAnswer(invocation -> {
+			ContractAnalysisProgressListener listener = invocation.getArgument(4);
 			listener.onStructuring();
 			throw new ApplicationException(ErrorCode.CONTRACT_EXTRACTION_FAILED);
 		});
@@ -91,6 +93,7 @@ class ContractAnalysisJobServiceTests {
 		ContractAnalysisJobResponse started = service.start(
 			"session-001",
 			"계약서를 설명해줘",
+			PreferredLanguage.VI,
 			List.of(file("contract.pdf"))
 		);
 		ContractAnalysisJobResponse failed = service.get("session-001", started.analysisId());
@@ -116,6 +119,7 @@ class ContractAnalysisJobServiceTests {
 		assertThatThrownBy(() -> service.start(
 			"session-001",
 			"계약서를 설명해줘",
+			PreferredLanguage.VI,
 			List.of(file("contract.pdf"))
 		))
 			.isInstanceOfSatisfying(ApplicationException.class, exception ->
@@ -141,7 +145,7 @@ class ContractAnalysisJobServiceTests {
 			"request-001",
 			new ContractDiagnosis(facts, List.of(), List.of()),
 			"문제가 없습니다.",
-			new DocumentAnalysisResult.Analysis("정상", List.of(), List.of()),
+			new AnalysisOutcome.Analysis("정상", List.of(), List.of()),
 			new SessionMessage("user-1", MessageRole.USER, "질문", Instant.EPOCH),
 			new SessionMessage("ai-1", MessageRole.AI, "문제가 없습니다.", Instant.EPOCH)
 		);

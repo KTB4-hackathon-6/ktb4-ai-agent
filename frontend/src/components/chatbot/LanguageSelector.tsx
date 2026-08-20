@@ -1,8 +1,9 @@
 import { languages } from '../../mocks/chatbot'
+import type { PreferredLanguage } from '../../types/chatbot'
 
 type LanguageSelectorProps = {
-  selectedLanguage: string
-  onSelect: (language: string) => void
+  selectedLanguage: PreferredLanguage
+  onSelect: (language: PreferredLanguage) => void
 }
 
 function LanguageSelector({ selectedLanguage, onSelect }: LanguageSelectorProps) {

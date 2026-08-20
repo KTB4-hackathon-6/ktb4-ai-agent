@@ -17,6 +17,14 @@ repositories {
 	mavenCentral()
 }
 
+sourceSets {
+	test {
+		resources {
+			srcDir '../test-fixtures'
+		}
+	}
+}
+
 dependencies {
 	implementation 'org.springframework.boot:spring-boot-starter-webmvc'
 	implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:3.1.0'

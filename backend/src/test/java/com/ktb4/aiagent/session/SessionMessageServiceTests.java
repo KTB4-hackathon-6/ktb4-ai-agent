@@ -99,7 +99,7 @@ class SessionMessageServiceTests {
 	void rejectsUserMessageLongerThanFastApiLimit() {
 		ApplicationException exception = assertThrows(
 			ApplicationException.class,
-			() -> service.addUserMessage("session-001", "가".repeat(4001))
+			() -> service.addUserMessage("session-001", "가".repeat(4_001))
 		);
 
 		assertEquals(ErrorCode.INVALID_REQUEST, exception.errorCode());

@@ -19,13 +19,13 @@ import {
   chatScript,
   type ServiceView,
 } from './mocks/chatbot'
-import type { UploadState } from './types/chatbot'
+import type { PreferredLanguage, UploadState } from './types/chatbot'
 import './App.css'
 
 type View = ServiceView | null
 
 function App() {
-  const [language, setLanguage] = useState('vi')
+  const [language, setLanguage] = useState<PreferredLanguage>('vi')
   const [languageChosen, setLanguageChosen] = useState(false)
   const [view, setView] = useState<View>(null)
   const [uploadState, setUploadState] = useState<UploadState>('idle')
@@ -82,6 +82,7 @@ function App() {
       const result = await analyzeContract(
         files,
         '이 근로계약서에서 주의할 점과 대응 방법을 설명해 주세요.',
+        language,
         setContractProgress,
         abortController.signal,
       )

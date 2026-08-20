@@ -8,6 +8,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.ktb4.aiagent.analysis.AnalysisClient;
+import com.ktb4.aiagent.analysis.AnalysisOutcome;
 import com.ktb4.aiagent.common.exception.ApplicationException;
 import com.ktb4.aiagent.common.exception.ErrorCode;
 import com.ktb4.aiagent.common.web.GlobalExceptionHandler;
@@ -38,9 +39,9 @@ class SessionChatControllerTests {
 			clock,
 			messageIds::removeFirst
 		);
-		AnalysisClient analysisClient = (requestId, sessionId, content) -> {
+		AnalysisClient analysisClient = (requestId, sessionId, preferredLanguage, content) -> {
 			clock.advance(Duration.ofSeconds(1));
-			return "확인이 필요합니다.";
+			return new AnalysisOutcome("확인이 필요합니다.", null);
 		};
 		mockMvc = createMockMvc(analysisClient);
 		sessionStore.create("session-001", Duration.ofMinutes(30));
@@ -67,7 +68,8 @@ class SessionChatControllerTests {
 				.content("""
 					{
 					  "role": "AI",
-					  "content": "계약서를 확인해줘"
+					  "content": "계약서를 확인해줘",
+					  "preferredLanguage": "vi"
 					}
 					"""))
 			.andExpect(status().isCreated())
@@ -75,6 +77,7 @@ class SessionChatControllerTests {
 			.andExpect(jsonPath("$.*", hasSize(2)))
 			.andExpect(jsonPath("$.code").value("SUCCESS"))
 			.andExpect(jsonPath("$.data.requestId").value("request-001"))
+			.andExpect(jsonPath("$.data.analysis").doesNotExist())
 			.andExpect(jsonPath("$.data.userMessage.messageId").value("message-001"))
 			.andExpect(jsonPath("$.data.userMessage.role").value("USER"))
 			.andExpect(jsonPath("$.data.userMessage.content").value("계약서를 확인해줘"))
@@ -91,7 +94,7 @@ class SessionChatControllerTests {
 
 	@Test
 	void returnsBadGatewayAndKeepsUserMessageWhenAiFails() throws Exception {
-		mockMvc = createMockMvc((requestId, sessionId, content) -> {
+		mockMvc = createMockMvc((requestId, sessionId, preferredLanguage, content) -> {
 			throw new ApplicationException(ErrorCode.AI_REQUEST_FAILED);
 		});
 
@@ -99,7 +102,8 @@ class SessionChatControllerTests {
 				.contentType(MediaType.APPLICATION_JSON)
 				.content("""
 					{
-					  "content": "응답 실패 질문"
+					  "content": "응답 실패 질문",
+					  "preferredLanguage": "vi"
 					}
 					"""))
 			.andExpect(status().isBadGateway())
@@ -119,7 +123,8 @@ class SessionChatControllerTests {
 				.contentType(MediaType.APPLICATION_JSON)
 				.content("""
 					{
-					  "content": "   "
+					  "content": "   ",
+					  "preferredLanguage": "vi"
 					}
 					"""))
 			.andExpect(status().isBadRequest())
@@ -133,7 +138,8 @@ class SessionChatControllerTests {
 				.contentType(MediaType.APPLICATION_JSON)
 				.content("""
 					{
-					  "content": "저장하면 안 되는 메시지"
+					  "content": "저장하면 안 되는 메시지",
+					  "preferredLanguage": "vi"
 					}
 					"""))
 			.andExpect(status().isNotFound())

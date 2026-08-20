@@ -76,6 +76,7 @@ class ContractDiagnosisServiceTests {
 			60,
 			8,
 			30,
+			true,
 			1,
 			1_600_000,
 			9_000,
