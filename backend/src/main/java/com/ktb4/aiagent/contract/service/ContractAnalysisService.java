@@ -152,6 +152,7 @@ public class ContractAnalysisService {
 		values.put("weekly_working_hours", facts.weeklyWorkingHours());
 		values.put("daily_working_hours", facts.dailyWorkingHours());
 		values.put("rest_minutes_per_workday", facts.restMinutesPerWorkday());
+		values.put("rest_time_specified", facts.restTimeSpecified());
 		values.put("weekly_paid_holidays", facts.weeklyPaidHolidays());
 		values.put("monthly_wage", facts.monthlyWage());
 		values.put("hourly_wage", facts.hourlyWage());
