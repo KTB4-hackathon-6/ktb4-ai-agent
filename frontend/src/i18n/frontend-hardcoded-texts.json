@@ -2,7 +2,7 @@
   "_meta": {
     "generatedAt": "2026-08-20T11:27:25.535Z",
     "sourceRef": "feat/frontend-i18n working tree",
-    "entryCount": 213,
+    "entryCount": 216,
     "targetLanguages": [
       "ko",
       "en",
@@ -924,6 +924,63 @@
         "id": "File ini tidak didukung: {files}",
         "mn": "Энэ файлыг дэмждэггүй: {files}",
         "km": "ឯកសារនេះមិនត្រូវបានគាំទ្រទេ៖ {files}"
+      }
+    },
+    {
+      "key": "upload.fileTooLarge",
+      "sources": [
+        "frontend/src/components/chatbot/UploadPanel.tsx"
+      ],
+      "kind": "error",
+      "values": {
+        "ko": "파일당 10MB를 초과해 추가할 수 없습니다: {files}"
+      },
+      "machineTranslations": {
+        "ko": "파일당 10MB를 초과해 추가할 수 없습니다: {files}",
+        "en": "Files larger than 10MB cannot be added: {files}",
+        "vi": "Không thể thêm tệp lớn hơn 10 MB: {files}",
+        "th": "ไม่สามารถเพิ่มไฟล์ที่มีขนาดเกิน 10MB ได้: {files}",
+        "id": "File yang lebih besar dari 10MB tidak dapat ditambahkan: {files}",
+        "mn": "10 МБ-аас том файл нэмэх боломжгүй: {files}",
+        "km": "មិនអាចបន្ថែមឯកសារដែលធំជាង 10MB បានទេ៖ {files}"
+      }
+    },
+    {
+      "key": "upload.requestTooLarge",
+      "sources": [
+        "frontend/src/components/chatbot/UploadPanel.tsx"
+      ],
+      "kind": "error",
+      "values": {
+        "ko": "선택한 파일의 전체 용량이 11MB를 초과해 추가할 수 없습니다: {files}"
+      },
+      "machineTranslations": {
+        "ko": "선택한 파일의 전체 용량이 11MB를 초과해 추가할 수 없습니다: {files}",
+        "en": "These files would exceed the 11MB total limit: {files}",
+        "vi": "Các tệp này sẽ vượt quá giới hạn tổng cộng 11 MB: {files}",
+        "th": "ไฟล์เหล่านี้จะเกินขีดจำกัดรวม 11MB: {files}",
+        "id": "File ini akan melebihi batas total 11MB: {files}",
+        "mn": "Эдгээр файл нийт 11 МБ-ын хязгаараас хэтэрнэ: {files}",
+        "km": "ឯកសារទាំងនេះនឹងលើសដែនកំណត់សរុប 11MB៖ {files}"
+      }
+    },
+    {
+      "key": "upload.sizeLimit",
+      "sources": [
+        "frontend/src/components/chatbot/UploadPanel.tsx"
+      ],
+      "kind": "ui_static",
+      "values": {
+        "ko": "파일당 최대 10MB · 선택 파일 전체 최대 11MB"
+      },
+      "machineTranslations": {
+        "ko": "파일당 최대 10MB · 선택 파일 전체 최대 11MB",
+        "en": "Maximum 10MB per file · 11MB total",
+        "vi": "Tối đa 10 MB mỗi tệp · tổng cộng 11 MB",
+        "th": "สูงสุด 10MB ต่อไฟล์ · รวม 11MB",
+        "id": "Maksimum 10MB per file · total 11MB",
+        "mn": "Файл бүр дээд тал нь 10 МБ · нийт 11 МБ",
+        "km": "អតិបរមា 10MB ក្នុងមួយឯកសារ · សរុប 11MB"
       }
     },
     {
