@@ -16,6 +16,7 @@ import ContractFlow from './components/chatbot/ContractFlow'
 import { normalizeLanguage } from './i18n'
 import { detectReviewIssue } from './review/presentation'
 import type { ComplaintChatMessage, FlowState, UploadState } from './types/chatbot'
+import illoMascot from './assets/illo-mascot.png'
 import './App.css'
 
 function App() {
@@ -35,6 +36,8 @@ function App() {
   const [guidance, setGuidance] = useState<GuidanceResponse | null>(null)
   const [guidanceLoading, setGuidanceLoading] = useState(false)
   const [guidanceError, setGuidanceError] = useState<string | null>(null)
+  const [showLanding, setShowLanding] = useState(() => window.location.pathname === '/index')
+  const [landingStage, setLandingStage] = useState<FlowState>('UPLOAD')
   const analysisAbortRef = useRef<AbortController | null>(null)
   const complaintAbortRef = useRef<AbortController | null>(null)
   const guidanceAbortRef = useRef<AbortController | null>(null)
@@ -44,6 +47,27 @@ function App() {
     complaintAbortRef.current?.abort()
     guidanceAbortRef.current?.abort()
   }, [])
+
+  useEffect(() => {
+    const handlePopState = () => {
+      const nextShowLanding = window.location.pathname === '/index'
+      if (nextShowLanding) setLandingStage('UPLOAD')
+      setShowLanding(nextShowLanding)
+    }
+    window.addEventListener('popstate', handlePopState)
+    return () => window.removeEventListener('popstate', handlePopState)
+  }, [])
+
+  useEffect(() => {
+    if (!showLanding) return
+    const previewStages: FlowState[] = ['UPLOAD', 'ANALYZING', 'REVIEW', 'DRAFTING', 'AGENCY', 'COMPLETED']
+    let index = 0
+    const interval = window.setInterval(() => {
+      index = (index + 1) % previewStages.length
+      setLandingStage(previewStages[index])
+    }, 1000)
+    return () => window.clearInterval(interval)
+  }, [showLanding])
 
   const runContractAnalysis = async (files: File[]) => {
     analysisAbortRef.current?.abort()
@@ -202,6 +226,46 @@ function App() {
     if (!value || flowState !== 'DRAFTING' || documentState === 'processing') return
     setFreeText('')
     void runComplaintTurn(value, true)
+  }
+
+  if (showLanding) {
+    return (
+      <main className="landing-page">
+        <ChatHeader
+          language={language}
+          state={landingStage}
+          onLanguageChange={(code) => void i18n.changeLanguage(code)}
+        />
+
+        <section className="landing-hero" aria-labelledby="landing-title">
+          <div className="landing-copy">
+            <p className="landing-eyebrow">{t('landing.eyebrow')}</p>
+            <h1 id="landing-title">{t('landing.title')}</h1>
+            <p className="landing-description">{t('landing.description')}</p>
+
+            <button
+              className="landing-start"
+              type="button"
+              onClick={() => {
+                window.history.pushState(null, '', '/')
+                setShowLanding(false)
+              }}
+            >
+              START
+              <span aria-hidden="true">→</span>
+            </button>
+          </div>
+
+          <div className="landing-visual">
+            <div className="landing-orbit" />
+            <p className="landing-bubble bubble-one">{t('landing.concern.contract')}</p>
+            <p className="landing-bubble bubble-two">{t('landing.concern.pay')}</p>
+            <p className="landing-bubble bubble-three">{t('landing.concern.help')}</p>
+            <img src={illoMascot} alt={t('mascot.helper')} />
+          </div>
+        </section>
+      </main>
+    )
   }
 
   return (
