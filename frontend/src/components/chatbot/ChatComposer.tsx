@@ -10,10 +10,9 @@ import type { FlowState } from '../../types/chatbot'
 const placeholderByState: Record<FlowState, string> = {
   UPLOAD: '문서 업로드나 서비스 이용에 대해 궁금한 점을 물어보세요',
   ANALYZING: '문서를 분석하고 있습니다. 잠시만 기다려주세요…',
-  REVIEW: '더 알려주실 내용이 있으면 적어주세요 (예: 7월 20일은 오전만 근무)',
-  REVIEW_UPDATING: '답변을 반영하는 중입니다…',
-  DRAFTING: '진정서에 넣고 싶은 내용을 적어주세요',
-  DRAFT_READY: '고칠 내용을 적어주세요',
+  REVIEW: '분석 결과를 확인한 뒤 다음 단계를 선택해주세요',
+  DRAFTING: 'ILLO의 질문에 답해주세요',
+  DRAFT_READY: '초안을 확인하고 내려받아 주세요',
   AGENCY: '기관 안내에 대해 물어보고 싶은 내용을 적어주세요',
   COMPLETED: '추가로 궁금한 점이 있으면 언제든 물어보세요',
 }
@@ -22,7 +21,6 @@ const assistantMoodByState: Record<FlowState, { icon: string; label: string; cla
   UPLOAD: { icon: '✦', label: '문서를 기다리고 있어요', className: 'waiting' },
   ANALYZING: { icon: '⌕', label: '꼼꼼히 읽고 있어요', className: 'thinking' },
   REVIEW: { icon: '?', label: '함께 확인해볼게요', className: 'reviewing' },
-  REVIEW_UPDATING: { icon: '↻', label: '답변을 반영하고 있어요', className: 'thinking' },
   DRAFTING: { icon: '✎', label: '내용을 정리하고 있어요', className: 'writing' },
   DRAFT_READY: { icon: '✓', label: '초안을 확인해주세요', className: 'ready' },
   AGENCY: { icon: '⌖', label: '도움받을 곳을 찾았어요', className: 'guiding' },
@@ -32,14 +30,15 @@ const assistantMoodByState: Record<FlowState, { icon: string; label: string; cla
 type ChatComposerProps = {
   state: FlowState
   value: string
+  busy?: boolean
   onChange: (value: string) => void
   onSubmit: () => void
 }
 
-function ChatComposer({ state, value, onChange, onSubmit }: ChatComposerProps) {
-  const placeholder = placeholderByState[state]
+function ChatComposer({ state, value, busy = false, onChange, onSubmit }: ChatComposerProps) {
+  const placeholder = busy ? '답변을 반영하고 있습니다…' : placeholderByState[state]
   const mood = assistantMoodByState[state]
-  const unavailable = state === 'ANALYZING' || state === 'REVIEW_UPDATING'
+  const unavailable = busy || state !== 'DRAFTING'
 
   const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault()
@@ -63,6 +62,7 @@ function ChatComposer({ state, value, onChange, onSubmit }: ChatComposerProps) {
         <input
           id="free-message"
           value={value}
+          maxLength={4000}
           disabled={unavailable}
           onChange={(event) => onChange(event.target.value)}
           placeholder={placeholder}

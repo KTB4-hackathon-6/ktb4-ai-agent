@@ -3,28 +3,20 @@ import type { ContractAnalysisResponse } from '../../api/contracts'
 import {
   evidenceToKeep,
   judgmentLimits,
-  requestLetter,
-  reviewIntro,
-  reviewItems,
   statusLabels,
-} from '../../mocks/chatbot'
-import type { ReviewStatus } from '../../types/chatbot'
-import ComparisonTable from './ComparisonTable'
-import ConfirmQuestions from './ConfirmQuestions'
+} from '../../config/chatbot'
+import { reviewCards, reviewCounts } from '../../review/presentation'
 import StageMascot from './StageMascot'
 
 /**
  * ILLO_SERVICE_SPEC 4.3 결과 확인
- * 항목별 결과, 세 자료 비교, 고용주 확인 요청문, 증거 안내, 판단 제한을 한 화면에서 보여준다.
+ * API가 반환한 분석 항목과 기준 대조 결과, 다음 행동, 증거 안내, 판단 제한을 보여준다.
  */
 type ReviewPanelProps = {
   result: ContractAnalysisResponse | null
-  updating: boolean
   openItem: string | null
-  answers: Record<string, string>
   checkedEvidence: string[]
   onToggleItem: (itemId: string | null) => void
-  onAnswer: (id: string, answer: string) => void
   onToggleEvidence: (id: string) => void
   onStartDraft: () => void
   onSkipToAgency: () => void
@@ -38,20 +30,16 @@ const panelMotion = {
 
 function ReviewPanel({
   result,
-  updating,
   openItem,
-  answers,
   checkedEvidence,
   onToggleItem,
-  onAnswer,
   onToggleEvidence,
   onStartDraft,
   onSkipToAgency,
 }: ReviewPanelProps) {
-  const counts = reviewItems.reduce<Record<ReviewStatus, number>>(
-    (acc, item) => ({ ...acc, [item.status]: acc[item.status] + 1 }),
-    { warn: 0, check: 0, ok: 0 },
-  )
+  const cards = result ? reviewCards(result) : []
+  const counts = reviewCounts(cards)
+  const attentionCount = counts.check + counts.warn
 
   return (
     <motion.section className="panel review-panel" {...panelMotion}>
@@ -60,10 +48,10 @@ function ReviewPanel({
           <StageMascot variant="review" compact />
           <div>
             <span className="panel-eyebrow">결과 확인 / Review</span>
-            <h2>확인이 필요한 항목이 {counts.check + counts.warn}건 있습니다</h2>
+            <h2>{attentionCount > 0 ? `확인이 필요한 항목이 ${attentionCount}건 있습니다` : '현재 결과에서 주의 항목이 발견되지 않았습니다'}</h2>
             <p className="panel-lead review-summary">
-              {result?.analysis.summary || reviewIntro.ko}
-              <small>{reviewIntro.en}</small>
+              {result?.analysis.summary || result?.answer || '분석 결과를 불러오지 못했습니다.'}
+              <small>The result below comes from the documents you uploaded.</small>
             </p>
           </div>
         </div>
@@ -74,29 +62,21 @@ function ReviewPanel({
         </ul>
       </header>
 
-      {updating && (
-        <p className="updating-note" aria-live="polite">
-          답변을 반영해 결과를 다시 정리하고 있습니다…
-        </p>
-      )}
-
-      <ComparisonTable />
-
       <div className="review-items">
-        {reviewItems.map((item) => {
-          const open = openItem === item.id
+        {cards.map((card) => {
+          const open = openItem === card.id
           return (
-            <motion.div className={`review-item ${item.status}`} key={item.id} layout>
+            <motion.div className={`review-item ${card.status}`} key={card.id} layout>
               <button
                 className="review-item-head"
                 type="button"
                 aria-expanded={open}
-                onClick={() => onToggleItem(open ? null : item.id)}
+                onClick={() => onToggleItem(open ? null : card.id)}
               >
-                <span className={`status-pill ${item.status}`}>{statusLabels[item.status].ko}</span>
+                <span className={`status-pill ${card.status}`}>{statusLabels[card.status].ko}</span>
                 <span className="review-item-title">
-                  <b>{item.ko}</b>
-                  <small>{item.summary}</small>
+                  <b>{card.title}</b>
+                  <small>{card.description}</small>
                 </span>
                 <motion.span className="chevron" animate={{ rotate: open ? 180 : 0 }} transition={{ duration: 0.2 }} aria-hidden="true">⌄</motion.span>
               </button>
@@ -109,39 +89,39 @@ function ReviewPanel({
                     exit={{ height: 0, opacity: 0 }}
                     transition={{ duration: 0.2 }}
                   >
-                    <dt>계약서 원문</dt>
-                    <dd>{item.original}</dd>
-                    <dt>쉬운 설명</dt>
-                    <dd>{item.plain}</dd>
-                    {item.userNote && (
+                    <dt>판정 출처</dt>
+                    <dd>{card.source}</dd>
+                    {card.relatedDocuments.length > 0 && (
                       <>
-                        <dt>사용자 설명</dt>
-                        <dd>{item.userNote}</dd>
+                        <dt>관련 문서</dt>
+                        <dd>{card.relatedDocuments.join(' · ')}</dd>
                       </>
                     )}
-                    {item.payslipNote && (
+                    {card.legalBasis && (
                       <>
-                        <dt>급여명세서</dt>
-                        <dd>{item.payslipNote}</dd>
+                        <dt>관련 기준</dt>
+                        <dd>{card.legalBasis}</dd>
                       </>
                     )}
-                    <dt>관련 조항</dt>
-                    <dd>{item.legal.join(' · ')}</dd>
                   </motion.dl>
                 )}
               </AnimatePresence>
             </motion.div>
           )
         })}
+        {cards.length === 0 && (
+          <p className="ask-done">분석 결과에 별도 문제 항목이 없습니다. 아래 한계와 준비자료를 함께 확인하세요.</p>
+        )}
       </div>
 
-      <ConfirmQuestions answers={answers} updating={updating} onAnswer={onAnswer} />
-
-      <div className="letter-block">
-        <h3>고용주에게 물어볼 내용 <span>Ask your employer</span></h3>
-        <p className="letter-body">{requestLetter.ko}</p>
-        <p className="letter-help">{requestLetter.en}</p>
-      </div>
+      {result && result.analysis.nextActions.length > 0 && (
+        <div className="letter-block">
+          <h3>권장되는 다음 행동 <span>Next actions from the analysis</span></h3>
+          <ol className="next-actions">
+            {result.analysis.nextActions.map((action, index) => <li key={`${action}-${index}`}>{action}</li>)}
+          </ol>
+        </div>
+      )}
 
       <div className="evidence-block">
         <h3>앞으로 모아두면 좋은 자료 <span>Keep these from now on</span></h3>
@@ -163,20 +143,12 @@ function ReviewPanel({
         </ul>
       </div>
 
-      {result && result.analysis.findings.length > 0 && (
+      {result && result.diagnosis.unverified_fields.length > 0 && (
         <div className="agent-block">
-          <h3>분석 결과 상세 <span>From the analysis</span></h3>
-          {result.analysis.findings.map((finding, index) => (
-            <article className="agent-finding" key={`${finding.title}-${index}`}>
-              <strong>{finding.title}</strong>
-              <p>{finding.description}</p>
-            </article>
-          ))}
-          {result.analysis.nextActions.length > 0 && (
-            <ol className="next-actions">
-              {result.analysis.nextActions.map((action, index) => <li key={`${action}-${index}`}>{action}</li>)}
-            </ol>
-          )}
+          <h3>문서에서 확인하지 못한 항목 <span>Not verified from the documents</span></h3>
+          <ul className="limits-list">
+            {result.diagnosis.unverified_fields.map((field) => <li key={field}>{field}</li>)}
+          </ul>
         </div>
       )}
 

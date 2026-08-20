@@ -1,13 +1,12 @@
 import { motion } from 'framer-motion'
-import { flowStages } from '../../mocks/chatbot'
+import { flowStages } from '../../config/chatbot'
 import type { FlowState } from '../../types/chatbot'
 
-/** ILLO_SERVICE_SPEC 5 상태와 분기 — 8개 상태를 6개 진행 단계로 묶어 보여준다 */
+/** ILLO_SERVICE_SPEC 5 상태와 분기 — 화면 상태를 6개 진행 단계로 묶어 보여준다 */
 const stageIndexOf: Record<FlowState, number> = {
   UPLOAD: 0,
   ANALYZING: 1,
   REVIEW: 2,
-  REVIEW_UPDATING: 2,
   DRAFTING: 3,
   DRAFT_READY: 3,
   AGENCY: 4,

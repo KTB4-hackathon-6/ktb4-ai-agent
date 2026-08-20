@@ -44,7 +44,7 @@ function UploadPanel({ files, error, onFilesChange, onStart }: UploadPanelProps)
       </div>
 
       <div className="upload-features" aria-label="문서 분석 기능">
-        <span><b aria-hidden="true">✦</b> OCR 자동 인식</span>
+        <span><b aria-hidden="true">▰</b> 기기 내 개인정보 가림</span>
         <span><b aria-hidden="true">↔</b> 두 문서 비교</span>
         <span><b aria-hidden="true">✓</b> 쉬운 결과 안내</span>
       </div>
@@ -87,9 +87,9 @@ function UploadPanel({ files, error, onFilesChange, onStart }: UploadPanelProps)
           whileHover={ready ? { y: -2 } : undefined}
           whileTap={ready ? { scale: 0.97 } : undefined}
         >
-          문서 확인 시작 / Start
+          민감정보 가리기 / Hide private information
         </motion.button>
-        <span className="panel-note">업로드한 문서는 확인이 끝나면 삭제됩니다.</span>
+        <span className="panel-note">직접 가린 사본만 서버로 전송됩니다.</span>
       </div>
     </motion.section>
   )
