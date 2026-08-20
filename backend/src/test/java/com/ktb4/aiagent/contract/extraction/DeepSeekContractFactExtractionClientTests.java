@@ -57,7 +57,7 @@ class DeepSeekContractFactExtractionClientTests {
 				{
 				  "choices": [{
 				    "message": {
-				      "content": "{\\"industry\\":\\"manufacturing\\",\\"weekly_working_hours\\":45,\\"daily_working_hours\\":8,\\"rest_minutes_per_workday\\":60,\\"weekly_paid_holidays\\":1,\\"monthly_wage\\":2300000,\\"wage_specified\\":true,\\"working_hours_specified\\":true,\\"holiday_specified\\":true,\\"contract_period_months\\":36,\\"payment_date_specified\\":true,\\"payment_method_in_person\\":false,\\"accommodation_deduction_krw\\":80000}"
+			      "content": "{\\"industry\\":\\"manufacturing\\",\\"weekly_working_hours\\":45,\\"daily_working_hours\\":8,\\"rest_minutes_per_workday\\":60,\\"rest_time_specified\\":true,\\"weekly_paid_holidays\\":1,\\"monthly_wage\\":2300000,\\"wage_specified\\":true,\\"working_hours_specified\\":true,\\"holiday_specified\\":true,\\"contract_period_months\\":36,\\"payment_date_specified\\":true,\\"payment_method_in_person\\":false,\\"accommodation_deduction_krw\\":80000,\\"employee_name\\":\\"홍길동\\",\\"contract_start_date\\":\\"2026-01-01\\",\\"contract_end_date\\":\\"2026-12-31\\"}"
 				    }
 				  }]
 				}
@@ -67,6 +67,7 @@ class DeepSeekContractFactExtractionClientTests {
 
 		assertThat(facts.monthlyWage()).isEqualTo(2_300_000);
 		assertThat(facts.restMinutesPerWorkday()).isEqualTo(60);
+		assertThat(facts.restTimeSpecified()).isTrue();
 		server.verify();
 	}
 

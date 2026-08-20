@@ -101,6 +101,7 @@ class ContractControllerTests {
 			45,
 			8,
 			60,
+			true,
 			1,
 			2_300_000,
 			11_005,
