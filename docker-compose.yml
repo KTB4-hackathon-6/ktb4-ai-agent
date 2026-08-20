@@ -33,6 +33,11 @@ services:
     restart: unless-stopped
     env_file:
       - .env
+    environment:
+      LAW_CORPUS_PATH: /data/laws.json
+      CHROMA_DIR: /data/.chroma
+    volumes:
+      - ai_law_data:/data
     expose:
       - "8000"
     networks:
@@ -70,6 +75,7 @@ services:
 
 volumes:
   mongodb_data:
+  ai_law_data:
   caddy_data:
   caddy_config:
 

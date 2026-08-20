@@ -12,7 +12,7 @@ from langchain_chroma import Chroma
 from langchain_upstage import UpstageEmbeddings
 
 from ai_agent.config import get_settings
-from ai_agent.services.rag.corpus import load_documents, snapshot_version
+from ai_agent.services.rag.corpus import invalidate_corpus_cache, load_documents, snapshot_version
 
 COLLECTION_NAME = "labor_law"
 VERSION_FILE_NAME = "corpus_version"
@@ -60,3 +60,10 @@ def _open_vector_store() -> Chroma:
         store.add_documents(list(documents), ids=[document.id for document in documents])
         version_file.write_text(version, encoding="utf-8")
     return store
+
+
+def rebuild_vector_store() -> Chroma:
+    """새 법령 스냅샷으로 컬렉션을 다시 만든다."""
+    invalidate_corpus_cache()
+    _open_vector_store.cache_clear()
+    return get_vector_store()
