@@ -1,15 +1,19 @@
 package com.ktb4.aiagent.contract.service;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 import com.ktb4.aiagent.analysis.AnalysisClient;
 import com.ktb4.aiagent.analysis.AnalysisOutcome;
 import com.ktb4.aiagent.analysis.DocumentAnalysisRequest;
 import com.ktb4.aiagent.analysis.PreferredLanguage;
+import com.ktb4.aiagent.common.exception.ApplicationException;
+import com.ktb4.aiagent.common.exception.ErrorCode;
 import com.ktb4.aiagent.contract.dto.ContractDiagnosis;
 import com.ktb4.aiagent.contract.dto.ContractFacts;
 import com.ktb4.aiagent.contract.dto.IndustryCategory;
@@ -26,6 +30,34 @@ import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.web.multipart.MultipartFile;
 
 class ContractAnalysisServiceTests {
+
+	@Test
+	void doesNotCallAnalysisAgentWhenUploadedDocumentIsUnrelated() {
+		ContractDiagnosisService diagnosisService = mock(ContractDiagnosisService.class);
+		AnalysisClient analysisClient = mock(AnalysisClient.class);
+		SessionMessageService messageService = mock(SessionMessageService.class);
+		when(messageService.addUserMessage("session-001", "계약서를 확인해줘"))
+			.thenReturn(message("user-message", MessageRole.USER, "계약서를 확인해줘"));
+		when(diagnosisService.diagnoseWithContext(any(), any()))
+			.thenThrow(new ApplicationException(ErrorCode.UNRELATED_DOCUMENT));
+		ContractAnalysisService service = new ContractAnalysisService(
+			diagnosisService,
+			analysisClient,
+			messageService,
+			() -> "request-001"
+		);
+
+		assertThatThrownBy(() -> service.analyze(
+			"session-001",
+			"계약서를 확인해줘",
+			PreferredLanguage.KO,
+			List.of(file("wrong.jpg"))
+		))
+			.isInstanceOf(ApplicationException.class)
+			.extracting(exception -> ((ApplicationException) exception).errorCode())
+			.isEqualTo(ErrorCode.UNRELATED_DOCUMENT);
+		verifyNoInteractions(analysisClient);
+	}
 
 	@Test
 	void sendsOcrDocumentsAndRuleViolationsToFastApiAndStoresConversation() {

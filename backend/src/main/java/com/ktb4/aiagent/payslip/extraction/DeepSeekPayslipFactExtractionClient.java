@@ -22,6 +22,8 @@ public class DeepSeekPayslipFactExtractionClient implements PayslipFactExtractio
 
 	private static final String SYSTEM_PROMPT = """
 		너는 대한민국 급여명세서 OCR 결과에서 정해진 필드를 그대로 읽어 JSON으로 구조화하는 도구다.
+		document_type은 OCR 원문만 보고 판정한다. 급여기간 또는 지급일과 임금 항목이나 지급액의 근거가 있는
+		급여명세서이면 payslip, 그 외 문서나 일반 이미지이면 other로 반환한다. 불확실하면 other로 반환한다.
 		법 위반 여부는 절대 판단하지 않는다. 문서에 없는 항목은 관련 *_specified를 false, 수치를 0으로 둔다.
 		base_pay는 기본급 항목만, gross_pay는 총지급액, total_deductions는 총공제액, net_pay는 실수령액을 읽는다.
 		regular_working_hours는 해당 급여기간의 기본급 산정 기준 근로시간이 명시된 경우만 반환한다.
@@ -29,12 +31,14 @@ public class DeepSeekPayslipFactExtractionClient implements PayslipFactExtractio
 		unclassified_deduction은 항목명이나 근거 없이 공제된 금액의 합계다.
 		employee_name은 근로자 성명을 그대로 읽고, pay_period는 귀속월을 YYYY-MM 형식으로 반환한다. 확인할 수 없으면 빈 문자열이다.
 		반드시 아래 키만 가진 유효한 json 객체를 반환한다.
-		{"pay_period_specified":false,"payment_date_specified":false,"wage_components_specified":false,
+		{"document_type":"payslip|other","pay_period_specified":false,"payment_date_specified":false,
+		"wage_components_specified":false,
 		"calculation_method_specified":false,"deductions_specified":false,"base_pay":0,
 		"regular_working_hours":0,"overtime_hours":0,"overtime_pay":0,"night_pay":0,"holiday_pay":0,
 		"gross_pay":0,"total_deductions":0,"net_pay":0,"unclassified_deduction":0,"employee_name":"","pay_period":""}
 		""";
 	private static final Set<String> REQUIRED_FIELDS = Set.of(
+		"document_type",
 		"pay_period_specified", "payment_date_specified", "wage_components_specified",
 		"calculation_method_specified", "deductions_specified", "base_pay", "regular_working_hours",
 		"overtime_hours", "overtime_pay", "night_pay", "holiday_pay", "gross_pay",
@@ -79,8 +83,14 @@ public class DeepSeekPayslipFactExtractionClient implements PayslipFactExtractio
 				throw new IllegalArgumentException("DeepSeek response is missing required payslip fields");
 			}
 			ExtractedPayslipFacts facts = objectMapper.convertValue(fields, ExtractedPayslipFacts.class);
+			if (!"payslip".equals(facts.documentType())) {
+				throw new ApplicationException(ErrorCode.UNRELATED_DOCUMENT);
+			}
 			validate(facts);
 			return facts;
+		}
+		catch (ApplicationException exception) {
+			throw exception;
 		}
 		catch (Exception exception) {
 			throw new ApplicationException(ErrorCode.CONTRACT_EXTRACTION_FAILED);

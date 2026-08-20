@@ -2,7 +2,7 @@
   "_meta": {
     "generatedAt": "2026-08-20T11:27:25.535Z",
     "sourceRef": "feat/frontend-i18n working tree",
-    "entryCount": 249,
+    "entryCount": 250,
     "targetLanguages": [
       "ko",
       "en",
@@ -4128,8 +4128,8 @@
         "km": "ការឆ្លើយតបរបស់ម៉ាស៊ីនមេមិនអាចបញ្ជាក់បានទេ។ សូមព្យាយាមម្តងទៀតនៅពេលក្រោយ។"
       }
     },
-    {
-      "key": "api.error.contractAnalysisFailed",
+		{
+			"key": "api.error.contractAnalysisFailed",
       "sources": [
         "frontend/src/api/contracts.ts:233",
         "frontend/src/api/contracts.ts:265"
@@ -4146,6 +4146,25 @@
         "id": "Kontrak tidak dapat dianalisis. Silakan coba lagi.",
         "mn": "Гэрээнд дүн шинжилгээ хийх боломжгүй байсан. Дахин оролдоно уу.",
         "km": "កិច្ចសន្យាមិនអាចវិភាគបានទេ។ សូមព្យាយាមម្តងទៀត។"
+      }
+    },
+    {
+      "key": "api.error.unrelatedDocument",
+      "sources": [
+        "frontend/src/api/contracts.ts"
+      ],
+      "kind": "error",
+      "values": {
+        "ko": "근로계약서 또는 급여명세서 이미지가 아닙니다. 올바른 문서를 업로드해주세요."
+      },
+      "machineTranslations": {
+        "ko": "근로계약서 또는 급여명세서 이미지가 아닙니다. 올바른 문서를 업로드해주세요.",
+        "en": "This image is not an employment contract or payslip. Please upload the correct document.",
+        "vi": "Hình ảnh này không phải là hợp đồng lao động hoặc phiếu lương. Vui lòng tải lên đúng tài liệu.",
+        "th": "รูปภาพนี้ไม่ใช่สัญญาจ้างงานหรือสลิปเงินเดือน โปรดอัปโหลดเอกสารที่ถูกต้อง",
+        "id": "Gambar ini bukan kontrak kerja atau slip gaji. Silakan unggah dokumen yang benar.",
+        "mn": "Энэ зураг нь хөдөлмөрийн гэрээ эсвэл цалингийн хуудас биш байна. Зөв баримт бичгийг оруулна уу.",
+        "km": "រូបភាពនេះមិនមែនជាកិច្ចសន្យាការងារ ឬបង្កាន់ដៃប្រាក់ខែទេ។ សូមផ្ទុកឯកសារត្រឹមត្រូវឡើង។"
       }
     },
     {

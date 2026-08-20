@@ -20,7 +20,8 @@ public record ExtractedContractFacts(
 	@JsonProperty("accommodation_deduction_krw") int accommodationDeductionKrw,
 	@JsonProperty("employee_name") String employeeName,
 	@JsonProperty("contract_start_date") String contractStartDate,
-	@JsonProperty("contract_end_date") String contractEndDate
+	@JsonProperty("contract_end_date") String contractEndDate,
+	@JsonProperty("document_type") String documentType
 ) {
 	public ExtractedContractFacts(IndustryCategory industry, double weeklyWorkingHours, double dailyWorkingHours,
 			int restMinutesPerWorkday, boolean restTimeSpecified, int weeklyPaidHolidays, int monthlyWage,
@@ -28,6 +29,18 @@ public record ExtractedContractFacts(
 			boolean paymentDateSpecified, boolean paymentMethodInPerson, int accommodationDeductionKrw) {
 		this(industry, weeklyWorkingHours, dailyWorkingHours, restMinutesPerWorkday, restTimeSpecified,
 			weeklyPaidHolidays, monthlyWage, wageSpecified, workingHoursSpecified, holidaySpecified,
-			contractPeriodMonths, paymentDateSpecified, paymentMethodInPerson, accommodationDeductionKrw, "", "", "");
+			contractPeriodMonths, paymentDateSpecified, paymentMethodInPerson, accommodationDeductionKrw,
+			"", "", "", "employment_contract");
+	}
+
+	public ExtractedContractFacts(IndustryCategory industry, double weeklyWorkingHours, double dailyWorkingHours,
+			int restMinutesPerWorkday, boolean restTimeSpecified, int weeklyPaidHolidays, int monthlyWage,
+			boolean wageSpecified, boolean workingHoursSpecified, boolean holidaySpecified, int contractPeriodMonths,
+			boolean paymentDateSpecified, boolean paymentMethodInPerson, int accommodationDeductionKrw,
+			String employeeName, String contractStartDate, String contractEndDate) {
+		this(industry, weeklyWorkingHours, dailyWorkingHours, restMinutesPerWorkday, restTimeSpecified,
+			weeklyPaidHolidays, monthlyWage, wageSpecified, workingHoursSpecified, holidaySpecified,
+			contractPeriodMonths, paymentDateSpecified, paymentMethodInPerson, accommodationDeductionKrw,
+			employeeName, contractStartDate, contractEndDate, "employment_contract");
 	}
 }

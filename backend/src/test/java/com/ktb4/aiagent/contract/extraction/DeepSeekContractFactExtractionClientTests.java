@@ -57,7 +57,7 @@ class DeepSeekContractFactExtractionClientTests {
 				{
 				  "choices": [{
 				    "message": {
-			      "content": "{\\"industry\\":\\"manufacturing\\",\\"weekly_working_hours\\":45,\\"daily_working_hours\\":8,\\"rest_minutes_per_workday\\":60,\\"rest_time_specified\\":true,\\"weekly_paid_holidays\\":1,\\"monthly_wage\\":2300000,\\"wage_specified\\":true,\\"working_hours_specified\\":true,\\"holiday_specified\\":true,\\"contract_period_months\\":36,\\"payment_date_specified\\":true,\\"payment_method_in_person\\":false,\\"accommodation_deduction_krw\\":80000,\\"employee_name\\":\\"홍길동\\",\\"contract_start_date\\":\\"2026-01-01\\",\\"contract_end_date\\":\\"2026-12-31\\"}"
+			      "content": "{\\"document_type\\":\\"employment_contract\\",\\"industry\\":\\"manufacturing\\",\\"weekly_working_hours\\":45,\\"daily_working_hours\\":8,\\"rest_minutes_per_workday\\":60,\\"rest_time_specified\\":true,\\"weekly_paid_holidays\\":1,\\"monthly_wage\\":2300000,\\"wage_specified\\":true,\\"working_hours_specified\\":true,\\"holiday_specified\\":true,\\"contract_period_months\\":36,\\"payment_date_specified\\":true,\\"payment_method_in_person\\":false,\\"accommodation_deduction_krw\\":80000,\\"employee_name\\":\\"홍길동\\",\\"contract_start_date\\":\\"2026-01-01\\",\\"contract_end_date\\":\\"2026-12-31\\"}"
 				    }
 				  }]
 				}
@@ -69,6 +69,25 @@ class DeepSeekContractFactExtractionClientTests {
 		assertThat(facts.restMinutesPerWorkday()).isEqualTo(60);
 		assertThat(facts.restTimeSpecified()).isTrue();
 		server.verify();
+	}
+
+	@Test
+	void rejectsUnrelatedDocumentBeforeReturningStructuredFacts() {
+		server.expect(requestTo(BASE_URL + "/chat/completions"))
+			.andRespond(withSuccess("""
+				{
+				  "choices": [{
+				    "message": {
+				      "content": "{\\"document_type\\":\\"other\\",\\"industry\\":\\"other\\",\\"weekly_working_hours\\":0,\\"daily_working_hours\\":0,\\"rest_minutes_per_workday\\":0,\\"rest_time_specified\\":false,\\"weekly_paid_holidays\\":0,\\"monthly_wage\\":0,\\"wage_specified\\":false,\\"working_hours_specified\\":false,\\"holiday_specified\\":false,\\"contract_period_months\\":0,\\"payment_date_specified\\":false,\\"payment_method_in_person\\":false,\\"accommodation_deduction_krw\\":0,\\"employee_name\\":\\"\\",\\"contract_start_date\\":\\"\\",\\"contract_end_date\\":\\"\\"}"
+				    }
+				  }]
+				}
+				""", MediaType.APPLICATION_JSON));
+
+		assertThatThrownBy(() -> client.extract("관광지 안내문"))
+			.isInstanceOf(ApplicationException.class)
+			.extracting(exception -> ((ApplicationException) exception).errorCode())
+			.isEqualTo(ErrorCode.UNRELATED_DOCUMENT);
 	}
 
 	@Test

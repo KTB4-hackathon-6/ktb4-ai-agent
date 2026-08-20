@@ -5,8 +5,8 @@ import com.ktb4.aiagent.common.exception.ErrorCode;
 import com.ktb4.aiagent.contract.dto.ContractDiagnosis;
 import com.ktb4.aiagent.contract.dto.RuleViolation;
 import com.ktb4.aiagent.ocr.service.OcrService;
-import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.IntStream;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -40,12 +40,16 @@ public class ContractDiagnosisService {
 		if (files == null || files.isEmpty()) {
 			throw new ApplicationException(ErrorCode.INVALID_REQUEST);
 		}
-		List<ContractDiagnosisContext.SourceDocument> documents = new ArrayList<>();
-		for (MultipartFile file : files) {
-			String fullText = ocrService.analyze(file).fullText();
-			documents.add(new ContractDiagnosisContext.SourceDocument(file.getOriginalFilename(), fullText));
-			progressListener.onOcrProgress(documents.size(), files.size());
-		}
+		var ocrResults = ocrService.analyzeAll(
+			files,
+			processedFiles -> progressListener.onOcrProgress(processedFiles, files.size())
+		);
+		List<ContractDiagnosisContext.SourceDocument> documents = IntStream.range(0, files.size())
+			.mapToObj(index -> new ContractDiagnosisContext.SourceDocument(
+				files.get(index).getOriginalFilename(),
+				ocrResults.get(index).fullText()
+			))
+			.toList();
 		String rawText = documents.stream()
 			.map(ContractDiagnosisContext.SourceDocument::text)
 			.reduce((front, back) -> front + "\n\n" + back)
