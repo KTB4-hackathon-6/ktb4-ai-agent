@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import type { ContractAnalysisResponse } from '../api/contracts'
-import { detectReviewIssue, reviewCards, reviewCounts } from './presentation'
+import { detectReviewIssue, groupReviewCards, reviewCards, reviewCounts } from './presentation'
 
 function result(overrides: Partial<ContractAnalysisResponse> = {}): ContractAnalysisResponse {
   return {
@@ -76,5 +76,26 @@ describe('review presentation', () => {
 
     expect(detectReviewIssue(conditionResult)).toBe('condition')
     expect(detectReviewIssue(result())).toBe('wage')
+  })
+
+  it('groups attention cards before normal cards without changing their relative order', () => {
+    const cards = [
+      { id: 'ok-1', status: 'ok' as const },
+      { id: 'check-1', status: 'check' as const },
+      { id: 'warn-1', status: 'warn' as const },
+      { id: 'ok-2', status: 'ok' as const },
+    ].map((card) => ({
+      ...card,
+      title: card.id,
+      description: card.id,
+      source: 'ai' as const,
+      relatedDocuments: [],
+      legalBasis: null,
+    }))
+
+    expect(groupReviewCards(cards)).toEqual({
+      attention: [cards[2], cards[1]],
+      normal: [cards[0], cards[3]],
+    })
   })
 })

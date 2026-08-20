@@ -1,8 +1,8 @@
 {
   "_meta": {
-    "generatedAt": "2026-08-20T09:19:03.595Z",
+    "generatedAt": "2026-08-20T11:27:25.535Z",
     "sourceRef": "feat/frontend-i18n working tree",
-    "entryCount": 228,
+    "entryCount": 249,
     "targetLanguages": [
       "ko",
       "en",
@@ -876,6 +876,74 @@
       }
     },
     {
+      "key": "upload.selectedCount",
+      "sources": [],
+      "kind": "ui_static",
+      "values": {
+        "ko": "선택한 파일 {count}개"
+      },
+      "machineTranslations": {
+        "ko": "선택한 파일 {count}개",
+        "en": "{count} files selected",
+        "vi": "{count} tệp đã được chọn",
+        "th": "เลือกไฟล์ {count} แล้ว",
+        "id": "{count} file dipilih",
+        "mn": "{count} файл сонгогдсон",
+        "km": "ឯកសារ {count} បានជ្រើសរើស"
+      }
+    },
+    {
+      "key": "upload.dropPrompt",
+      "sources": [],
+      "kind": "ui_static",
+      "values": {
+        "ko": "파일을 이곳에 끌어놓거나 아래 버튼으로 선택하세요"
+      },
+      "machineTranslations": {
+        "ko": "파일을 이곳에 끌어놓거나 아래 버튼으로 선택하세요",
+        "en": "Drag your file here or select it using the button below",
+        "vi": "Kéo tệp của bạn vào đây hoặc chọn tệp đó bằng nút bên dưới",
+        "th": "ลากไฟล์ของคุณมาที่นี่หรือเลือกโดยใช้ปุ่มด้านล่าง",
+        "id": "Seret file Anda ke sini atau pilih menggunakan tombol di bawah",
+        "mn": "Файлаа энд чирнэ үү эсвэл доорх товчлуурыг ашиглан сонгоно уу",
+        "km": "អូសឯកសាររបស់អ្នកនៅទីនេះ ឬជ្រើសរើសវាដោយប្រើប៊ូតុងខាងក្រោម"
+      }
+    },
+    {
+      "key": "upload.dropActive",
+      "sources": [],
+      "kind": "ui_static",
+      "values": {
+        "ko": "파일을 놓아주세요"
+      },
+      "machineTranslations": {
+        "ko": "파일을 놓아주세요",
+        "en": "Please drop the file",
+        "vi": "Vui lòng thả tập tin",
+        "th": "กรุณาวางไฟล์",
+        "id": "Silakan jatuhkan file tersebut",
+        "mn": "Файлыг орхино уу",
+        "km": "សូមទម្លាក់ឯកសារ"
+      }
+    },
+    {
+      "key": "upload.unsupportedFiles",
+      "sources": [],
+      "kind": "ui_static",
+      "values": {
+        "ko": "지원하지 않는 파일입니다: {files}"
+      },
+      "machineTranslations": {
+        "ko": "지원하지 않는 파일입니다: {files}",
+        "en": "This file is not supported: {files}",
+        "vi": "Tệp này không được hỗ trợ: {files}",
+        "th": "ไม่รองรับไฟล์นี้: {files}",
+        "id": "File ini tidak didukung: {files}",
+        "mn": "Энэ файлыг дэмждэггүй: {files}",
+        "km": "ឯកសារនេះមិនត្រូវបានគាំទ្រទេ៖ {files}"
+      }
+    },
+    {
       "key": "upload.choosePrompt",
       "sources": [],
       "kind": "ui_static",
@@ -948,16 +1016,84 @@
       "sources": [],
       "kind": "ui_static",
       "values": {
-        "ko": "파일 선택"
+        "ko": "사진 촬영 또는 파일 선택"
       },
       "machineTranslations": {
-        "ko": "파일 선택",
-        "en": "Select file",
-        "vi": "Chọn tập tin",
-        "th": "เลือกไฟล์",
-        "id": "Pilih berkas",
-        "mn": "Файл сонгоно уу",
-        "km": "ជ្រើសរើសឯកសារ"
+        "ko": "사진 촬영 또는 파일 선택",
+        "en": "Take a photo or select a file",
+        "vi": "Chụp ảnh hoặc chọn một tập tin",
+        "th": "ถ่ายภาพหรือเลือกไฟล์",
+        "id": "Ambil foto atau pilih file",
+        "mn": "Зураг авах эсвэл файл сонгоно уу",
+        "km": "ថតរូប ឬជ្រើសរើសឯកសារ"
+      }
+    },
+    {
+      "key": "upload.combinedFileNote",
+      "sources": [],
+      "kind": "ui_static",
+      "values": {
+        "ko": "근로계약서와 급여명세서가 한 파일에 함께 있어도 괜찮습니다."
+      },
+      "machineTranslations": {
+        "ko": "근로계약서와 급여명세서가 한 파일에 함께 있어도 괜찮습니다.",
+        "en": "It is okay to have the employment contract and pay stubs together in one file.",
+        "vi": "Bạn có thể gộp hợp đồng lao động và cuống phiếu lương vào cùng một hồ sơ.",
+        "th": "การมีสัญญาจ้างงานและต้นขั้วการจ่ายเงินรวมกันเป็นไฟล์เดียวก็เป็นเรื่องปกติ",
+        "id": "Tidak apa-apa jika kontrak kerja dan potongan gaji digabungkan dalam satu file.",
+        "mn": "Хөдөлмөрийн гэрээ, тооцооны мөнгийг хамтад нь нэг файлд хийвэл зүгээр.",
+        "km": "វាមិនអីទេក្នុងការមានកិច្ចសន្យាការងារ និងប្រាក់បៀវត្សរ៍រួមគ្នាក្នុងឯកសារតែមួយ។"
+      }
+    },
+    {
+      "key": "upload.remove",
+      "sources": [],
+      "kind": "ui_static",
+      "values": {
+        "ko": "삭제"
+      },
+      "machineTranslations": {
+        "ko": "삭제",
+        "en": "Delete",
+        "vi": "Xóa",
+        "th": "ลบ",
+        "id": "Hapus",
+        "mn": "Устгах",
+        "km": "លុប"
+      }
+    },
+    {
+      "key": "upload.removeFile",
+      "sources": [],
+      "kind": "ui_static",
+      "values": {
+        "ko": "파일 삭제: {file}"
+      },
+      "machineTranslations": {
+        "ko": "파일 삭제: {file}",
+        "en": "Delete file: {file}",
+        "vi": "Xóa tập tin: {file}",
+        "th": "ลบไฟล์: {file}",
+        "id": "Hapus berkas: {file}",
+        "mn": "Файл устгах: {file}",
+        "km": "លុបឯកសារ៖ {file}"
+      }
+    },
+    {
+      "key": "upload.privacyHeading",
+      "sources": [],
+      "kind": "ui_static",
+      "values": {
+        "ko": "아직 서버에 전송되지 않았습니다."
+      },
+      "machineTranslations": {
+        "ko": "아직 서버에 전송되지 않았습니다.",
+        "en": "It hasn't been sent to the server yet.",
+        "vi": "Nó chưa được gửi đến máy chủ.",
+        "th": "ยังไม่ได้ส่งไปยังเซิร์ฟเวอร์",
+        "id": "Itu belum dikirim ke server.",
+        "mn": "Энэ нь сервер рүү хараахан илгээгдээгүй байна.",
+        "km": "វាមិនទាន់ត្រូវបានផ្ញើទៅម៉ាស៊ីនមេនៅឡើយទេ។"
       }
     },
     {
@@ -965,16 +1101,16 @@
       "sources": [],
       "kind": "ui_static",
       "values": {
-        "ko": "민감정보 가리기"
+        "ko": "다음: 민감정보 가리기"
       },
       "machineTranslations": {
-        "ko": "민감정보 가리기",
-        "en": "Hiding sensitive information",
-        "vi": "Ẩn thông tin nhạy cảm",
-        "th": "การซ่อนข้อมูลที่ละเอียดอ่อน",
-        "id": "Menyembunyikan informasi sensitif",
-        "mn": "Нууц мэдээллийг нуух",
-        "km": "លាក់ព័ត៌មានរសើប"
+        "ko": "다음: 민감정보 가리기",
+        "en": "Next: Hiding sensitive information",
+        "vi": "Tiếp theo: Ẩn thông tin nhạy cảm",
+        "th": "ถัดไป: การซ่อนข้อมูลที่ละเอียดอ่อน",
+        "id": "Berikutnya: Menyembunyikan informasi sensitif",
+        "mn": "Дараа нь: Нууц мэдээллийг нуух",
+        "km": "បន្ទាប់៖ លាក់ព័ត៌មានរសើប"
       }
     },
     {
@@ -1196,6 +1332,23 @@
         "id": "berikutnya",
         "mn": "дараагийн",
         "km": "បន្ទាប់"
+      }
+    },
+    {
+      "key": "redaction.pageNavigation",
+      "sources": [],
+      "kind": "ui_static",
+      "values": {
+        "ko": "문서 페이지 이동"
+      },
+      "machineTranslations": {
+        "ko": "문서 페이지 이동",
+        "en": "Go to document page",
+        "vi": "Tới trang tài liệu",
+        "th": "ไปที่หน้าเอกสาร",
+        "id": "Buka halaman dokumen",
+        "mn": "Баримт бичгийн хуудас руу очно уу",
+        "km": "ចូលទៅកាន់ទំព័រឯកសារ"
       }
     },
     {
@@ -1570,6 +1723,125 @@
         "id": "Tidak ada item catatan yang ditemukan dalam hasil saat ini",
         "mn": "Одоогийн үр дүнд тэмдэглэл олдсонгүй",
         "km": "រកមិនឃើញធាតុនៃចំណាំនៅក្នុងលទ្ធផលបច្ចុប្បន្នទេ។"
+      }
+    },
+    {
+      "key": "review.attentionHeading",
+      "sources": [],
+      "kind": "ui_static",
+      "values": {
+        "ko": "먼저 확인할 내용"
+      },
+      "machineTranslations": {
+        "ko": "먼저 확인할 내용",
+        "en": "What to check first",
+        "vi": "Những gì cần kiểm tra đầu tiên",
+        "th": "สิ่งที่ต้องตรวจสอบก่อน",
+        "id": "Apa yang harus diperiksa terlebih dahulu",
+        "mn": "Юуны өмнө юу шалгах вэ",
+        "km": "អ្វីដែលត្រូវពិនិត្យជាមុន"
+      }
+    },
+    {
+      "key": "review.attentionDescription",
+      "sources": [],
+      "kind": "ui_static",
+      "values": {
+        "ko": "주의 및 추가 확인 항목을 우선 표시합니다."
+      },
+      "machineTranslations": {
+        "ko": "주의 및 추가 확인 항목을 우선 표시합니다.",
+        "en": "Prioritizes warnings and additional confirmation items.",
+        "vi": "Ưu tiên các cảnh báo và các mục xác nhận bổ sung.",
+        "th": "จัดลำดับความสำคัญคำเตือนและรายการยืนยันเพิ่มเติม",
+        "id": "Memprioritaskan peringatan dan item konfirmasi tambahan.",
+        "mn": "Анхааруулга болон нэмэлт баталгаажуулах зүйлсийг эрэмбэлдэг.",
+        "km": "ផ្តល់អាទិភាពដល់ការព្រមាន និងធាតុបញ្ជាក់បន្ថែម។"
+      }
+    },
+    {
+      "key": "review.normalHeading",
+      "sources": [],
+      "kind": "ui_static",
+      "values": {
+        "ko": "특이사항 없음 {count}개"
+      },
+      "machineTranslations": {
+        "ko": "특이사항 없음 {count}개",
+        "en": "No special information {count}",
+        "vi": "Không có thông tin đặc biệt {count}",
+        "th": "ไม่มีข้อมูลพิเศษ {count}",
+        "id": "Tidak ada informasi khusus {count}",
+        "mn": "Тусгай мэдээлэл байхгүй {count}",
+        "km": "មិនមានព័ត៌មានពិសេស {count}"
+      }
+    },
+    {
+      "key": "review.showNormal",
+      "sources": [],
+      "kind": "ui_static",
+      "values": {
+        "ko": "내용 보기"
+      },
+      "machineTranslations": {
+        "ko": "내용 보기",
+        "en": "View content",
+        "vi": "Xem nội dung",
+        "th": "ดูเนื้อหา",
+        "id": "Lihat konten",
+        "mn": "Агуулгыг үзэх",
+        "km": "មើលមាតិកា"
+      }
+    },
+    {
+      "key": "review.hideNormal",
+      "sources": [],
+      "kind": "ui_static",
+      "values": {
+        "ko": "접기"
+      },
+      "machineTranslations": {
+        "ko": "접기",
+        "en": "fold",
+        "vi": "gấp lại",
+        "th": "พับ",
+        "id": "lipat",
+        "mn": "нугалах",
+        "km": "បត់"
+      }
+    },
+    {
+      "key": "review.actionHeading",
+      "sources": [],
+      "kind": "ui_static",
+      "values": {
+        "ko": "지금 할 일"
+      },
+      "machineTranslations": {
+        "ko": "지금 할 일",
+        "en": "What to do now",
+        "vi": "Phải làm gì bây giờ",
+        "th": "จะทำอย่างไรตอนนี้",
+        "id": "Apa yang harus dilakukan sekarang",
+        "mn": "Одоо яах вэ",
+        "km": "អ្វីដែលត្រូវធ្វើឥឡូវនេះ"
+      }
+    },
+    {
+      "key": "review.actionFallback",
+      "sources": [],
+      "kind": "ui_static",
+      "values": {
+        "ko": "분석 결과를 보관하고 궁금한 내용을 고용주 또는 상담기관에 확인하세요."
+      },
+      "machineTranslations": {
+        "ko": "분석 결과를 보관하고 궁금한 내용을 고용주 또는 상담기관에 확인하세요.",
+        "en": "Keep the analysis results and check with your employer or consulting agency if you have any questions.",
+        "vi": "Hãy giữ lại kết quả phân tích và kiểm tra với người sử dụng lao động hoặc cơ quan tư vấn nếu bạn có bất kỳ thắc mắc nào.",
+        "th": "เก็บผลการวิเคราะห์ไว้และตรวจสอบกับนายจ้างหรือหน่วยงานที่ปรึกษาของคุณหากคุณมีคำถามใดๆ",
+        "id": "Simpan hasil analisis dan tanyakan kepada perusahaan atau agen konsultan Anda jika Anda memiliki pertanyaan.",
+        "mn": "Шинжилгээний үр дүнг хадгалж, хэрэв танд асуулт байвал ажил олгогч эсвэл зөвлөх агентлагаасаа асуугаарай.",
+        "km": "រក្សាលទ្ធផលនៃការវិភាគ និងពិនិត្យជាមួយនិយោជក ឬទីភ្នាក់ងារប្រឹក្សាយោបល់របស់អ្នក ប្រសិនបើអ្នកមានសំណួរណាមួយ។"
       }
     },
     {
@@ -2168,6 +2440,40 @@
       }
     },
     {
+      "key": "complaint.previewAria",
+      "sources": [],
+      "kind": "ui_static",
+      "values": {
+        "ko": "진정서 작성 내용 미리보기"
+      },
+      "machineTranslations": {
+        "ko": "진정서 작성 내용 미리보기",
+        "en": "Preview the contents of the petition",
+        "vi": "Xem trước nội dung của đơn thỉnh nguyện",
+        "th": "ดูตัวอย่างเนื้อหาคำร้อง",
+        "id": "Pratinjau isi petisi",
+        "mn": "Өргөдлийн агуулгыг урьдчилан харах",
+        "km": "មើលមាតិកានៃញត្តិជាមុន"
+      }
+    },
+    {
+      "key": "complaint.previewNotice",
+      "sources": [],
+      "kind": "ui_static",
+      "values": {
+        "ko": "화면 미리보기입니다. 실제 제출 파일은 내려받은 HWPX를 확인해 주세요."
+      },
+      "machineTranslations": {
+        "ko": "화면 미리보기입니다. 실제 제출 파일은 내려받은 HWPX를 확인해 주세요.",
+        "en": "This is a screen preview. Please check the downloaded HWPX for the actual submission file.",
+        "vi": "Đây là một bản xem trước màn hình. Vui lòng kiểm tra HWPX đã tải xuống để biết tệp gửi thực tế.",
+        "th": "นี่คือการแสดงตัวอย่างหน้าจอ โปรดตรวจสอบ HWPX ที่ดาวน์โหลดมาเพื่อดูไฟล์การส่งจริง",
+        "id": "Ini adalah pratinjau layar. Silakan periksa HWPX yang diunduh untuk file pengiriman sebenarnya.",
+        "mn": "Энэ бол дэлгэцийн урьдчилан харах явдал юм. Татаж авсан HWPX-д илгээсэн бодит файлыг шалгана уу.",
+        "km": "នេះគឺជាការមើលអេក្រង់ជាមុន។ សូមពិនិត្យមើល HWPX ដែលបានទាញយកសម្រាប់ឯកសារដាក់ស្នើពិតប្រាកដ។"
+      }
+    },
+    {
       "key": "complaint.review",
       "sources": [],
       "kind": "ui_static",
@@ -2318,6 +2624,57 @@
         "id": "kontrak lisan",
         "mn": "аман гэрээ",
         "km": "កិច្ចសន្យាផ្ទាល់មាត់"
+      }
+    },
+    {
+      "key": "complaintPreview.recipientPlaceholder",
+      "sources": [],
+      "kind": "ui_static",
+      "values": {
+        "ko": "관할 노동관서"
+      },
+      "machineTranslations": {
+        "ko": "관할 노동관서",
+        "en": "Competent labor office",
+        "vi": "Văn phòng lao động có thẩm quyền",
+        "th": "สำนักงานแรงงานที่มีความสามารถ",
+        "id": "Kantor tenaga kerja yang kompeten",
+        "mn": "Чадварлаг хөдөлмөрийн алба",
+        "km": "ការិយាល័យការងារមានសមត្ថកិច្ច"
+      }
+    },
+    {
+      "key": "complaintPreview.formDescription",
+      "sources": [],
+      "kind": "ui_static",
+      "values": {
+        "ko": "근로관계에서 발생한 사항에 대한 진정 내용"
+      },
+      "machineTranslations": {
+        "ko": "근로관계에서 발생한 사항에 대한 진정 내용",
+        "en": "Complaints regarding matters arising from employment relations",
+        "vi": "Khiếu nại các vấn đề phát sinh từ quan hệ lao động",
+        "th": "การร้องเรียนเกี่ยวกับเรื่องที่เกิดจากความสัมพันธ์ในการจ้างงาน",
+        "id": "Pengaduan mengenai hal-hal yang timbul dalam hubungan kerja",
+        "mn": "Хөдөлмөрийн харилцаанаас үүссэн асуудлаар гомдол гаргах",
+        "km": "ពាក្យបណ្តឹងទាក់ទងនឹងបញ្ហាដែលកើតឡើងពីទំនាក់ទំនងការងារ"
+      }
+    },
+    {
+      "key": "complaintPreview.submissionRecipient",
+      "sources": [],
+      "kind": "ui_static",
+      "values": {
+        "ko": "제출처"
+      },
+      "machineTranslations": {
+        "ko": "제출처",
+        "en": "Submit to",
+        "vi": "Gửi tới",
+        "th": "ส่งไปที่",
+        "id": "Kirim ke",
+        "mn": "-д илгээнэ үү",
+        "km": "ដាក់ស្នើទៅ"
       }
     },
     {
@@ -2665,16 +3022,16 @@
       "sources": [],
       "kind": "ui_static",
       "values": {
-        "ko": "확인했습니다"
+        "ko": "확인하고 종료하기"
       },
       "machineTranslations": {
-        "ko": "확인했습니다",
-        "en": "Confirmed",
-        "vi": "Đã xác nhận",
-        "th": "ยืนยันแล้ว",
-        "id": "Dikonfirmasi",
-        "mn": "Батлагдсан",
-        "km": "បញ្ជាក់"
+        "ko": "확인하고 종료하기",
+        "en": "Confirm and finish",
+        "vi": "Xác nhận và kết thúc",
+        "th": "ยืนยันและสิ้นสุด",
+        "id": "Konfirmasi dan selesai",
+        "mn": "Баталгаажуулаад дуусгах",
+        "km": "បញ្ជាក់ និងបញ្ចប់"
       }
     },
     {

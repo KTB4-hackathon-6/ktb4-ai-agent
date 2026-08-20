@@ -1,11 +1,9 @@
+import { useState } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
 import { useTranslation } from 'react-i18next'
 import type { ContractAnalysisResponse } from '../../api/contracts'
-import {
-  evidenceToKeep,
-  judgmentLimits,
-} from '../../config/chatbot'
-import { reviewCards, reviewCounts } from '../../review/presentation'
+import { evidenceToKeep } from '../../config/chatbot'
+import { groupReviewCards, reviewCards, reviewCounts, type ReviewCard } from '../../review/presentation'
 import StageMascot from './StageMascot'
 
 /**
@@ -15,9 +13,7 @@ import StageMascot from './StageMascot'
 type ReviewPanelProps = {
   result: ContractAnalysisResponse | null
   openItem: string | null
-  checkedEvidence: string[]
   onToggleItem: (itemId: string | null) => void
-  onToggleEvidence: (id: string) => void
   onStartDraft: () => void
   onSkipToAgency: () => void
 }
@@ -31,16 +27,63 @@ const panelMotion = {
 function ReviewPanel({
   result,
   openItem,
-  checkedEvidence,
   onToggleItem,
-  onToggleEvidence,
   onStartDraft,
   onSkipToAgency,
 }: ReviewPanelProps) {
   const { t } = useTranslation()
   const cards = result ? reviewCards(result) : []
   const counts = reviewCounts(cards)
+  const groups = groupReviewCards(cards)
   const attentionCount = counts.check + counts.warn
+  const [showNormal, setShowNormal] = useState(false)
+
+  const renderCard = (card: ReviewCard) => {
+    const open = openItem === card.id
+    return (
+      <motion.div className={`review-item ${card.status}`} key={card.id} layout>
+        <button
+          className="review-item-head"
+          type="button"
+          aria-expanded={open}
+          onClick={() => onToggleItem(open ? null : card.id)}
+        >
+          <span className={`status-pill ${card.status}`}>{t(`review.status.${card.status}`)}</span>
+          <span className="review-item-title">
+            <b>{card.title}</b>
+            <small>{card.description}</small>
+          </span>
+          <motion.span className="chevron" animate={{ rotate: open ? 180 : 0 }} transition={{ duration: 0.2 }} aria-hidden="true">⌄</motion.span>
+        </button>
+        <AnimatePresence initial={false}>
+          {open && (
+            <motion.dl
+              className="review-item-body"
+              initial={{ height: 0, opacity: 0 }}
+              animate={{ height: 'auto', opacity: 1 }}
+              exit={{ height: 0, opacity: 0 }}
+              transition={{ duration: 0.2 }}
+            >
+              <dt>{t('review.source.label')}</dt>
+              <dd>{t(`review.source.${card.source}`)}</dd>
+              {card.relatedDocuments.length > 0 && (
+                <>
+                  <dt>{t('review.relatedDocuments')}</dt>
+                  <dd>{card.relatedDocuments.join(' · ')}</dd>
+                </>
+              )}
+              {card.legalBasis && (
+                <>
+                  <dt>{t('review.legalBasis')}</dt>
+                  <dd>{card.legalBasis}</dd>
+                </>
+              )}
+            </motion.dl>
+          )}
+        </AnimatePresence>
+      </motion.div>
+    )
+  }
 
   return (
     <motion.section className="panel review-panel" {...panelMotion}>
@@ -50,9 +93,6 @@ function ReviewPanel({
           <div>
             <span className="panel-eyebrow">{t('review.eyebrow')}</span>
             <h2>{attentionCount > 0 ? t('review.attentionCount', { count: attentionCount }) : t('review.noAttention')}</h2>
-            <p className="panel-lead review-summary">
-              {result?.analysis.summary || result?.answer || t('review.summaryFallback')}
-            </p>
           </div>
         </div>
         <ul className="count-badges">
@@ -62,100 +102,67 @@ function ReviewPanel({
         </ul>
       </header>
 
-      <div className="review-items">
-        {cards.map((card) => {
-          const open = openItem === card.id
-          return (
-            <motion.div className={`review-item ${card.status}`} key={card.id} layout>
+      <div className="review-layout">
+        <section className="review-findings" aria-labelledby="review-findings-heading">
+          <header className="review-section-head">
+            <div>
+              <h3 id="review-findings-heading">{t('review.attentionHeading')}</h3>
+              <p>{t('review.attentionDescription')}</p>
+            </div>
+            <strong>{attentionCount}</strong>
+          </header>
+
+          <div className="review-items">
+            {groups.attention.map(renderCard)}
+            {groups.attention.length === 0 && <p className="ask-done">{t('review.noItems')}</p>}
+          </div>
+
+          {groups.normal.length > 0 && (
+            <section className="review-normal-group">
               <button
-                className="review-item-head"
+                className="review-normal-toggle"
                 type="button"
-                aria-expanded={open}
-                onClick={() => onToggleItem(open ? null : card.id)}
+                aria-expanded={showNormal}
+                onClick={() => setShowNormal((value) => !value)}
               >
-                <span className={`status-pill ${card.status}`}>{t(`review.status.${card.status}`)}</span>
-                <span className="review-item-title">
-                  <b>{card.title}</b>
-                  <small>{card.description}</small>
-                </span>
-                <motion.span className="chevron" animate={{ rotate: open ? 180 : 0 }} transition={{ duration: 0.2 }} aria-hidden="true">⌄</motion.span>
+                <span>{t('review.normalHeading', { count: groups.normal.length })}</span>
+                <b>{showNormal ? t('review.hideNormal') : t('review.showNormal')}</b>
               </button>
               <AnimatePresence initial={false}>
-                {open && (
-                  <motion.dl
-                    className="review-item-body"
+                {showNormal && (
+                  <motion.div
+                    className="review-items review-normal-items"
                     initial={{ height: 0, opacity: 0 }}
                     animate={{ height: 'auto', opacity: 1 }}
                     exit={{ height: 0, opacity: 0 }}
-                    transition={{ duration: 0.2 }}
                   >
-                    <dt>{t('review.source.label')}</dt>
-                    <dd>{t(`review.source.${card.source}`)}</dd>
-                    {card.relatedDocuments.length > 0 && (
-                      <>
-                        <dt>{t('review.relatedDocuments')}</dt>
-                        <dd>{card.relatedDocuments.join(' · ')}</dd>
-                      </>
-                    )}
-                    {card.legalBasis && (
-                      <>
-                        <dt>{t('review.legalBasis')}</dt>
-                        <dd>{card.legalBasis}</dd>
-                      </>
-                    )}
-                  </motion.dl>
+                    {groups.normal.map(renderCard)}
+                  </motion.div>
                 )}
               </AnimatePresence>
-            </motion.div>
-          )
-        })}
-        {cards.length === 0 && (
-          <p className="ask-done">{t('review.noItems')}</p>
-        )}
-      </div>
+            </section>
+          )}
+        </section>
 
-      {result && result.analysis.nextActions.length > 0 && (
-        <div className="letter-block">
-          <h3>{t('review.nextActions')}</h3>
-          <ol className="next-actions">
-            {result.analysis.nextActions.map((action, index) => <li key={`${action}-${index}`}>{action}</li>)}
-          </ol>
-        </div>
-      )}
+        <aside className="review-action-rail">
+          <section className="review-action-block primary">
+            <h3>{t('review.actionHeading')}</h3>
+            {result && result.analysis.nextActions.length > 0 ? (
+              <ol className="next-actions">
+                {result.analysis.nextActions.map((action, index) => <li key={`${action}-${index}`}>{action}</li>)}
+              </ol>
+            ) : <p>{t('review.actionFallback')}</p>}
+          </section>
 
-      <div className="evidence-block">
-        <h3>{t('review.evidence.heading')}</h3>
-        <ul className="evidence-list">
-          {evidenceToKeep.map((item) => {
-            const checked = checkedEvidence.includes(item)
-            return (
-              <li key={item}>
-                <button className="evidence-item" type="button" aria-pressed={checked} onClick={() => onToggleEvidence(item)}>
-                  <span className={checked ? 'evidence-check checked' : 'evidence-check'} aria-hidden="true">{checked ? '✓' : ''}</span>
-                  <span>
-                    {t(`review.evidence.${item}`)}
-                  </span>
-                </button>
-              </li>
-            )
-          })}
-        </ul>
-      </div>
-
-      {result && result.diagnosis.unverified_fields.length > 0 && (
-        <div className="agent-block">
-          <h3>{t('review.unverified')}</h3>
-          <ul className="limits-list">
-            {result.diagnosis.unverified_fields.map((field) => <li key={field}>{field}</li>)}
-          </ul>
-        </div>
-      )}
-
-      <div className="limits-block">
-        <h3>{t('review.limits.heading')}</h3>
-        <ul className="limits-list">
-          {judgmentLimits.map((limit) => <li key={limit}>{t(`review.limits.${limit}`)}</li>)}
-        </ul>
+          <section className="review-action-block">
+            <h3>{t('review.evidence.heading')}</h3>
+            <ul className="evidence-list">
+              {evidenceToKeep.map((item) => (
+                <li className="evidence-item" key={item}>{t(`review.evidence.${item}`)}</li>
+              ))}
+            </ul>
+          </section>
+        </aside>
       </div>
 
       <div className="panel-actions">

@@ -9,7 +9,6 @@ import {
   type ContractAnalysisResponse,
   type DocumentPreparationResponse,
 } from './api/contracts'
-import ChatComposer from './components/chatbot/ChatComposer'
 import ChatHeader from './components/chatbot/ChatHeader'
 import ContractFlow from './components/chatbot/ContractFlow'
 import { normalizeLanguage } from './i18n'
@@ -29,7 +28,6 @@ function App() {
   const [documentError, setDocumentError] = useState<string | null>(null)
   const [documentFiles, setDocumentFiles] = useState<File[]>([])
   const [openItem, setOpenItem] = useState<string | null>(null)
-  const [checkedEvidence, setCheckedEvidence] = useState<string[]>([])
   const [complaintMessages, setComplaintMessages] = useState<ComplaintChatMessage[]>([])
   const [draftDownloaded, setDraftDownloaded] = useState(false)
   const [freeText, setFreeText] = useState('')
@@ -102,7 +100,6 @@ function App() {
       }])
       const ready = preparation.documentDrafts[0]?.status === 'READY'
       setDocumentState(ready ? 'done' : 'idle')
-      if (ready) setFlowState('DRAFT_READY')
     } catch (error) {
       if (error instanceof DOMException && error.name === 'AbortError') return
       setDocumentError(error instanceof ContractApiError ? error.message : t('app.complaint.createFailed'))
@@ -141,7 +138,6 @@ function App() {
     setDocumentError(null)
     setDocumentFiles([])
     setOpenItem(null)
-    setCheckedEvidence([])
     setComplaintMessages([])
     setDraftDownloaded(false)
     setFreeText('')
@@ -170,31 +166,25 @@ function App() {
           uploadError={uploadError}
           documentFiles={documentFiles}
           openItem={openItem}
-          checkedEvidence={checkedEvidence}
           documentPreparation={documentPreparation}
           complaintMessages={complaintMessages}
           draftDownloaded={draftDownloaded}
           documentState={documentState}
           documentError={documentError}
+          chatValue={freeText}
           issue={detectReviewIssue(contractResult)}
           onDocumentFilesChange={setDocumentFiles}
           onStartAnalysis={runContractAnalysis}
           onToggleItem={setOpenItem}
-          onToggleEvidence={(id) => setCheckedEvidence((items) => items.includes(id) ? items.filter((item) => item !== id) : [...items, id])}
           onStartDraft={startComplaintDraft}
           onSubmitComplaint={(content) => void runComplaintTurn(content, true)}
+          onChatChange={setFreeText}
+          onChatSubmit={sendFreeText}
           onGoTo={setFlowState}
           onDownloadDraft={downloadDraft}
           onRestart={restart}
         />
 
-        <ChatComposer
-          state={flowState}
-          value={freeText}
-          busy={flowState === 'DRAFTING' && documentState === 'processing'}
-          onChange={setFreeText}
-          onSubmit={sendFreeText}
-        />
       </div>
     </main>
   )

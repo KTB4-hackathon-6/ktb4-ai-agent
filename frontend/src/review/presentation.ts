@@ -52,6 +52,16 @@ export function reviewCounts(cards: ReviewCard[]): Record<ReviewStatus, number> 
   )
 }
 
+export function groupReviewCards(cards: ReviewCard[]): { attention: ReviewCard[]; normal: ReviewCard[] } {
+  return {
+    attention: [
+      ...cards.filter((card) => card.status === 'warn'),
+      ...cards.filter((card) => card.status === 'check'),
+    ],
+    normal: cards.filter((card) => card.status === 'ok'),
+  }
+}
+
 export function detectReviewIssue(result: ContractAnalysisResponse | null): ReviewIssue {
   if (!result) return 'wage'
   const text = [

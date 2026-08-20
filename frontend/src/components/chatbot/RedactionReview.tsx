@@ -110,39 +110,19 @@ function RedactionReview({
         <strong>{t('redaction.confirmedCount', { confirmed: confirmedCount, total: pages.length })}</strong>
       </header>
 
-      <div className="redaction-toolbar">
-        <button
-          className="ghost-button"
-          type="button"
-          disabled={pageIndex === 0 || exporting}
-          onClick={() => setPageIndex((current) => current - 1)}
-        >
-          {t('redaction.previous')}
-        </button>
-        <strong>{pageLabel}</strong>
-        <button
-          className="ghost-button"
-          type="button"
-          disabled={pageIndex === pages.length - 1 || exporting}
-          onClick={() => setPageIndex((current) => current + 1)}
-        >
-          {t('redaction.next')}
-        </button>
-        <label className="zoom-control">
-          {t('redaction.zoom')}
-          <input
-            type="range"
-            min="0.75"
-            max="1.75"
-            step="0.25"
-            value={zoom}
-            onChange={(event) => setZoom(Number(event.target.value))}
-          />
-        </label>
-      </div>
-
       <div className="redaction-workspace">
         <div className="redaction-document-scroll">
+          <label className="zoom-control">
+            {t('redaction.zoom')}
+            <input
+              type="range"
+              min="0.75"
+              max="1.75"
+              step="0.25"
+              value={zoom}
+              onChange={(event) => setZoom(Number(event.target.value))}
+            />
+          </label>
           <div
             className="redaction-page"
             style={{ width: `${zoom * 100}%` }}
@@ -186,6 +166,25 @@ function RedactionReview({
         </div>
 
         <aside className="redaction-sidebar">
+          <nav className="redaction-page-navigation" aria-label={t('redaction.pageNavigation')}>
+            <button
+              className="ghost-button"
+              type="button"
+              disabled={pageIndex === 0 || exporting}
+              onClick={() => setPageIndex((current) => current - 1)}
+            >
+              {t('redaction.previous')}
+            </button>
+            <strong>{pageLabel}</strong>
+            <button
+              className="ghost-button"
+              type="button"
+              disabled={pageIndex === pages.length - 1 || exporting}
+              onClick={() => setPageIndex((current) => current + 1)}
+            >
+              {t('redaction.next')}
+            </button>
+          </nav>
           <h3>{t('redaction.regions.heading')}</h3>
           <p>{t('redaction.regions.description')}</p>
           <button className="ghost-button" type="button" onClick={addKeyboardRegion} disabled={exporting}>
