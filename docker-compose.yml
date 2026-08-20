@@ -54,6 +54,8 @@ services:
     image: caddy:2
     container_name: hackathon-caddy
     restart: unless-stopped
+    environment:
+      ACME_EMAIL: ${ACME_EMAIL}
     depends_on:
       - frontend
     ports:
