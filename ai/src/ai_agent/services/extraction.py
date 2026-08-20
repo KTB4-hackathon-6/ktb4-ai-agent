@@ -103,7 +103,7 @@ class _LLMExtraction(BaseModel):
 def _get_model():
     settings = get_settings()
     return ChatDeepSeek(
-        model=settings.chat_model,
+        model=settings.extraction_model,
         api_key=settings.deepseek_api_key or None,
         extra_body={"thinking": {"type": "disabled"}},
     ).with_structured_output(_LLMExtraction)

@@ -36,7 +36,10 @@ public record DocumentAnalysisRequest(
 
 	public record LegalCheck(
 		CheckId checkId,
-		CheckResult result
+		CheckResult result,
+		String lawName,
+		String article,
+		String message
 	) {
 	}
 

@@ -40,6 +40,9 @@ class Settings(BaseSettings):
     # Chat
     deepseek_api_key: str = ""
     chat_model: str = "deepseek-v4-flash"
+    # OCR 구조화 추출 전용 경량 모델. 계산·판단 없이 "원문 그대로 읽기"만 하므로
+    # reasoning agent(chat_model)보다 가볍고 저렴한 모델을 쓴다.
+    extraction_model: str = "deepseek-chat"
     checkpoint_db_path: Path = ROOT_ENV.parent / "ai" / "checkpoints.sqlite3"
 
     # Observability

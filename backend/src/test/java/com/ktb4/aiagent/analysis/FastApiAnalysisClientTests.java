@@ -120,7 +120,10 @@ class FastApiAnalysisClientTests {
 				  }],
 				  "legalChecks": [{
 				    "checkId": "BELOW_MINIMUM_WAGE",
-				    "result": "DETECTED"
+				    "result": "DETECTED",
+				    "lawName": "최저임금법",
+				    "article": "제6조",
+				    "message": "시급이 최저임금보다 낮습니다."
 				  }]
 				}
 				"""))
@@ -158,7 +161,10 @@ class FastApiAnalysisClientTests {
 			)),
 			List.of(new DocumentAnalysisRequest.LegalCheck(
 				DocumentAnalysisRequest.CheckId.BELOW_MINIMUM_WAGE,
-				DocumentAnalysisRequest.CheckResult.DETECTED
+				DocumentAnalysisRequest.CheckResult.DETECTED,
+				"최저임금법",
+				"제6조",
+				"시급이 최저임금보다 낮습니다."
 			))
 		);
 

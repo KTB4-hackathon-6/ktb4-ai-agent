@@ -122,7 +122,10 @@ public class ContractAnalysisService {
 			: DocumentAnalysisRequest.CheckResult.REVIEW_REQUIRED;
 		return new DocumentAnalysisRequest.LegalCheck(
 			DocumentAnalysisRequest.CheckId.fromRuleId(violation.ruleId()),
-			result
+			result,
+			violation.lawName(),
+			violation.article(),
+			violation.message()
 		);
 	}
 }

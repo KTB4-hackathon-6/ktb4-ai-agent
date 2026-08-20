@@ -1,11 +1,16 @@
 import json
 
+from fastapi import FastAPI
 from fastapi.testclient import TestClient
 
 from ai_agent.api.routes import contracts as contracts_route
-from ai_agent.main import app
 from ai_agent.schemas.extraction import ExtractionResult
 from ai_agent.schemas.rules import ContractFacts, IndustryCategory
+
+# main.app에는 이 라우터가 등록돼 있지 않다(OCR·룰 판정은 Java 백엔드가 담당).
+# 라우터 자체의 동작은 여전히 유효하므로 전용 앱으로 테스트한다.
+app = FastAPI()
+app.include_router(contracts_route.router)
 
 
 def _violating_facts() -> ContractFacts:

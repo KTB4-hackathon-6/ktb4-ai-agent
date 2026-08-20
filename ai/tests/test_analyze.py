@@ -29,6 +29,9 @@ REQUEST = {
         {
             "checkId": "ACCOMMODATION_DEDUCTION_HIGH",
             "result": "REVIEW_REQUIRED",
+            "lawName": "외국인근로자의 고용 등에 관한 법률",
+            "article": "숙식비 공제지침",
+            "message": "숙박비 공제가 월급 대비 과다하지 않은지 확인이 필요합니다.",
         }
     ],
 }

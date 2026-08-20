@@ -46,10 +46,34 @@ pendingFieldId는 서버가 직전 턴에 질문한 필드다. userMessage가 �
 근로자 성명은 complainant.fullName, 사업주나 대표자 성명은 respondent.fullName, 사업체명은
 respondent.workplaceName, 실제 근무장소는 respondent.actualWorkplaceAddress, 근로계약 시작일은
 complaint.employmentStartDate, 업무 내용은 complaint.jobDescription에 넣는다. 제공된 문서가
-서면 근로계약서임이 명확하면 complaint.contractMethod는 WRITTEN이다. 문제 내용은 detectedIssues와
-reviewResult에 명시된 사실을 complaint.details에 반영한다. 출처에 없는 주소, 연락처, 관할 관서는
-추측하지 않는다. 관할 관서가 userMessage나 reviewResult에 명시되면
-submission.recipientLaborOfficeName에 반영하되, 사용자에게 관할 관서를 질문하지 않는다.
+서면 근로계약서임이 명확하면 complaint.contractMethod는 WRITTEN이다.
+
+[진정 내용(complaint.details)은 항상 모델이 직접 쓴다]
+pendingFieldId가 complaint.details이면, 이번 userMessage에 새 정보가 없더라도 detectedIssues나
+reviewResult에 이미 확인된 사실이 하나라도 있으면 그 턴에 반드시 complaint.details를 합성해
+form_updates로 반환한다. "진정 내용을 알려주세요", "어떤 문제인지 적어주세요"처럼 완성된 문장을
+사용자에게 대신 써 달라고 요청하지 않는다 — 사용자는 진정서 양식을 모르는 외국인 근로자이며, 내용을
+작성하는 것은 모델의 역할이다. detectedIssues와 reviewResult에 확인된 사실이 전혀 없을 때만
+예외로, 완성된 문장이 아니라 "언제부터 얼마가 안 나왔나요"처럼 구체적인 사실(날짜·금액·경위)을
+되묻는다. 그렇게 확인된 사실은 다음 턴에 그대로 두지 않고 아래 순서에 따라 반드시 모델이
+complaint.details로 합성해 반환한다.
+
+[진정 내용(complaint.details) 작성 순서]
+complaint.details는 아래 세 부분을 이 순서로 문단을 나누어 작성하며, 실제 진정서로 제출 가능한
+수준으로 구체적으로 쓴다.
+1. 사실관계: detectedIssues와 reviewResult에 명시된 사실을 기간(언제부터 언제까지, 몇 개월간)과
+   금액을 포함해 적는다. "문제가 있습니다" 같은 요약이 아니라 계약서·명세서·사용자 진술의 값을
+   그대로 대조해 적는다.
+2. 근거 법령: 앞의 각 사실과 관련된 legalChecks 항목 중 detectedIssues[].related_check_ids가
+   가리키는 항목을 찾아 그 lawName과 article을 그대로 인용한다("이는 {lawName} {article} 위반에
+   해당합니다"). law 이름과 조항을 임의로 만들어내지 않으며, 대응하는 legalChecks 항목이 없는
+   사실에는 법령을 인용하지 않고 사실관계로만 남긴다.
+3. 진정 취지: 마지막 문단에 피진정인에 대한 요구를 명시한다("피진정인은 진정인에게 미지급 임금 등을
+   즉시 지급하고 위 위반사항을 시정하여 주시기 바랍니다"에 해당하는 문장). complaint.unpaidWagesTotal이
+   채워져 있으면 그 금액과 일치하는 숫자를 언급한다.
+
+출처에 없는 주소, 연락처, 관할 관서는 추측하지 않는다. 관할 관서가 userMessage나 reviewResult에
+명시되면 submission.recipientLaborOfficeName에 반영하되, 사용자에게 관할 관서를 질문하지 않는다.
 
 form_updates에는 새로 확인되거나 수정된 값만 {"field_id": "필드 경로", "value": 값} 형태로
 반환한다. 기존 값과 확인되지 않은 필드는 반환하지 않는다. 날짜는 YYYY-MM-DD, 금액은 통화 기호나
@@ -74,6 +98,29 @@ jobDescription, contractMethod, details 순서로 확인한다.
 
 질문 답변과 다음 필드 질문은 서버가 별도로 생성하므로 반환하지 않는다. 렌더링이나 제출을
 완료했다고 말하지 않는다.
+"""
+
+COMPLAINT_DETAILS_COMPOSER_PROMPT = """대한민국 고용노동부 진정서의 '진정 내용'(complaint.details)
+한 항목만 작성한다. 다른 필드나 대화 응답은 만들지 않으며 사용자에게 되묻지 않는다.
+
+detectedIssues, reviewResult, legalChecks, formData에 있는 사실만 사용하고 없는 사실은 추측하지
+않는다. 반드시 한국어로 작성한다.
+
+아래 세 부분을 이 순서로 문단을 나누어 작성하며, 실제 진정서로 제출 가능한 수준으로 구체적으로
+쓴다.
+1. 사실관계: detectedIssues와 reviewResult에 명시된 사실을 기간(언제부터 언제까지, 몇 개월간)과
+   금액을 포함해 적는다. "문제가 있습니다" 같은 요약이 아니라 계약서·명세서·사용자 진술의 값을
+   그대로 대조해 적는다.
+2. 근거 법령: 앞의 각 사실과 관련된 legalChecks 항목 중 detectedIssues[].related_check_ids가
+   가리키는 항목을 찾아 그 lawName과 article을 그대로 인용한다("이는 {lawName} {article} 위반에
+   해당합니다"). law 이름과 조항을 임의로 만들어내지 않으며, 대응하는 legalChecks 항목이 없는
+   사실에는 법령을 인용하지 않고 사실관계로만 남긴다.
+3. 진정 취지: 마지막 문단에 피진정인에 대한 요구를 명시한다("피진정인은 진정인에게 미지급 임금 등을
+   즉시 지급하고 위 위반사항을 시정하여 주시기 바랍니다"에 해당하는 문장). formData의
+   complaint.unpaidWagesTotal이 채워져 있으면 그 금액과 일치하는 숫자를 언급한다.
+
+detectedIssues와 reviewResult 어디에도 다룰 수 있는 사실이 전혀 없을 때만 details를 빈 문자열로
+반환한다. 사실이 하나라도 있으면 짧더라도 반드시 위 구조로 작성해서 반환한다.
 """
 
 DOCUMENT_QUESTION_ANSWER_PROMPT = """대한민국 고용노동부 진정서 작성 중 사용자가 물은 질문에만
