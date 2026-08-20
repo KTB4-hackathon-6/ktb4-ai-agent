@@ -99,12 +99,28 @@ button { -webkit-tap-highlight-color: transparent; }
   white-space: pre-line;
 }
 
+.landing-page-en .landing-copy h1 { font-size: clamp(32px, 3.8vw, 48px); }
+.landing-page-vi .landing-copy h1,
+.landing-page-id .landing-copy h1 { font-size: clamp(30px, 3.5vw, 42px); line-height: 1.18; }
+.landing-page-th .landing-copy h1 { font-size: clamp(30px, 3.5vw, 42px); line-height: 1.22; }
+.landing-page-mn .landing-copy h1 { font-size: clamp(29px, 3.3vw, 40px); line-height: 1.2; }
+.landing-page-km .landing-copy { font-family: "Khmer Sangam MN", "Noto Sans Khmer", "Khmer MN", sans-serif; }
+.landing-page-km .landing-copy h1 { font-size: clamp(28px, 3.2vw, 38px); line-height: 1.3; font-weight: 800; font-synthesis: weight; }
+.landing-page-km .landing-eyebrow { font-weight: 700; }
+
+.landing-inline-logo-wrap {
+  display: inline-flex;
+  align-items: center;
+  height: .82em;
+  margin: 0 .08em;
+  vertical-align: -.08em;
+  white-space: nowrap;
+}
+
 .landing-inline-logo {
   width: auto;
-  height: .76em;
-  display: inline-block;
-  margin: 0 .08em;
-  vertical-align: -.04em;
+  height: 100%;
+  display: block;
   object-fit: contain;
   filter: drop-shadow(0 7px 13px rgba(15,43,98,.16));
 }
@@ -214,7 +230,7 @@ button { -webkit-tap-highlight-color: transparent; }
 
 .brand-row {
   display: grid;
-  grid-template-columns: minmax(128px, 1fr) minmax(0, 900px) minmax(128px, 1fr);
+  grid-template-columns: minmax(172px, 1fr) minmax(0, 840px) minmax(172px, 1fr);
   align-items: center;
   gap: 16px;
   min-height: 44px;
@@ -224,7 +240,7 @@ button { -webkit-tap-highlight-color: transparent; }
 .progress-shell {
   position: relative;
   width: 100%;
-  max-width: 900px;
+  max-width: 840px;
   min-width: 0;
   display: flex;
   align-items: center;

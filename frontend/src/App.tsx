@@ -234,7 +234,7 @@ function App() {
 
   if (showLanding) {
     return (
-      <main className="landing-page">
+      <main className={`landing-page landing-page-${language}`}>
         <ChatHeader
           language={language}
           state={landingStage}
@@ -246,7 +246,7 @@ function App() {
             <p className="landing-eyebrow">{t('landing.eyebrow')}</p>
             <h1 id="landing-title">
               {brandIndex >= 0 ? (
-                <>{landingTitle.slice(0, brandIndex)}<img className="landing-inline-logo" src={illoLogo} alt="ILLO" />{landingTitle.slice(brandIndex + 4)}</>
+                <>{landingTitle.slice(0, brandIndex)}<span className="landing-inline-logo-wrap"><img className="landing-inline-logo" src={illoLogo} alt="ILLO" /></span>{landingTitle.slice(brandIndex + 4)}</>
               ) : landingTitle}
             </h1>
             <p className="landing-description">
