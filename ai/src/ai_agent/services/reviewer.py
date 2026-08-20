@@ -8,10 +8,9 @@ from langchain.agents import create_agent
 from langchain.agents.middleware import (
     ModelCallLimitMiddleware,
     ToolCallLimitMiddleware,
-    wrap_model_call,
 )
 from langchain.agents.structured_output import ToolStrategy
-from langchain_core.messages import HumanMessage
+from langchain_core.messages import HumanMessage, ToolMessage
 from langchain_core.tracers import LangChainTracer
 from langsmith import Client
 from pydantic import BaseModel, Field
@@ -22,39 +21,62 @@ from ai_agent.services.rag.retriever import search_labor_law
 from ai_agent.services.remedy.models import DetectedIssue
 
 SYSTEM_PROMPT = """대한민국에서 일하는 외국인 근로자의 문서를 검토한다.
-사용자 질문을 우선 해결하면서 문서 전체의 중요한 문제도 찾는다.
+사용자 질문을 우선하되 질문이 없으면 문서 전체를 검토한다. 아래 플레이북은 검토 방법이며
+문제 종류를 제한하는 목록이 아니다.
 
-legalChecks는 deterministic validator가 이미 확인한 사실이다. 재계산하거나 반박하지 말고,
-VIOLATION과 POSSIBLE_VIOLATION을 관련 문제에 반영한다. 같은 내용을 중복 문제로 만들지 않는다.
-PASS는 문제가 아니며 UNKNOWN은 확정하지 않는다.
+[사실 먼저 확인하기]
+- legalChecks는 validator가 이미 확인한 사실이다. VIOLATION과 POSSIBLE_VIOLATION은 반영하고,
+  PASS는 문제가 아니며 UNKNOWN은 확정하지 않는다.
+- 계약서, 급여명세서, 사용자 설명에서 같은 항목의 값을 먼저 모은다.
+- 숫자는 기본급, 지급총액, 공제액, 실지급액을 구분하고 출처와 함께 기록한다.
 
-하나의 사실을 여러 법적 표현으로 중복 issue화하지 말고 가장 직접적인 issue_type 하나만 고른다.
-아직 퇴직하지 않은 사람의 퇴직금처럼 미래에 발생할 수 있는 상황은 issue로 만들지 말고 필요한
-경우 next_actions의 주의사항으로만 안내한다. POSSIBLE_VIOLATION은 확정 위반으로 표현하지 않는다.
+[임금 비교]
+- 계약 기본급과 명세서 기본급을 비교한다.
+- 계약의 고정수당이 명세서에서 줄거나 빠졌는지 확인한다.
+- 이미 지급된 수당은 계산을 더 확인할 수 있다는 이유만으로 문제로 만들지 않는다.
 
-문서에서 추가 문제를 발견하면 필요한 경우 search_labor_law로 근거를 확인한다. 검색 근거 없이
-법 위반이라고 확정하지 않는다. 각 issue의 facts에는 구제 Agent가 사용할 문서상 핵심 사실과
-증거 문장을 짧은 문자열 key-value로 담는다. 관련 checkId와 documentId를 반드시 연결한다.
-법령 검색 제한 메시지를 받으면 추가 검색을 시도하지 말고, 현재까지 확보한 근거로 즉시
-DocumentReview를 반환한다. 근거가 부족한 내용은 위반으로 확정하지 않는다.
+[근무시간 비교]
+- 계약시간과 사용자 설명을 비교한다.
+- 급여명세서가 있으면 연장·야간·휴일수당 항목을 함께 확인한다.
+- 급여명세서가 없으면 수당 미지급을 추정하지 않고 next_actions에서 확인을 안내한다.
+- 시간 차이와 수당 누락이 같은 근무 사실에서 나왔다면 하나의 문제 상황으로 묶는다.
+- 실제 휴게시간이 입력에 없으면 하루 총 근로시간이나 초과시간을 계산하지 않는다. 계약보다
+  몇 시 일찍 시작하고 몇 시 늦게 끝나는지만 설명한다.
 
-issue_type은 아래 표에서 가장 가까운 값을 쓴다. 근거가 필요하면 같은 줄의 검색어로
-search_labor_law를 호출한다. 표의 조항 번호는 검색 출발점일 뿐이고 조문 내용을 아는 것이
-아니므로, 검색 결과에 실제로 나온 조문만 근거로 인용한다.
+[공제 비교]
+- 계약의 숙식비와 명세서의 실제 숙식비를 비교한다.
+- 소득세·지방소득세·국민연금·건강보험·고용보험은 계약서에 없다는 이유만으로 문제로
+  만들지 않는다.
+- 계약에 없는 비법정 공제는 사용자의 설명과 legalChecks를 함께 확인한다.
 
-| issue_type | 대표 조항 | 검색어 |
-|---|---|---|
-| MINIMUM_WAGE | 최저임금법 제6조 | 최저임금 미달 지급 최저임금 효력 |
-| UNPAID_WAGE | 근로기준법 제43조·제36조, 임금채권보장법 제7조 | 임금 전액 직접 지급 원칙 |
-| OVERTIME_PREMIUM | 근로기준법 제56조 | 연장근로 야간근로 휴일근로 가산수당 |
-| SEVERANCE_PAY | 근로자퇴직급여 보장법 제8조·제9조 | 퇴직금제도 설정 의무 계속근로기간 |
-| HOUSING_DEDUCTION | 근로기준법 제43조 | 임금 전액 지급 공제 금지 |
-| WORKING_CONDITION_VIOLATION | 근로기준법 제17조·제54조·제55조 | 근로계약 체결 근로조건 서면 명시 |
-| DEPARTURE_INSURANCE | 외국인근로자의 고용 등에 관한 법률 제13조 | 출국만기보험 신탁 가입 의무 |
+[업무와 장소 비교]
+- 계약 업무·근무장소와 사용자의 실제 업무·근무장소 설명을 비교한다.
+- 문서에 없는 정보나 사용자가 말하지 않은 위험을 추정하지 않는다.
 
-검색은 issue 하나당 한 번이면 충분하다. 같은 쟁점을 표현만 바꿔 다시 검색하지 않는다.
-문제가 없다고 판단한 문서는 그 판단을 확인하려고 검색하지 않는다 — 위반이 없다는 것은
-검색으로 증명하는 대상이 아니다. 찾은 문제가 없으면 issues를 비운 채로 바로 반환한다.
+[문제 묶기]
+- finding 하나는 피해자가 겪은 하나의 문제 상황이다. 법률 위반 종류별 목록이 아니다.
+- 같은 금액, 공제, 근무시간, 업무 또는 장소를 근거로 finding을 여러 개 만들지 않는다.
+- 한 사실에 여러 법률이 적용될 수 있으면 하나의 finding 안에서 함께 설명한다.
+- title은 "계약보다 적은 기본급", "계약보다 많은 숙식비 공제"처럼 짧고 쉬운 한국어로 쓴다.
+- 확인하면 좋은 사항과 제출되지 않은 문서로 확인해야 하는 사항은 issue가 아니라 next_actions다.
+
+문서에 없다는 이유로 퇴직금·보험·동의서 미가입이나 미작성을 추정하지 않는다. 계약과 같은
+숙식비, 정상 세금·사회보험, 지급총액과 실지급액의 차이, 정상 합계도 문제가 아니다.
+농축산어업에는 일반 업종의 근로시간·휴일 규정을 기계적으로 확정 적용하지 않는다.
+
+[법적 근거]
+문제 상황을 먼저 찾은 뒤 필요한 경우에만 search_labor_law로 근거를 확인한다. 검색으로 새 문제를
+만들지 않는다. 검색어는 상황에 맞게 정하며 같은 문제를 표현만 바꿔 반복 검색하지 않는다.
+검색 근거 없이 법 위반이라고 확정하지 않는다. 검색 제한 메시지를 받으면 현재 근거로 즉시
+DocumentReview를 반환한다. facts에는 문서상 핵심 사실과 증거를 짧게 담고 관련 ID를 연결한다.
+
+[사용자 답변]
+- 사용자는 한국어가 익숙하지 않은 외국인 근로자다. 쉬운 단어와 짧은 문장을 쓴다.
+- 문제 개수를 직접 쓰지 않고 "검토 결과입니다."로 시작한다.
+- 문제마다 계약서·급여명세서·사용자 설명의 값을 나란히 보여준다.
+- 관련 legalChecks가 VIOLATION인 경우만 확인된 문제라고 한다. 나머지는 문제 가능성 또는
+  추가 확인 필요라고 한다.
+- next_actions는 최대 3개이며 기록 보관을 먼저 안내한다. 긴 법률 문구와 장문 보고서를 피한다.
 """
 
 
@@ -63,16 +85,6 @@ class DocumentReview(BaseModel):
     summary: str
     issues: list[DetectedIssue] = Field(default_factory=list)
     next_actions: list[str] = Field(default_factory=list)
-
-
-@wrap_model_call
-async def stop_search_after_limit(request, handler):
-    search_count = request.state.get("run_tool_call_count", {}).get("search_labor_law", 0)
-    if search_count >= 5:
-        request = request.override(
-            tools=[tool for tool in request.tools if tool.name != "search_labor_law"]
-        )
-    return await handler(request)
 
 
 def deduplicate_issues(issues: list[DetectedIssue]) -> list[DetectedIssue]:
@@ -96,13 +108,24 @@ def get_reviewer_agent():
         get_model(),
         tools=[search_labor_law],
         middleware=[
-            ToolCallLimitMiddleware(
-                tool_name="search_labor_law", run_limit=5, exit_behavior="continue"
-            ),
-            stop_search_after_limit,
+            ToolCallLimitMiddleware(tool_name="search_labor_law", run_limit=5, exit_behavior="end"),
             ModelCallLimitMiddleware(run_limit=7, exit_behavior="error"),
         ],
         system_prompt=SYSTEM_PROMPT,
+        response_format=ToolStrategy(DocumentReview),
+    )
+
+
+@lru_cache
+def get_reviewer_finalizer():
+    from ai_agent.services.agent import get_model
+
+    return create_agent(
+        get_model(),
+        tools=[],
+        middleware=[ModelCallLimitMiddleware(run_limit=3, exit_behavior="error")],
+        system_prompt=SYSTEM_PROMPT
+        + "\n추가 검색 없이 현재 근거로 즉시 DocumentReview를 반환한다.",
         response_format=ToolStrategy(DocumentReview),
     )
 
@@ -141,8 +164,9 @@ async def review_documents(
     }
     tracer = get_langsmith_tracer()
     async with asyncio.timeout(45):
+        input_message = HumanMessage(json.dumps(context, ensure_ascii=False))
         result = await get_reviewer_agent().ainvoke(
-            {"messages": [HumanMessage(json.dumps(context, ensure_ascii=False))]},
+            {"messages": [input_message]},
             {
                 "callbacks": [tracer] if tracer else [],
                 "run_name": "problem-review-agent",
@@ -152,6 +176,29 @@ async def review_documents(
                 },
             },
         )
-    review = result["structured_response"]
+        review = result.get("structured_response")
+        if review is None:
+            evidence = "\n\n".join(
+                str(message.content)
+                for message in result["messages"]
+                if isinstance(message, ToolMessage) and message.status == "success"
+            )
+            result = await get_reviewer_finalizer().ainvoke(
+                {
+                    "messages": [
+                        input_message,
+                        HumanMessage(f"확보한 법령 검색 결과:\n{evidence}"),
+                    ]
+                },
+                {
+                    "callbacks": [tracer] if tracer else [],
+                    "run_name": "problem-review-finalizer",
+                    "metadata": {
+                        "request_id": request_id,
+                        "session_id": session_id,
+                    },
+                },
+            )
+            review = result["structured_response"]
     review.issues = deduplicate_issues(review.issues)
     return review

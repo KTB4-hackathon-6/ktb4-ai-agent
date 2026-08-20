@@ -11,8 +11,7 @@ from langgraph.graph import END, START, StateGraph
 from langgraph.graph.message import add_messages
 from pydantic import BaseModel, Field
 
-from ai_agent.services.rag.retriever import search_labor_law
-from ai_agent.services.remedy.guides import REMEDY_SYSTEM_PROMPT
+from ai_agent.services.remedy.guides import DOCUMENT_AUTHORING_SYSTEM_PROMPT
 
 
 class RemedyTurn(BaseModel):
@@ -34,6 +33,10 @@ class RemedyState(TypedDict, total=False):
     remedy_plan: list[str]
     selected_forms: list[str]
     form_drafts: dict[str, dict[str, str]]
+    documents: list[dict]
+    legal_checks: list[dict]
+    review_result: dict
+    authoring_started: bool
 
 
 @lru_cache
@@ -42,8 +45,8 @@ def get_remedy_agent():
 
     return create_agent(
         get_model(),
-        tools=[search_labor_law],
-        system_prompt=REMEDY_SYSTEM_PROMPT,
+        tools=[],
+        system_prompt=DOCUMENT_AUTHORING_SYSTEM_PROMPT,
         response_format=ToolStrategy(RemedyTurn),
     )
 
@@ -61,6 +64,9 @@ async def run_remedy_agent(state: RemedyState) -> RemedyTurn:
         "currentPlan": state.get("remedy_plan") or [],
         "selectedForms": state.get("selected_forms") or [],
         "formDrafts": state.get("form_drafts") or {},
+        "documents": state.get("documents") or [],
+        "legalChecks": state.get("legal_checks") or [],
+        "reviewResult": state.get("review_result") or {},
         "userMessage": last_user_text(state),
     }
     result = await get_remedy_agent().ainvoke(
@@ -71,12 +77,9 @@ async def run_remedy_agent(state: RemedyState) -> RemedyTurn:
 
 async def remedy(state: RemedyState) -> dict:
     turn = await run_remedy_agent(state)
-    forms = list(dict.fromkeys([*(state.get("selected_forms") or []), *turn.selected_forms]))
+    forms = ["SN001"]
     drafts = {form_id: dict(values) for form_id, values in (state.get("form_drafts") or {}).items()}
-    for form_id, updates in turn.field_updates.items():
-        if form_id not in forms:
-            continue
-        drafts.setdefault(form_id, {}).update(updates)
+    drafts.setdefault("SN001", {}).update(turn.field_updates.get("SN001", {}))
     return {
         "messages": [AIMessage(turn.answer)],
         "remedy_plan": turn.remedy_plan or state.get("remedy_plan") or [],
@@ -94,7 +97,12 @@ async def review(state: RemedyState) -> dict:
 
 
 def route(state: RemedyState) -> str:
-    if state.get("issues") or state.get("remedy_plan") or state.get("form_drafts"):
+    if (
+        state.get("authoring_started")
+        or state.get("issues")
+        or state.get("remedy_plan")
+        or state.get("form_drafts")
+    ):
         return "remedy"
     return "review"
 
