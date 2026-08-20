@@ -41,6 +41,17 @@ class RemedyTurn(BaseModel):
             and not (self.question_answer or "").strip()
         ):
             raise ValueError("QUESTION and MIXED require question_answer")
+        narratives = (
+            self.form_data.complaint.jobDescription,
+            self.form_data.complaint.details,
+        )
+        for value in filter(None, narratives):
+            letters = [char for char in value if char.isalpha()]
+            hangul_count = sum("가" <= char <= "힣" for char in letters)
+            # ponytail: 문자 비율 검사로 충분하다.
+            # 혼합 언어 진정서를 허용할 때 언어 감지기로 교체한다.
+            if not hangul_count or hangul_count * 3 < len(letters):
+                raise ValueError("form_data must be written in Korean")
         return self
 
 
@@ -135,7 +146,8 @@ async def run_remedy_agent(state: RemedyState) -> RemedyTurn:
         "pendingFieldId": pending_field_id,
         "pendingQuestion": (state.get("field_questions") or {}).get(pending_field_id),
         "userMessage": last_user_text(state),
-        "preferredLanguage": state.get("preferred_language") or "ko",
+        "conversationLanguage": state.get("preferred_language") or "ko",
+        "documentLanguage": "ko",
     }
     result = await get_remedy_agent().ainvoke(
         {"messages": [HumanMessage(json.dumps(context, ensure_ascii=False))]}

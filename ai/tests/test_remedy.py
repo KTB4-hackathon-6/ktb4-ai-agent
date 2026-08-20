@@ -4,6 +4,7 @@ from types import SimpleNamespace
 import pytest
 from langchain_core.messages import AIMessage, HumanMessage
 from langgraph.checkpoint.sqlite.aio import AsyncSqliteSaver
+from pydantic import ValidationError
 
 from ai_agent.schemas.document_authoring import (
     ComplainantData,
@@ -239,6 +240,37 @@ async def test_remedy_agent_includes_pending_field_context(monkeypatch) -> None:
 
     assert captured["pendingFieldId"] == "complainant.address"
     assert captured["pendingQuestion"] == "거주지를 알려주세요."
+    assert captured["conversationLanguage"] == "ko"
+    assert captured["documentLanguage"] == "ko"
+    assert "preferredLanguage" not in captured
+
+
+@pytest.mark.parametrize(
+    "complaint",
+    [
+        {"jobDescription": "product packing", "details": "임금을 지급하지 않았습니다."},
+        {
+            "jobDescription": "제품 포장",
+            "details": "Theo 근로기준법, người sử dụng lao động chưa trả lương.",
+        },
+    ],
+)
+def test_remedy_turn_rejects_non_korean_form_narratives(complaint) -> None:
+    with pytest.raises(ValidationError, match="form_data must be written in Korean"):
+        RemedyTurn(
+            intent=AuthoringIntent.FORM_INPUT,
+            form_data=LaborComplaintFormData(complaint=complaint),
+        )
+
+    RemedyTurn(
+        intent=AuthoringIntent.FORM_INPUT,
+        form_data=LaborComplaintFormData(
+            complaint={
+                "jobDescription": "제품 포장",
+                "details": "사업주가 임금을 지급하지 않았습니다.",
+            }
+        ),
+    )
 
 
 @pytest.mark.asyncio
@@ -252,6 +284,10 @@ def test_document_authoring_prompt_uses_integrated_form_contract() -> None:
     assert "LABOR_COMPLAINT_001" not in DOCUMENT_AUTHORING_SYSTEM_PROMPT
     assert "이미 채워진 필드는 다시 묻지 않는다" in DOCUMENT_AUTHORING_SYSTEM_PROMPT
     assert "사용자에게 관할 관서를" in DOCUMENT_AUTHORING_SYSTEM_PROMPT
+    assert "conversationLanguage" in DOCUMENT_AUTHORING_SYSTEM_PROMPT
+    assert "documentLanguage" in DOCUMENT_AUTHORING_SYSTEM_PROMPT
+    assert "form_data의 자연어 문장" in DOCUMENT_AUTHORING_SYSTEM_PROMPT
+    assert "항상 한국어로 번역" in DOCUMENT_AUTHORING_SYSTEM_PROMPT
 
 
 def test_labor_office_is_not_user_required_form_input() -> None:
