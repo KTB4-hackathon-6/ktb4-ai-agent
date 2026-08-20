@@ -92,20 +92,10 @@ LOOKUP_FALLBACK_NOTE = (
     "관할관서를 자동 확인하지 못했습니다. 노동포털 관할관서 찾기에서 실제 근무지 주소로 "
     "확인해 주세요."
 )
-
-
-def document_not_ready(request: GuidanceRequest) -> JSONResponse:
-    response = GuidanceResponse(
-        requestId=request.requestId,
-        sessionId=request.sessionId,
-        status=AnalyzeStatus.FAILED,
-        result=None,
-        error=AnalyzeError(
-            code="DOCUMENT_NOT_READY",
-            message="먼저 /docs에서 진정서 필수 정보를 입력해야 합니다.",
-        ),
-    )
-    return JSONResponse(status_code=400, content=response.model_dump(mode="json"))
+DOCUMENT_FALLBACK_NOTE = (
+    "진정서 작성 전에는 관할관서를 자동 확인할 수 없습니다. 노동포털 관할관서 찾기에서 "
+    "실제 근무지 주소로 확인해 주세요."
+)
 
 
 @router.post(
@@ -126,15 +116,13 @@ async def guide(request: GuidanceRequest) -> GuidanceResponse | JSONResponse:
     try:
         raw_form = await get_document_form(request.sessionId)
     except LookupError:
-        return document_not_ready(request)
+        raw_form = None
 
     data = LaborComplaintFormData(**(raw_form or {}))
-    if data.required_missing_field_ids():
-        return document_not_ready(request)
-
-    office_name = data.submission.recipientLaborOfficeName
-    note = LOOKUP_SUCCESS_NOTE
-    if not office_name:
+    document_ready = not data.required_missing_field_ids()
+    office_name = data.submission.recipientLaborOfficeName if document_ready else None
+    note = LOOKUP_SUCCESS_NOTE if document_ready else DOCUMENT_FALLBACK_NOTE
+    if document_ready and not office_name:
         try:
             office_name = (await resolve_jurisdiction(data)).officeName
         except Exception:
@@ -147,6 +135,8 @@ async def guide(request: GuidanceRequest) -> GuidanceResponse | JSONResponse:
             )
             office_name = FALLBACK_OFFICE_NAME
             note = LOOKUP_FALLBACK_NOTE
+    if not office_name:
+        office_name = FALLBACK_OFFICE_NAME
 
     attachments = data.complaint.attachmentFileNames or ["근로계약서", "임금 지급 내역 등 증빙자료"]
     return GuidanceResponse(
