@@ -2,8 +2,11 @@ import { useEffect, useRef, useState } from 'react'
 import {
   analyzeContract,
   ContractApiError,
+  downloadGeneratedDocument,
+  prepareLaborComplaint,
   type ContractAnalysisJob,
   type ContractAnalysisResponse,
+  type DocumentPreparationResponse,
 } from './api/contracts'
 import ChatComposer from './components/chatbot/ChatComposer'
 import ContractFlow from './components/chatbot/ContractFlow'
@@ -34,6 +37,9 @@ function App() {
   const [contractResult, setContractResult] = useState<ContractAnalysisResponse | null>(null)
   const [contractProgress, setContractProgress] = useState<ContractAnalysisJob | null>(null)
   const [uploadError, setUploadError] = useState<string | null>(null)
+  const [documentPreparation, setDocumentPreparation] = useState<DocumentPreparationResponse | null>(null)
+  const [documentState, setDocumentState] = useState<UploadState>('idle')
+  const [documentError, setDocumentError] = useState<string | null>(null)
   const [openClause, setOpenClause] = useState<string | null>(null)
   const [chatStep, setChatStep] = useState(0)
   const [chatMessages, setChatMessages] = useState<ChatMessageItem[]>([
@@ -48,7 +54,7 @@ function App() {
 
   useEffect(() => {
     chatEndRef.current?.scrollIntoView({ behavior: 'smooth', block: 'end' })
-  }, [uploadState, chatMessages, resultsShown])
+  }, [uploadState, chatMessages, resultsShown, documentPreparation])
 
   useEffect(() => () => analysisAbortRef.current?.abort(), [])
 
@@ -58,6 +64,9 @@ function App() {
     setContractResult(null)
     setContractProgress(null)
     setUploadError(null)
+    setDocumentPreparation(null)
+    setDocumentState('idle')
+    setDocumentError(null)
 
     const abortController = new AbortController()
     analysisAbortRef.current = abortController
@@ -80,6 +89,23 @@ function App() {
     }
   }
 
+  const prepareDocument = async (content: string) => {
+    if (!contractResult) return
+    setDocumentState('processing')
+    setDocumentError(null)
+    try {
+      const result = await prepareLaborComplaint(
+        contractResult.sessionId,
+        content,
+        language,
+      )
+      setDocumentPreparation(result)
+      setDocumentState('done')
+    } catch (error) {
+      setDocumentError(error instanceof ContractApiError ? error.message : '진정서를 만들지 못했습니다. 다시 시도해주세요.')
+      setDocumentState('error')
+    }
+  }
   const pickChatOption = (ko: string, en: string) => {
     const next = chatStep + 1
     setChatMessages((messages) => [
@@ -125,8 +151,14 @@ function App() {
           onShowResults={() => setResultsShown(true)}
           onResultTabChange={setResultTab}
           onToggleEvidence={(id) => setCheckedEvidence((items) => items.includes(id) ? items.filter((item) => item !== id) : [...items, id])}
+          documentPreparation={documentPreparation}
+          documentState={documentState}
+          documentError={documentError}
+          onPrepareDocument={prepareDocument}
+          onDownloadDocument={() => {
+            if (documentPreparation) downloadGeneratedDocument(documentPreparation.document)
+          }}
         />
-
         <div ref={chatEndRef} />
       </section>
 
