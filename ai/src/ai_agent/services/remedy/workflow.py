@@ -352,6 +352,10 @@ async def compose_complaint_details(state: RemedyState) -> str | None:
         "reviewResult": review_result,
         "legalChecks": state.get("legal_checks") or [],
         "formData": (state.get("form_drafts") or {}).get("LABOR_COMPLAINT_001", {}),
+        # 서버가 사실을 되물었을 때 사용자가 대화로 답한 날짜·금액·경위는 여기에만 있다.
+        # recent_conversation은 현재 발화를 빼므로 userMessage를 따로 넘긴다.
+        "conversationHistory": recent_conversation(state),
+        "userMessage": last_user_text(state),
     }
     try:
         result = await invoke_structured(
@@ -366,6 +370,31 @@ async def compose_complaint_details(state: RemedyState) -> str | None:
         return None
     details = (result.details if result else "").strip()
     return details or None
+
+
+async def compose_details_into_form(state: RemedyState, form: dict) -> dict | None:
+    """남은 필수 항목이 진정 내용뿐이면 사용자에게 묻지 않고 그 자리에서 작성해 반영한다.
+
+    작성하지 못했으면 None을 반환해 호출자가 기존 흐름을 그대로 이어가게 한다. 사용자 답변을
+    반영한 폼으로 판단해야 하므로 값이 채워지는 지점마다 호출한다.
+    """
+    # ponytail: 작성에 실패한 턴은 이 함수가 두 번(진입 시점·모델 경로) 돌아 한 턴에 모델을
+    # 최대 세 번 부른다. 그 실패가 잦아지면 턴당 한 번으로 결과를 캐시한다.
+    if LaborComplaintFormData(**form).required_missing_field_ids() != ["complaint.details"]:
+        return None
+    details = await compose_complaint_details(
+        {**state, "form_drafts": {"LABOR_COMPLAINT_001": form}}
+    )
+    if not details:
+        return None
+    try:
+        return apply_form_updates(
+            form, [FormFieldUpdate(field_id="complaint.details", value=details)]
+        ).model_dump(mode="json")
+    except ValueError:
+        # 한국어가 아니거나 4000자를 넘으면 폼을 그대로 두고 사실 확인 질문으로 넘어간다.
+        logger.exception("작성한 진정 내용을 폼에 반영하지 못했습니다.")
+        return None
 
 
 async def remedy(state: RemedyState) -> dict:
@@ -391,23 +420,18 @@ async def remedy(state: RemedyState) -> dict:
 
     missing_ids = LaborComplaintFormData(**existing_form).required_missing_field_ids()
 
-    if missing_ids and missing_ids[0] == "complaint.details":
-        details = await compose_complaint_details(state)
-        if details:
-            form = apply_form_updates(
-                existing_form,
-                [FormFieldUpdate(field_id="complaint.details", value=details)],
-            )
-            return {
-                "form_drafts": {"LABOR_COMPLAINT_001": form.model_dump(mode="json")},
-                "authoring_intent": AuthoringIntent.FORM_INPUT.value,
-                "question_answer": None,
-                "field_questions": {},
-                "input_error": None,
-                "form_initialized": True,
-            }
-        # 사실이 전혀 없으면(문서 진단을 거치지 않은 경우 등) 기존 대화 흐름대로
-        # 사용자에게 사실을 되묻는다.
+    # 문서만으로 다른 필수값이 다 찬 경우. 작성하지 못했으면(문서 진단을 거치지 않은 경우 등)
+    # 아래 기존 대화 흐름으로 내려가 사용자에게 사실을 되묻는다.
+    composed = await compose_details_into_form(state, existing_form)
+    if composed is not None:
+        return {
+            "form_drafts": {"LABOR_COMPLAINT_001": composed},
+            "authoring_intent": AuthoringIntent.FORM_INPUT.value,
+            "question_answer": None,
+            "field_questions": {},
+            "input_error": None,
+            "form_initialized": True,
+        }
 
     if initialized_now and last_user_text(state).strip().casefold() in START_REQUESTS:
         return {
@@ -425,9 +449,11 @@ async def remedy(state: RemedyState) -> dict:
             form = apply_form_updates(
                 existing_form,
                 [FormFieldUpdate(field_id=missing_ids[0], value=value)],
-            )
+            ).model_dump(mode="json")
+            # 이 답변으로 진정 내용만 남았을 수 있어, 묻기 전에 같은 턴에서 작성한다.
+            form = await compose_details_into_form(state, form) or form
             return {
-                "form_drafts": {"LABOR_COMPLAINT_001": form.model_dump(mode="json")},
+                "form_drafts": {"LABOR_COMPLAINT_001": form},
                 "authoring_intent": AuthoringIntent.FORM_INPUT.value,
                 "question_answer": None,
                 "field_questions": {},
@@ -458,17 +484,21 @@ async def remedy(state: RemedyState) -> dict:
             "form_initialized": True,
         }
 
+    # 자유 대화로 여러 필드를 한 번에 채우면 여기서 진정 내용만 남을 수 있다.
+    form_data = form.model_dump(mode="json")
+    form_data = await compose_details_into_form(state, form_data) or form_data
+
     question_answer = None
     if turn.intent in {AuthoringIntent.QUESTION, AuthoringIntent.MIXED}:
         try:
             question_answer = await answer_authoring_question(
-                {**state, "form_drafts": {"LABOR_COMPLAINT_001": form.model_dump(mode="json")}}
+                {**state, "form_drafts": {"LABOR_COMPLAINT_001": form_data}}
             )
         except Exception:
             logger.exception("문서작성 질문 답변 생성에 실패했습니다.")
     return {
         "remedy_plan": turn.remedy_plan or state.get("remedy_plan") or [],
-        "form_drafts": {"LABOR_COMPLAINT_001": form.model_dump(mode="json")},
+        "form_drafts": {"LABOR_COMPLAINT_001": form_data},
         "authoring_intent": turn.intent.value,
         "question_answer": question_answer,
         "field_questions": {},
