@@ -14,22 +14,22 @@ import {
   chatScript,
   languages,
 } from './mocks/chatbot'
-import type { UploadState } from './types/chatbot'
+import type { PreferredLanguage, UploadState } from './types/chatbot'
 import './App.css'
 
-function detectDeviceLanguage(): string {
+function detectDeviceLanguage(): PreferredLanguage {
   if (typeof navigator === 'undefined') return 'en'
   const supported = languages.map((item) => item.code)
   const candidates = navigator.languages?.length ? navigator.languages : [navigator.language]
   for (const candidate of candidates) {
     const primary = candidate?.toLowerCase().split('-')[0]
-    if (primary && supported.includes(primary)) return primary
+    if (primary && supported.includes(primary as PreferredLanguage)) return primary as PreferredLanguage
   }
   return 'en'
 }
 
 function App() {
-  const [language, setLanguage] = useState(detectDeviceLanguage)
+  const [language, setLanguage] = useState<PreferredLanguage>(detectDeviceLanguage)
   const [uploadState, setUploadState] = useState<UploadState>('idle')
   const [contractResult, setContractResult] = useState<ContractAnalysisResponse | null>(null)
   const [contractProgress, setContractProgress] = useState<ContractAnalysisJob | null>(null)
@@ -65,6 +65,7 @@ function App() {
       const result = await analyzeContract(
         files,
         '근로계약서와 급여명세서를 비교해 주의할 점과 대응 방법을 설명해 주세요.',
+        language,
         setContractProgress,
         abortController.signal,
       )

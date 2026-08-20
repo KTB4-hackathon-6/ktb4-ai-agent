@@ -2,10 +2,11 @@ import { useEffect, useRef, useState } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
 import illoLogo from '../../assets/illo-logo.png'
 import { languages } from '../../mocks/chatbot'
+import type { PreferredLanguage } from '../../types/chatbot'
 
 type ChatHeaderProps = {
-  language: string
-  onLanguageChange: (code: string) => void
+  language: PreferredLanguage
+  onLanguageChange: (code: PreferredLanguage) => void
 }
 
 function ChatHeader({ language, onLanguageChange }: ChatHeaderProps) {

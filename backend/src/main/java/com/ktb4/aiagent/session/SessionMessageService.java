@@ -13,7 +13,7 @@ import org.springframework.stereotype.Service;
 @Service
 public class SessionMessageService {
 
-	private static final int MAX_USER_MESSAGE_LENGTH = 4000;
+	private static final int MAX_USER_MESSAGE_LENGTH = 4_000;
 
 	private final InMemorySessionStore sessionStore;
 	private final InMemorySessionMessageStore messageStore;
