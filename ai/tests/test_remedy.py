@@ -437,3 +437,149 @@ def test_labor_office_is_not_user_required_form_input() -> None:
 
     assert form.submission.recipientLaborOfficeName == "안산지청"
     assert form.required_missing_field_ids() == []
+
+
+def form_missing(*field_ids: str) -> dict:
+    """진정 내용과 지정한 필드만 비어 있는 진정서 폼을 만든다."""
+    form = {
+        "complainant": {
+            "fullName": "응우옌 반 남",
+            "address": "경기도 안산시 단원구 1",
+            "mobilePhone": "010-1234-5678",
+        },
+        "respondent": {
+            "fullName": "김사업",
+            "workplaceType": "WORKPLACE",
+            "workplaceName": "대한농장",
+            "actualWorkplaceAddress": "경기도 안산시 단원구 공단로 1",
+        },
+        "complaint": {
+            "employmentStartDate": "2025-01-01",
+            "employmentStatus": "EMPLOYED",
+            "jobDescription": "제품 포장",
+            "contractMethod": "WRITTEN",
+        },
+    }
+    for field_id in field_ids:
+        section, field = field_id.split(".", 1)
+        form[section].pop(field)
+    return form
+
+
+@pytest.mark.asyncio
+async def test_last_direct_answer_composes_details_in_the_same_turn(monkeypatch) -> None:
+    """마지막 직접입력 필드를 답한 턴에 진정 내용까지 작성해야 한 턴 늦게 묻지 않는다."""
+
+    async def compose(_state):
+        return "사실관계와 근거 법령을 담은 진정 내용입니다."
+
+    async def fail_if_called(_state):
+        raise AssertionError("a direct pending-field answer must not call the remedy model")
+
+    monkeypatch.setattr(workflow, "compose_complaint_details", compose)
+    monkeypatch.setattr(workflow, "run_remedy_agent", fail_if_called)
+
+    state = await workflow.remedy(
+        {
+            "messages": [HumanMessage("WRITTEN")],
+            "form_initialized": True,
+            "form_drafts": {"LABOR_COMPLAINT_001": form_missing("complaint.contractMethod")},
+        }
+    )
+
+    form = LaborComplaintFormData(**state["form_drafts"]["LABOR_COMPLAINT_001"])
+    assert form.complaint.contractMethod == "WRITTEN"
+    assert form.complaint.details == "사실관계와 근거 법령을 담은 진정 내용입니다."
+    assert form.required_missing_field_ids() == []
+
+
+@pytest.mark.asyncio
+async def test_free_talk_completing_form_composes_details_in_the_same_turn(monkeypatch) -> None:
+    """자유 대화로 마지막 필드가 채워진 턴에도 진정 내용을 바로 작성한다."""
+
+    async def compose(_state):
+        return "사실관계와 근거 법령을 담은 진정 내용입니다."
+
+    async def turn(_state):
+        return RemedyTurn(
+            intent=AuthoringIntent.FORM_INPUT,
+            form_updates=[FormFieldUpdate(field_id="complaint.jobDescription", value="제품 포장")],
+        )
+
+    monkeypatch.setattr(workflow, "compose_complaint_details", compose)
+    monkeypatch.setattr(workflow, "run_remedy_agent", turn)
+
+    state = await workflow.remedy(
+        {
+            "messages": [HumanMessage("공장에서 제품 포장 일을 했어요")],
+            "form_initialized": True,
+            "form_drafts": {"LABOR_COMPLAINT_001": form_missing("complaint.jobDescription")},
+        }
+    )
+
+    form = LaborComplaintFormData(**state["form_drafts"]["LABOR_COMPLAINT_001"])
+    assert form.complaint.jobDescription == "제품 포장"
+    assert form.complaint.details == "사실관계와 근거 법령을 담은 진정 내용입니다."
+
+
+@pytest.mark.parametrize(
+    "details",
+    ["Người sử dụng lao động chưa trả lương cho tôi.", "가" * 4001],
+)
+@pytest.mark.asyncio
+async def test_unusable_composed_details_falls_back_to_asking(monkeypatch, details) -> None:
+    """한국어가 아니거나 4000자를 넘는 진정 내용은 500이 아니라 질문으로 되돌아간다."""
+
+    async def compose(_state):
+        return details
+
+    async def turn(_state):
+        return RemedyTurn(intent=AuthoringIntent.FORM_INPUT)
+
+    monkeypatch.setattr(workflow, "compose_complaint_details", compose)
+    monkeypatch.setattr(workflow, "run_remedy_agent", turn)
+
+    state = await workflow.remedy(
+        {
+            "messages": [HumanMessage("석 달치를 못 받았어요")],
+            "form_initialized": True,
+            "form_drafts": {"LABOR_COMPLAINT_001": form_missing()},
+        }
+    )
+
+    form = LaborComplaintFormData(**state["form_drafts"]["LABOR_COMPLAINT_001"])
+    assert form.complaint.details is None
+    assert form.required_missing_field_ids() == ["complaint.details"]
+    assert form.complainant.fullName == "응우옌 반 남"
+
+
+@pytest.mark.asyncio
+async def test_details_composer_sees_the_authoring_conversation(monkeypatch) -> None:
+    """서버가 사실을 되물어 받은 답변은 대화에만 있으므로 작성기 입력에 들어가야 한다."""
+    contexts = []
+
+    class Model:
+        async def ainvoke(self, messages):
+            contexts.append(json.loads(messages[-1].text))
+            return workflow.ComplaintDetailsDraft(details="임금이 지급되지 않았습니다.")
+
+    monkeypatch.setattr(workflow, "get_details_composer_model", lambda: Model())
+
+    await workflow.remedy(
+        {
+            "messages": [
+                HumanMessage("진정 내용을 어떻게 쓰나요"),
+                AIMessage("어떤 문제가 언제부터 얼마나 있었는지 알려주세요"),
+                HumanMessage("작년 9월부터 석 달치 300만원을 못 받았어요"),
+            ],
+            "form_initialized": True,
+            "issues": [housing_issue().model_dump(mode="json")],
+            "form_drafts": {"LABOR_COMPLAINT_001": form_missing()},
+        }
+    )
+
+    assert len(contexts) == 1
+    assert contexts[0]["userMessage"] == "작년 9월부터 석 달치 300만원을 못 받았어요"
+    assert {"role": "user", "content": "진정 내용을 어떻게 쓰나요"} in contexts[0][
+        "conversationHistory"
+    ]

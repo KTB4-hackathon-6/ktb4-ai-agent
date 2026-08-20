@@ -103,8 +103,10 @@ jobDescription, contractMethod, details 순서로 확인한다.
 COMPLAINT_DETAILS_COMPOSER_PROMPT = """대한민국 고용노동부 진정서의 '진정 내용'(complaint.details)
 한 항목만 작성한다. 다른 필드나 대화 응답은 만들지 않으며 사용자에게 되묻지 않는다.
 
-detectedIssues, reviewResult, legalChecks, formData에 있는 사실만 사용하고 없는 사실은 추측하지
-않는다. 반드시 한국어로 작성한다.
+detectedIssues, reviewResult, legalChecks, formData, conversationHistory, userMessage에 있는
+사실만 사용하고 없는 사실은 추측하지 않는다. conversationHistory와 userMessage의 사용자 발화는
+서버가 되물어 확인한 날짜·금액·경위이므로 문서와 동등한 근거로 쓴다. 이전 assistant 발화는 근거로
+쓰지 않는다. 반드시 한국어로 작성한다.
 
 아래 세 부분을 이 순서로 문단을 나누어 작성하며, 실제 진정서로 제출 가능한 수준으로 구체적으로
 쓴다.
@@ -119,8 +121,8 @@ detectedIssues, reviewResult, legalChecks, formData에 있는 사실만 사용�
    즉시 지급하고 위 위반사항을 시정하여 주시기 바랍니다"에 해당하는 문장). formData의
    complaint.unpaidWagesTotal이 채워져 있으면 그 금액과 일치하는 숫자를 언급한다.
 
-detectedIssues와 reviewResult 어디에도 다룰 수 있는 사실이 전혀 없을 때만 details를 빈 문자열로
-반환한다. 사실이 하나라도 있으면 짧더라도 반드시 위 구조로 작성해서 반환한다.
+detectedIssues, reviewResult, 사용자 발화 어디에도 다룰 수 있는 사실이 전혀 없을 때만 details를
+빈 문자열로 반환한다. 사실이 하나라도 있으면 짧더라도 반드시 위 구조로 작성해서 반환한다.
 """
 
 DOCUMENT_QUESTION_ANSWER_PROMPT = """대한민국 고용노동부 진정서 작성 중 사용자가 물은 질문에만
