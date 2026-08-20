@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
+import illoLogo from '../../assets/illo-logo.png'
 import { languages } from '../../mocks/chatbot'
 
 type ChatHeaderProps = {
@@ -31,13 +32,13 @@ function ChatHeader({ language, onLanguageChange }: ChatHeaderProps) {
   return (
     <header className="app-header">
       <div className="brand">
-        <div className="brand-mark" aria-hidden="true">
-          <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M9 12l2 2 4-4" />
-            <path d="M12 3l7 4v5c0 4.5-3 8-7 9-4-1-7-4.5-7-9V7l7-4z" />
-          </svg>
+        <div className="brand-logo-frame">
+          <img
+            className="brand-logo"
+            src={illoLogo}
+            alt="ILLO"
+          />
         </div>
-        <span className="brand-name">근로계약서 진단</span>
       </div>
 
       <div className="lang-switcher" ref={switcherRef}>
