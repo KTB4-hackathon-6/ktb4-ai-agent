@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import type { LaborComplaintFormData } from '../api/contracts'
+import i18n from '../i18n'
 import { complaintPreviewGroups, requiredFieldProgress } from './presentation'
 
 const emptyData: LaborComplaintFormData = {
@@ -40,7 +41,8 @@ const emptyData: LaborComplaintFormData = {
 }
 
 describe('complaint presentation', () => {
-  it('uses the backend form structure instead of mock field values', () => {
+  it('uses the backend form structure instead of mock field values', async () => {
+    await i18n.changeLanguage('ko')
     const data = structuredClone(emptyData)
     data.respondent.workplaceType = 'CONSTRUCTION_SITE'
     data.complaint.unpaidWagesTotal = 250000

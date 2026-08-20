@@ -1,7 +1,7 @@
 package com.ktb4.aiagent.payslip.service;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.Mockito.when;
 
 import com.ktb4.aiagent.ocr.dto.OcrAnalysisResponse;
@@ -21,7 +21,8 @@ class PayslipDiagnosisServiceTests {
 		PayslipRuleEngine ruleEngine = new PayslipRuleEngine();
 		PayslipDiagnosisService service = new PayslipDiagnosisService(ocrService, factExtractor, ruleEngine);
 		MockMultipartFile file = new MockMultipartFile("files", "payslip.jpg", "image/jpeg", "image".getBytes());
-		when(ocrService.analyze(any())).thenReturn(new OcrAnalysisResponse(Instant.EPOCH, "OCR 원문"));
+		when(ocrService.analyzeAll(anyList()))
+			.thenReturn(List.of(new OcrAnalysisResponse(Instant.EPOCH, "OCR 원문")));
 		when(factExtractor.extract("OCR 원문")).thenReturn(new PayslipExtraction(
 			new PayslipFacts(true, true, true, true, true, 2_000_000, 209,
 				0, 0, 0, 0, 2_000_000, 0, 2_000_000, 0),

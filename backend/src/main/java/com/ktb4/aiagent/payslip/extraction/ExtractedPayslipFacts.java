@@ -19,7 +19,8 @@ public record ExtractedPayslipFacts(
 	@JsonProperty("net_pay") int netPay,
 	@JsonProperty("unclassified_deduction") int unclassifiedDeduction,
 	@JsonProperty("employee_name") String employeeName,
-	@JsonProperty("pay_period") String payPeriod
+	@JsonProperty("pay_period") String payPeriod,
+	@JsonProperty("document_type") String documentType
 ) {
 	public ExtractedPayslipFacts(boolean payPeriodSpecified, boolean paymentDateSpecified, boolean wageComponentsSpecified,
 			boolean calculationMethodSpecified, boolean deductionsSpecified, int basePay, double regularWorkingHours,
@@ -27,6 +28,16 @@ public record ExtractedPayslipFacts(
 			int netPay, int unclassifiedDeduction) {
 		this(payPeriodSpecified, paymentDateSpecified, wageComponentsSpecified, calculationMethodSpecified,
 			deductionsSpecified, basePay, regularWorkingHours, overtimeHours, overtimePay, nightPay, holidayPay,
-			grossPay, totalDeductions, netPay, unclassifiedDeduction, "", "");
+			grossPay, totalDeductions, netPay, unclassifiedDeduction, "", "", "payslip");
+	}
+
+	public ExtractedPayslipFacts(boolean payPeriodSpecified, boolean paymentDateSpecified,
+			boolean wageComponentsSpecified, boolean calculationMethodSpecified, boolean deductionsSpecified,
+			int basePay, double regularWorkingHours, double overtimeHours, int overtimePay, int nightPay,
+			int holidayPay, int grossPay, int totalDeductions, int netPay, int unclassifiedDeduction,
+			String employeeName, String payPeriod) {
+		this(payPeriodSpecified, paymentDateSpecified, wageComponentsSpecified, calculationMethodSpecified,
+			deductionsSpecified, basePay, regularWorkingHours, overtimeHours, overtimePay, nightPay, holidayPay,
+			grossPay, totalDeductions, netPay, unclassifiedDeduction, employeeName, payPeriod, "payslip");
 	}
 }
