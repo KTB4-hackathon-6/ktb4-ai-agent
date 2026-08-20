@@ -59,7 +59,6 @@
   "upload.selectedFiles": "ឯកសារដែលបានជ្រើសរើស",
   "upload.addFiles": "បន្ថែមឯកសារ",
   "upload.chooseFiles": "ជ្រើសរើសឯកសារ",
-  "upload.combinedFileNote": "វាមិនអីទេក្នុងការមានកិច្ចសន្យាការងារ និងប្រាក់បៀវត្សរ៍រួមគ្នាក្នុងឯកសារតែមួយ។",
   "upload.remove": "លុប",
   "upload.removeFile": "លុបឯកសារ៖ {file}",
   "upload.analyze": "ចាប់ផ្តើមការវិភាគ",

@@ -1069,23 +1069,6 @@
       }
     },
     {
-      "key": "upload.combinedFileNote",
-      "sources": [],
-      "kind": "ui_static",
-      "values": {
-        "ko": "근로계약서와 급여명세서가 한 파일에 함께 있어도 괜찮습니다."
-      },
-      "machineTranslations": {
-        "ko": "근로계약서와 급여명세서가 한 파일에 함께 있어도 괜찮습니다.",
-        "en": "It is okay to have the employment contract and pay stubs together in one file.",
-        "vi": "Bạn có thể gộp hợp đồng lao động và cuống phiếu lương vào cùng một hồ sơ.",
-        "th": "การมีสัญญาจ้างงานและต้นขั้วการจ่ายเงินรวมกันเป็นไฟล์เดียวก็เป็นเรื่องปกติ",
-        "id": "Tidak apa-apa jika kontrak kerja dan potongan gaji digabungkan dalam satu file.",
-        "mn": "Хөдөлмөрийн гэрээ, тооцооны мөнгийг хамтад нь нэг файлд хийвэл зүгээр.",
-        "km": "វាមិនអីទេក្នុងការមានកិច្ចសន្យាការងារ និងប្រាក់បៀវត្សរ៍រួមគ្នាក្នុងឯកសារតែមួយ។"
-      }
-    },
-    {
       "key": "upload.remove",
       "sources": [],
       "kind": "ui_static",

@@ -59,7 +59,6 @@
   "upload.selectedFiles": "selected document file",
   "upload.addFiles": "Add file",
   "upload.chooseFiles": "Select files",
-  "upload.combinedFileNote": "It is okay to have the employment contract and pay stubs together in one file.",
   "upload.remove": "Delete",
   "upload.removeFile": "Delete file: {file}",
   "upload.analyze": "Start analysis",

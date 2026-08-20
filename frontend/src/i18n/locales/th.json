@@ -59,7 +59,6 @@
   "upload.selectedFiles": "ไฟล์เอกสารที่เลือก",
   "upload.addFiles": "เพิ่มไฟล์",
   "upload.chooseFiles": "เลือกไฟล์",
-  "upload.combinedFileNote": "การมีสัญญาจ้างงานและต้นขั้วการจ่ายเงินรวมกันเป็นไฟล์เดียวก็เป็นเรื่องปกติ",
   "upload.remove": "ลบ",
   "upload.removeFile": "ลบไฟล์: {file}",
   "upload.analyze": "เริ่มการวิเคราะห์",
