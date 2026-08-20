@@ -28,7 +28,8 @@ public class PayslipDiagnosisService {
 		if (files == null || files.isEmpty()) {
 			throw new ApplicationException(ErrorCode.INVALID_REQUEST);
 		}
-		String rawText = files.stream().map(file -> ocrService.analyze(file).fullText())
+		String rawText = ocrService.analyzeAll(files).stream()
+			.map(result -> result.fullText())
 			.reduce((first, second) -> first + "\n\n" + second)
 			.orElseThrow(() -> new ApplicationException(ErrorCode.INVALID_REQUEST));
 		PayslipExtraction extraction = factExtractor.extract(rawText);

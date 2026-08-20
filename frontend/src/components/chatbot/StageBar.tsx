@@ -1,3 +1,4 @@
+import type { CSSProperties } from 'react'
 import { motion } from 'framer-motion'
 import { useTranslation } from 'react-i18next'
 import { flowStages } from '../../config/chatbot'
@@ -21,6 +22,8 @@ type StageBarProps = {
 function StageBar({ state }: StageBarProps) {
   const { t } = useTranslation()
   const current = stageIndexOf[state]
+  const stageCount = flowStages.length
+  const fillPercent = stageCount > 1 ? (current / (stageCount - 1)) * 100 : 0
 
   return (
     <nav className="stage-bar" aria-label={t('stage.aria')}>
@@ -28,19 +31,25 @@ function StageBar({ state }: StageBarProps) {
         <b>{current + 1}/{flowStages.length}</b>
         {t(`stage.${flowStages[current].id}`)}
       </span>
-      <ol className="stage-list">
-        {flowStages.map((stage, index) => {
-          const status = index < current ? 'done' : index === current ? 'now' : 'wait'
-          return (
-            <motion.li className={`stage-chip ${status}`} key={stage.id} layout aria-current={status === 'now' ? 'step' : undefined}>
-              <span className="stage-dot" aria-hidden="true">{status === 'done' ? '✓' : index + 1}</span>
-              <span className="stage-label">
-                <strong>{t(`stage.${stage.id}`)}</strong>
-              </span>
-            </motion.li>
-          )
-        })}
-      </ol>
+      <div className="stage-track-wrap" style={{ '--stage-count': stageCount } as CSSProperties}>
+        <div className="stage-track" aria-hidden="true">
+          <div className="stage-track-fill" style={{ width: `${fillPercent}%` }} />
+        </div>
+        <ol className="stage-list">
+          {flowStages.map((stage, index) => {
+            const status = index < current ? 'done' : index === current ? 'now' : 'wait'
+            const label = t(`stage.${stage.id}`)
+            return (
+              <motion.li className={`stage-chip ${status}`} key={stage.id} layout aria-current={status === 'now' ? 'step' : undefined}>
+                <span className="stage-dot" aria-hidden="true">{status === 'done' ? '✓' : index + 1}</span>
+                <span className="stage-label">
+                  <strong title={label}>{label}</strong>
+                </span>
+              </motion.li>
+            )
+          })}
+        </ol>
+      </div>
     </nav>
   )
 }

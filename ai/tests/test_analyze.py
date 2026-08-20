@@ -7,6 +7,7 @@ from langchain_core.messages import ToolMessage
 
 from ai_agent.api.routes import analyze
 from ai_agent.main import app
+from ai_agent.schemas.analyze import AnalyzeRequest
 from ai_agent.services import agent as agent_service
 from ai_agent.services import reviewer as reviewer_service
 from ai_agent.services.rag.retriever import search_labor_law
@@ -35,6 +36,22 @@ REQUEST = {
         }
     ],
 }
+
+
+def test_analyze_contract_accepts_rest_time_review_check() -> None:
+    request = AnalyzeRequest.model_validate(
+        {
+            **REQUEST,
+            "legalChecks": [
+                {
+                    "checkId": "REST_TIME_NEEDS_REVIEW",
+                    "result": "REVIEW_REQUIRED",
+                }
+            ],
+        }
+    )
+
+    assert request.legalChecks[0].checkId.value == "REST_TIME_NEEDS_REVIEW"
 
 
 def test_analyze_uses_only_input_text(monkeypatch) -> None:

@@ -24,13 +24,4 @@ export const evidenceToKeep = ['timesheet', 'orders', 'payments', 'notes'] as co
 
 export const judgmentLimits = ['userStatement', 'noPayslip', 'noRecords', 'noLegalDecision'] as const
 
-/** 백엔드에 세션용 제출 안내 API가 노출되기 전까지 사용하는 공식 고정 안내 목록. */
-export const supportChannels = [
-  { id: 'laborPortal', href: 'https://labor.moel.go.kr/minwonApply/minwonFormat.do?searchVal=SN001&searchGubun=1', issue: 'wage' },
-  { id: 'localOffice', href: 'https://www.moel.go.kr/agency/agency/agencyList.do', issue: 'wage' },
-  { id: 'moel1350', href: 'tel:1350', issue: 'wage' },
-  { id: 'foreignCentre', href: 'tel:15770071', issue: 'condition' },
-  { id: 'eps', href: 'https://www.eps.go.kr/', issue: 'condition' },
-] as const
-
 export const issueLabels = { wage: 'wage', condition: 'condition' } as const

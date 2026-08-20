@@ -144,9 +144,8 @@ export type GeneratedDocument = {
 }
 
 export type GuidanceRequest = {
-  input: {
-    text: string
-  }
+  content: string
+  preferredLanguage: PreferredLanguage
 }
 
 export type GuidanceResponse = {
@@ -263,9 +262,10 @@ export async function analyzeContract(
   }
 
   if (job.status === 'FAILED') {
+    const errorCode = job.error?.code ?? 'ANALYSIS_FAILED'
     throw new ContractApiError(
-      job.error?.message ?? i18n.t('api.error.contractAnalysisFailed'),
-      job.error?.code ?? 'ANALYSIS_FAILED',
+      localizedAnalysisError(errorCode, job.error?.message),
+      errorCode,
       200,
     )
   }
@@ -307,6 +307,24 @@ export async function prepareLaborComplaint(
   )
 }
 
+export async function requestSubmissionGuidance(
+  sessionId: string,
+  content: string,
+  preferredLanguage: PreferredLanguage,
+  signal?: AbortSignal,
+): Promise<GuidanceResponse> {
+  const body: GuidanceRequest = { content, preferredLanguage }
+  return request<GuidanceResponse>(
+    `/api/sessions/${sessionId}/guidance`,
+    {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body),
+      signal,
+    },
+  )
+}
+
 export function downloadGeneratedDocument(document: GeneratedDocument): void {
   const binary = window.atob(document.bytes)
   const bytes = new Uint8Array(binary.length)
@@ -342,13 +360,18 @@ async function request<T>(path: string, init: RequestInit): Promise<T> {
   if (!response.ok || envelope.code !== 'SUCCESS') {
     const errorData = envelope.data as ErrorData
     throw new ContractApiError(
-      errorData.message ?? i18n.t('api.error.contractAnalysisFailed'),
+      localizedAnalysisError(envelope.code, errorData.message),
       envelope.code,
       response.status,
     )
   }
 
   return envelope.data as T
+}
+
+function localizedAnalysisError(code: string, fallback?: string): string {
+  if (code === 'UNRELATED_DOCUMENT') return i18n.t('api.error.unrelatedDocument')
+  return fallback ?? i18n.t('api.error.contractAnalysisFailed')
 }
 
 async function readEnvelope<T>(response: Response): Promise<ApiEnvelope<T>> {

@@ -1,17 +1,10 @@
-import { useEffect, useRef, useState } from 'react'
-import { AnimatePresence, motion } from 'framer-motion'
-import { useTranslation } from 'react-i18next'
+import { AnimatePresence } from 'framer-motion'
 import type {
   ContractAnalysisJob,
   ContractAnalysisResponse,
   DocumentPreparationResponse,
+  GuidanceResponse,
 } from '../../api/contracts'
-import {
-  exportRedactedFiles,
-  prepareRedactionPages,
-  releaseRedactionPages,
-} from '../../redaction/document'
-import type { RedactionPage } from '../../redaction/types'
 import type { ComplaintChatMessage, FlowState, UploadState } from '../../types/chatbot'
 import AgencyPanel from './AgencyPanel'
 import AnalysisProgress from './AnalysisProgress'
@@ -19,7 +12,6 @@ import ComplaintDraftPanel from './ComplaintDraftPanel'
 import CompletedPanel from './CompletedPanel'
 import DraftReadyPanel from './DraftReadyPanel'
 import ReviewPanel from './ReviewPanel'
-import RedactionReview from './RedactionReview'
 import UploadPanel from './UploadPanel'
 import { issueLabels } from '../../config/chatbot'
 
@@ -35,6 +27,9 @@ type ContractFlowProps = {
   draftDownloaded: boolean
   documentState: UploadState
   documentError: string | null
+  guidance: GuidanceResponse | null
+  guidanceLoading: boolean
+  guidanceError: string | null
   chatValue: string
   issue: keyof typeof issueLabels
   onDocumentFilesChange: (files: File[]) => void
@@ -51,118 +46,22 @@ type ContractFlowProps = {
 
 function ContractFlow({
   state, contractResult, contractProgress, uploadError, documentFiles, openItem,
-  documentPreparation, complaintMessages, draftDownloaded, documentState, documentError, chatValue,
+  documentPreparation, complaintMessages, draftDownloaded, documentState, documentError,
+  guidance, guidanceLoading, guidanceError, chatValue,
   issue, onDocumentFilesChange, onStartAnalysis, onToggleItem,
   onStartDraft, onSubmitComplaint, onChatChange, onChatSubmit, onGoTo, onDownloadDraft, onRestart,
 }: ContractFlowProps) {
-  const { t } = useTranslation()
-  const [redactionStep, setRedactionStep] = useState<'upload' | 'preparing' | 'review' | 'exporting'>('upload')
-  const [redactionPages, setRedactionPages] = useState<RedactionPage[]>([])
-  const [redactionError, setRedactionError] = useState<string | null>(null)
-  const [preparedPageCount, setPreparedPageCount] = useState(0)
-  const redactionPagesRef = useRef<RedactionPage[]>([])
-  const preparationGenerationRef = useRef(0)
-
-  useEffect(() => {
-    redactionPagesRef.current = redactionPages
-  }, [redactionPages])
-
-  useEffect(() => () => {
-    preparationGenerationRef.current += 1
-    releaseRedactionPages(redactionPagesRef.current)
-  }, [])
-
-  const startRedaction = async (files: File[]) => {
-    if (files.length === 0) return
-    const generation = preparationGenerationRef.current + 1
-    preparationGenerationRef.current = generation
-    setRedactionStep('preparing')
-    setRedactionError(null)
-    setPreparedPageCount(0)
-
-    try {
-      const pages = await prepareRedactionPages(files, ({ completedPages }) => {
-        if (preparationGenerationRef.current === generation) setPreparedPageCount(completedPages)
-      })
-      if (preparationGenerationRef.current !== generation) {
-        releaseRedactionPages(pages)
-        return
-      }
-      setRedactionPages(pages)
-      setRedactionStep('review')
-    } catch (error) {
-      if (preparationGenerationRef.current !== generation) return
-      setRedactionError(error instanceof Error ? error.message : t('redaction.error.prepare'))
-      setRedactionStep('upload')
-    }
-  }
-
-  const cancelRedaction = () => {
-    preparationGenerationRef.current += 1
-    releaseRedactionPages(redactionPages)
-    setRedactionPages([])
-    setRedactionError(null)
-    setPreparedPageCount(0)
-    setRedactionStep('upload')
-    onDocumentFilesChange([])
-  }
-
-  const submitRedactedDocuments = async () => {
-    setRedactionStep('exporting')
-    setRedactionError(null)
-    try {
-      const files = await exportRedactedFiles(redactionPages)
-      releaseRedactionPages(redactionPages)
-      setRedactionPages([])
-      setRedactionStep('upload')
-      onDocumentFilesChange([])
-      onStartAnalysis(files)
-    } catch (error) {
-      setRedactionError(error instanceof Error ? error.message : t('redaction.error.export'))
-      setRedactionStep('review')
-    }
-  }
-
   return (
     <div className="app-body">
       <section className="stage-area" aria-live="polite">
         <AnimatePresence mode="wait" initial={false}>
-          {state === 'UPLOAD' && redactionStep === 'upload' && (
+          {state === 'UPLOAD' && (
             <UploadPanel
               key="upload"
               files={documentFiles}
-              error={redactionError ?? uploadError}
+              error={uploadError}
               onFilesChange={onDocumentFilesChange}
-              onStart={startRedaction}
-            />
-          )}
-          {state === 'UPLOAD' && redactionStep === 'preparing' && (
-            <motion.section
-              key="redaction-preparing"
-              className="panel redaction-preparing"
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -8 }}
-              aria-live="polite"
-            >
-              <span className="step-spinner" aria-hidden="true" />
-              <div>
-                <h2>{t('redaction.preparing.heading')}</h2>
-                <p>{t('redaction.preparing.description')}</p>
-                {preparedPageCount > 0 && <small>{t('redaction.preparing.pages', { count: preparedPageCount })}</small>}
-              </div>
-              <button className="ghost-button" type="button" onClick={cancelRedaction}>{t('redaction.cancel')}</button>
-            </motion.section>
-          )}
-          {state === 'UPLOAD' && (redactionStep === 'review' || redactionStep === 'exporting') && redactionPages.length > 0 && (
-            <RedactionReview
-              key="redaction-review"
-              pages={redactionPages}
-              exporting={redactionStep === 'exporting'}
-              error={redactionError}
-              onPagesChange={setRedactionPages}
-              onCancel={cancelRedaction}
-              onSubmit={submitRedactedDocuments}
+              onStart={onStartAnalysis}
             />
           )}
           {state === 'ANALYZING' && <AnalysisProgress key="analyzing" job={contractProgress} />}
@@ -194,7 +93,17 @@ function ContractFlow({
               onBackToConversation={() => onGoTo('DRAFTING')}
             />
           )}
-          {state === 'AGENCY' && <AgencyPanel key="agency" issue={issue} onFinish={() => onGoTo('COMPLETED')} onBack={() => onGoTo('REVIEW')} />}
+          {state === 'AGENCY' && (
+            <AgencyPanel
+              key="agency"
+              issue={issue}
+              guidance={guidance}
+              loading={guidanceLoading}
+              error={guidanceError}
+              onFinish={() => onGoTo('COMPLETED')}
+              onBack={() => onGoTo('REVIEW')}
+            />
+          )}
           {state === 'COMPLETED' && <CompletedPanel key="completed" draftDownloaded={draftDownloaded} onRestart={onRestart} />}
         </AnimatePresence>
       </section>
