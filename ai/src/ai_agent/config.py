@@ -29,6 +29,12 @@ class Settings(BaseSettings):
     upstage_api_key: str = ""
     embedding_model: str = "solar-embedding-1-large"
     chroma_dir: Path = ROOT_ENV.parent / "ai" / ".chroma"
+    law_corpus_path: Path = ROOT_ENV.parent / "ai" / "src" / "ai_agent" / "data" / "laws.json"
+
+    # 국가법령정보 공동활용 Open API
+    law_open_api_oc: str = ""
+    law_sync_enabled: bool = True
+    law_sync_interval_hours: int = 24
 
     # Chat
     deepseek_api_key: str = ""
