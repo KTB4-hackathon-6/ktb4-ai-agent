@@ -2,14 +2,16 @@ import { useEffect, useRef, useState } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
 import illoLogo from '../../assets/illo-logo.png'
 import { languages } from '../../mocks/chatbot'
-import type { PreferredLanguage } from '../../types/chatbot'
+import type { FlowState, PreferredLanguage } from '../../types/chatbot'
+import StageBar from './StageBar'
 
 type ChatHeaderProps = {
   language: PreferredLanguage
+  state: FlowState
   onLanguageChange: (code: PreferredLanguage) => void
 }
 
-function ChatHeader({ language, onLanguageChange }: ChatHeaderProps) {
+function ChatHeader({ language, state, onLanguageChange }: ChatHeaderProps) {
   const [open, setOpen] = useState(false)
   const switcherRef = useRef<HTMLDivElement>(null)
   const current = languages.find((item) => item.code === language) ?? languages[0]
@@ -31,18 +33,19 @@ function ChatHeader({ language, onLanguageChange }: ChatHeaderProps) {
   }, [open])
 
   return (
-    <header className="app-header">
-      <div className="brand">
-        <div className="brand-logo-frame">
-          <img
-            className="brand-logo"
-            src={illoLogo}
-            alt="ILLO"
-          />
-        </div>
-      </div>
+    <header className="app-top">
+      <div className="brand-row">
+        <button
+          className="compact-brand"
+          type="button"
+          aria-label="ILLO 처음 화면으로 돌아가기"
+          title="처음 화면으로 돌아가기"
+          onClick={() => window.location.reload()}
+        >
+          <img src={illoLogo} alt="ILLO" />
+        </button>
 
-      <div className="lang-switcher" ref={switcherRef}>
+        <div className="lang-switcher" ref={switcherRef}>
         <button
           className="lang-trigger"
           type="button"
@@ -56,6 +59,7 @@ function ChatHeader({ language, onLanguageChange }: ChatHeaderProps) {
             <path d="M3 12h18" />
             <path d="M12 3c2.8 2.6 4.3 5.7 4.3 9s-1.5 6.4-4.3 9c-2.8-2.6-4.3-5.7-4.3-9s1.5-6.4 4.3-9z" />
           </svg>
+          <span className="lang-current">{current.native}</span>
         </button>
         <AnimatePresence>
           {open && (
@@ -89,6 +93,11 @@ function ChatHeader({ language, onLanguageChange }: ChatHeaderProps) {
           )}
         </AnimatePresence>
       </div>
+      </div>
+
+      <section className="progress-shell" aria-label="서비스 진행 상황">
+        <StageBar state={state} />
+      </section>
     </header>
   )
 }
