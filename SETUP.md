@@ -220,6 +220,18 @@ Spring Boot는 페이지별 OCR 원문을 FastAPI의 `documents`로, 규칙 진�
 계약 진단 결과와 함께 반환되며 사용자·AI 메시지는 해당 세션에 저장됩니다. 상태 조회의
 `stage`는 `OCR`, `STRUCTURING`, `GENERATING_RESPONSE`, `COMPLETED` 순서로 변경됩니다.
 
+분석에 사용한 같은 세션에서 진정서 작성을 시작하려면 다음 API를 호출합니다. FastAPI
+`/docs`가 반환한 구조화 초안은 HWPX로 변환되며, 공통 응답 봉투의
+`data.document.bytes`에 Base64로 포함됩니다. 필수값이 남아 있어도 현재까지 입력된 값으로
+작성본을 받을 수 있습니다.
+
+```bash
+curl -sS -X POST \
+  "http://localhost:8080/api/sessions/${SESSION_ID}/documents" \
+  -H 'Content-Type: application/json' \
+  -d '{"content":"진정서 작성을 시작해줘","preferredLanguage":"vi"}' | jq
+```
+
 S3 사용을 위한 비민감 설정 예시는 같은 파일에 다음과 같이 정의되어 있습니다.
 
 ```env

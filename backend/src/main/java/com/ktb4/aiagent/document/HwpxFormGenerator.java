@@ -91,6 +91,18 @@ public class HwpxFormGenerator {
 		}
 		validateDraftContract(draft);
 
+		return DocumentGenerationResult.generated(generateDocument(draft.data()));
+	}
+
+	/**
+	 * Generates a downloadable snapshot from the values collected so far. Missing
+	 * optional or required values are rendered as blank fields in the template.
+	 */
+	public GeneratedDocument generatePartial(AnalysisOutcome.LaborComplaintFormData data) {
+		return generateDocument(Objects.requireNonNull(data, "Form data must not be null"));
+	}
+
+	private GeneratedDocument generateDocument(AnalysisOutcome.LaborComplaintFormData data) {
 		Map<String, TemplateEntry> entries = readTemplateEntries();
 		Map<String, Document> documents = new LinkedHashMap<>();
 		for (FieldMapping field : mapping.fields()) {
@@ -98,7 +110,7 @@ public class HwpxFormGenerator {
 				field.target().entry(),
 				entryName -> parseXml(requireEntry(entries, entryName).content())
 			);
-			String value = fieldValue(draft.data(), field);
+			String value = fieldValue(data, field);
 			applyValue(document, field.target(), value);
 		}
 		for (Map.Entry<String, Document> document : documents.entrySet()) {
@@ -111,7 +123,7 @@ public class HwpxFormGenerator {
 		validatePackage(entries);
 		byte[] generatedBytes = writePackage(entries);
 		String documentId = requireGeneratedId(documentIdSupplier.get());
-		GeneratedDocument document = new GeneratedDocument(
+		return new GeneratedDocument(
 			documentId,
 			mapping.templateId(),
 			mapping.templateVersion(),
@@ -121,7 +133,6 @@ public class HwpxFormGenerator {
 			generatedBytes,
 			GeneratedDocument.Status.GENERATED
 		);
-		return DocumentGenerationResult.generated(document);
 	}
 
 	private void validateDraftContract(AnalysisOutcome.DocumentDraft draft) {

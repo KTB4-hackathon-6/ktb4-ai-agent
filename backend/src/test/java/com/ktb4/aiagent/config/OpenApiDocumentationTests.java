@@ -54,6 +54,8 @@ class OpenApiDocumentationTests {
 			.andExpect(jsonPath("$.paths['/api/sessions/{sessionId}/chat'].post").exists())
 			.andExpect(jsonPath("$.paths['/api/sessions/{sessionId}/chat'].post.summary")
 				.value("상담 메시지 분석 및 AI 답변 생성"))
+			.andExpect(jsonPath("$.paths['/api/sessions/{sessionId}/documents'].post.summary")
+				.value("진정서 작성 및 현재 HWPX 생성"))
 			.andExpect(jsonPath("$.components.schemas.Analysis.properties.documentDrafts").doesNotExist())
 			.andExpect(jsonPath("$.components.schemas.ChatExchange.properties.analysis['$ref']")
 				.value("#/components/schemas/Analysis"))

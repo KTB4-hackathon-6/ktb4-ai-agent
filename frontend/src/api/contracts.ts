@@ -1,3 +1,5 @@
+import type { PreferredLanguage } from '../types/chatbot'
+
 export type ContractFacts = {
   industry: 'manufacturing' | 'agriculture_livestock_fishery' | 'other'
   weekly_working_hours: number
@@ -101,7 +103,7 @@ export type DocumentDraft = {
   missingFields: MissingField[]
 }
 
-export type ContractAnalysisResponse = {
+export type ContractAnalysisApiResponse = {
   requestId: string
   diagnosis: ContractDiagnosis
   answer: string
@@ -112,6 +114,10 @@ export type ContractAnalysisResponse = {
   }
 }
 
+export type ContractAnalysisResponse = ContractAnalysisApiResponse & {
+  sessionId: string
+}
+
 export type DocumentPreparationRequest = {
   input: {
     text: string
@@ -119,8 +125,21 @@ export type DocumentPreparationRequest = {
 }
 
 export type DocumentPreparationResponse = {
+  requestId: string
   answer: string
   documentDrafts: DocumentDraft[]
+  document: GeneratedDocument
+}
+
+export type GeneratedDocument = {
+  documentId: string
+  templateId: string
+  templateVersion: string
+  fileName: string
+  mimeType: string
+  generatedAt: string
+  bytes: string
+  status: 'GENERATED'
 }
 
 export type GuidanceRequest = {
@@ -154,7 +173,7 @@ export type ContractAnalysisJob = {
   stage: ContractAnalysisStage
   processedFiles: number
   totalFiles: number
-  result: ContractAnalysisResponse | null
+  result: ContractAnalysisApiResponse | null
   error: {
     code: string
     message: string
@@ -238,7 +257,38 @@ export async function analyzeContract(
   if (!job.result) {
     throw new ContractApiError('분석 결과를 확인할 수 없습니다.', 'INVALID_RESPONSE', 200)
   }
-  return job.result
+  return { ...job.result, sessionId: session.sessionId }
+}
+
+export async function prepareLaborComplaint(
+  sessionId: string,
+  content: string,
+  preferredLanguage: PreferredLanguage,
+  signal?: AbortSignal,
+): Promise<DocumentPreparationResponse> {
+  return request<DocumentPreparationResponse>(
+    `/api/sessions/${sessionId}/documents`,
+    {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ content, preferredLanguage }),
+      signal,
+    },
+  )
+}
+
+export function downloadGeneratedDocument(document: GeneratedDocument): void {
+  const binary = window.atob(document.bytes)
+  const bytes = new Uint8Array(binary.length)
+  for (let index = 0; index < binary.length; index += 1) {
+    bytes[index] = binary.charCodeAt(index)
+  }
+  const url = URL.createObjectURL(new Blob([bytes], { type: document.mimeType }))
+  const anchor = window.document.createElement('a')
+  anchor.href = url
+  anchor.download = document.fileName
+  anchor.click()
+  URL.revokeObjectURL(url)
 }
 
 type CreateSessionResponse = {
@@ -300,4 +350,3 @@ function wait(milliseconds: number, signal?: AbortSignal): Promise<void> {
     signal?.addEventListener('abort', handleAbort, { once: true })
   })
 }
-import type { PreferredLanguage } from '../types/chatbot'
