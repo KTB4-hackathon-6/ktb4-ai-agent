@@ -115,6 +115,7 @@ button { -webkit-tap-highlight-color: transparent; }
   min-height: 0;
   display: block;
   padding: 0;
+  border-radius: 0 0 24px 24px;
   overflow: hidden;
 }
 
@@ -1146,6 +1147,7 @@ button { -webkit-tap-highlight-color: transparent; }
   flex-direction: column;
   border: 1px solid var(--color-border);
   border-radius: var(--radius-md);
+  overflow-anchor: none;
   overflow: hidden;
 }
 
@@ -1536,9 +1538,11 @@ button { -webkit-tap-highlight-color: transparent; }
     flex: 1;
     overflow: visible;
   }
-  .panel { height: auto; min-height: 100%; flex: 1; padding: 22px 18px; overflow: visible; }
+  .app-body { overflow: hidden; }
+  .panel { width: 100%; min-width: 0; height: auto; min-height: 100%; flex: 1; padding: 22px 18px; overflow: visible; }
   .panel::before { margin: -22px 0 20px; }
   .panel h2 { font-size: 20px; }
+  .panel-heading-with-mascot > div { min-width: 0; }
   .upload-file-manager { padding: 16px; }
   .upload-file-manager-head { align-items: flex-start; }
   .upload-file-manager-head .ghost-button { padding: 9px 13px; }
@@ -1569,9 +1573,9 @@ button { -webkit-tap-highlight-color: transparent; }
   }
   .complaint-chat { min-height: 320px; max-height: 52vh; padding: 14px; }
   .draft-workspace,
-  .draft-workspace.with-preview { display: flex; flex-direction: column; }
-  .complaint-chat-shell { min-height: 440px; }
-  .complaint-live-preview { min-height: 520px; }
+  .draft-workspace.with-preview { width: 100%; min-width: 0; display: flex; flex-direction: column; }
+  .complaint-chat-shell { width: 100%; min-width: 0; min-height: 440px; }
+  .complaint-live-preview { width: 100%; min-width: 0; min-height: 520px; }
   .draft-ready-preview { max-height: 70vh; }
   .evidence-list,
   .draft-preview-group dl,
@@ -1579,7 +1583,7 @@ button { -webkit-tap-highlight-color: transparent; }
   .agency-card { flex-direction: column; align-items: flex-start; }
   .agency-actions { flex-direction: column; }
   .agency-actions button { width: 100%; }
-  .complaint-chat-shell > .complaint-composer { padding: 8px; }
+  .complaint-chat-shell > .complaint-composer { width: 100%; min-width: 0; padding: 8px; }
 }
 
 @media (prefers-reduced-motion: reduce) {

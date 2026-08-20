@@ -46,11 +46,38 @@ function ComplaintDraftPanel({
   const completed = draft?.status === 'READY'
   const quickReplies = missingField?.validationRules.allowedValues ?? []
   const chatRef = useRef<HTMLDivElement>(null)
+  const inputRef = useRef<HTMLInputElement>(null)
+  const actionsRef = useRef<HTMLDivElement>(null)
+  const wasCompletedRef = useRef(completed)
+  const hasUserReply = messages.some((message) => message.role === 'user')
 
   useEffect(() => {
     const chat = chatRef.current
     if (chat) chat.scrollTop = chat.scrollHeight
   }, [messages, preparing])
+
+  useEffect(() => {
+    if (preparing || completed || !missingField || !hasUserReply) return
+    const frameId = window.requestAnimationFrame(() => {
+      inputRef.current?.focus({ preventScroll: true })
+    })
+    return () => window.cancelAnimationFrame(frameId)
+  }, [completed, hasUserReply, missingField, preparing])
+
+  useEffect(() => {
+    const becameCompleted = completed && !wasCompletedRef.current
+    wasCompletedRef.current = completed
+    if (!becameCompleted) return
+
+    const frameId = window.requestAnimationFrame(() => {
+      const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+      actionsRef.current?.scrollIntoView({
+        behavior: reduceMotion ? 'auto' : 'smooth',
+        block: 'center',
+      })
+    })
+    return () => window.cancelAnimationFrame(frameId)
+  }, [completed])
 
   return (
     <motion.section className="panel draft-panel" {...panelMotion}>
@@ -108,6 +135,7 @@ function ComplaintDraftPanel({
           <ChatComposer
             value={inputValue}
             busy={preparing}
+            inputRef={inputRef}
             onChange={onInputChange}
             onSubmit={onInputSubmit}
           />
@@ -123,7 +151,7 @@ function ComplaintDraftPanel({
         )}
       </div>
 
-      <div className="panel-actions">
+      <div className="panel-actions" ref={actionsRef}>
         {completed && (
           <motion.button
             className="primary-button"

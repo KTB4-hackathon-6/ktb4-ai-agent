@@ -1,15 +1,16 @@
-import type { FormEvent } from 'react'
+import type { FormEvent, RefObject } from 'react'
 import { motion } from 'framer-motion'
 import { useTranslation } from 'react-i18next'
 
 type ChatComposerProps = {
   value: string
   busy?: boolean
+  inputRef?: RefObject<HTMLInputElement | null>
   onChange: (value: string) => void
   onSubmit: () => void
 }
 
-function ChatComposer({ value, busy = false, onChange, onSubmit }: ChatComposerProps) {
+function ChatComposer({ value, busy = false, inputRef, onChange, onSubmit }: ChatComposerProps) {
   const { t } = useTranslation()
   const placeholder = busy ? t('composer.busy') : t('composer.placeholder.drafting')
 
@@ -22,6 +23,7 @@ function ChatComposer({ value, busy = false, onChange, onSubmit }: ChatComposerP
     <form className="composer complaint-composer" aria-label={t('composer.aria')} onSubmit={handleSubmit}>
         <label className="sr-only" htmlFor="free-message">{t('composer.inputLabel')}</label>
         <input
+          ref={inputRef}
           id="free-message"
           value={value}
           maxLength={4000}
