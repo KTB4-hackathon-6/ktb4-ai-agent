@@ -4,9 +4,8 @@
 `POST /analyze`는 제거하고 문제 검토는 `POST /review`, 문서 작성은 `POST /docs`, 해결 및
 제출 안내는 `POST /guide`로 분리한다.
 
-> 상태: **구현 목표 계약(초안)**. Python 서버에는 `POST /review`와 임시 SN001
-> `POST /docs`가 구현되어 있으며 `POST /guide`는 아직 구현되지 않았다. 현재 `/docs`의 실제
-> 스키마는 `document-authoring-api.md`를 참고하고, 이 문서는 양쪽 구현이 맞춰야 할 목표 계약으로 사용한다.
+> 상태: **통합 계약**. Python 서버의 `POST /review`, `POST /docs`, `POST /guide` 요청·응답
+> 스키마와 Spring 클라이언트의 Java record가 이 계약을 사용한다.
 
 | 단계 | Method | Path | 역할 |
 |---|---|---|---|
@@ -506,10 +505,10 @@ class ContractModel(BaseModel):
 
 | 영역 | 현재 상태 | 계약 충족을 위해 필요한 작업 |
 |---|---|---|
-| Spring | `/review`, `/docs`, `/guide` 클라이언트와 Java record 변경 중 | 최종 계약 테스트와 필드 validator 정합성 확인 |
-| 선호 언어 전달 | Frontend와 Spring에서 `preferredLanguage` 전달 | Python이 응답 생성에 적용하는 작업은 후속 구현 |
-| Python 라우트 | `POST /review`, 임시 `POST /docs` 등록 | `/guide` 추가 |
-| Python 요청 모델 | `/review`는 기존 `AnalyzeRequest`, `/docs`는 최소 대화 입력 사용 | `preferredLanguage` 등 목표 계약 반영 |
-| Python 응답 모델 | `/docs`가 SN001 `result.form` 스냅샷 반환 | 목표 `documentDrafts` 구조와 `/guide` 응답 추가 |
-| Python 문맥 | SQLite checkpointer로 검토 결과와 SN001 초안을 `sessionId`에 저장 | 30분 TTL 적용 |
-| 엄격한 검증 | Pydantic 기본값으로 알 수 없는 필드 허용 | 공통 `extra="forbid"` 적용 |
+| Spring | `/review`, `/docs`, `/guide` 클라이언트와 Java record 적용 | 최종 통합 호출 확인 |
+| 선호 언어 전달 | 모든 요청에서 `preferredLanguage` 전달·검증 | 최종 통합 호출 확인 |
+| Python 라우트 | `POST /review`, `POST /docs`, `POST /guide` 등록 | 없음 |
+| Python 요청 모델 | 공통 필드와 엔드포인트별 입력 계약 적용 | 없음 |
+| Python 응답 모델 | 검토, 진정서 초안, 제출 안내 계약 적용 | 없음 |
+| Python 문맥 | SQLite checkpointer로 검토 결과와 진정서 초안을 `sessionId`에 저장 | 30분 TTL 적용 |
+| 엄격한 검증 | 공통 `extra="forbid"`와 응답 불변식 적용 | 없음 |
