@@ -4,7 +4,6 @@ from types import SimpleNamespace
 import pytest
 from langchain_core.messages import AIMessage, HumanMessage
 from langgraph.checkpoint.sqlite.aio import AsyncSqliteSaver
-from pydantic import ValidationError
 
 from ai_agent.schemas.document_authoring import (
     ComplainantData,
@@ -15,7 +14,7 @@ from ai_agent.services import agent as agent_service
 from ai_agent.services.remedy import workflow
 from ai_agent.services.remedy.guides import DOCUMENT_AUTHORING_SYSTEM_PROMPT
 from ai_agent.services.remedy.models import DetectedIssue
-from ai_agent.services.remedy.workflow import AuthoringIntent, RemedyTurn
+from ai_agent.services.remedy.workflow import AuthoringIntent, FormFieldUpdate, RemedyTurn
 
 
 def housing_issue() -> DetectedIssue:
@@ -88,9 +87,9 @@ async def test_document_authoring_uses_review_state_and_fixed_sn001(run_turn, mo
         return RemedyTurn(
             intent=AuthoringIntent.FORM_INPUT,
             remedy_plan=["SN001 작성"],
-            form_data=LaborComplaintFormData(
-                complainant=ComplainantData(fullName="응우옌 반 남"),
-            ),
+            form_updates=[
+                FormFieldUpdate(field_id="complainant.fullName", value="응우옌 반 남")
+            ],
         )
 
     monkeypatch.setattr(workflow, "run_remedy_agent", decide)
@@ -127,7 +126,6 @@ async def test_first_authoring_turn_extracts_document_fields_once(run_turn, monk
         assert form["respondent"]["workplaceName"] == "대한농장"
         return RemedyTurn(
             intent=AuthoringIntent.FORM_INPUT,
-            form_data=LaborComplaintFormData(**form),
         )
 
     monkeypatch.setattr(workflow, "extract_document_form", extract)
@@ -140,6 +138,119 @@ async def test_first_authoring_turn_extracts_document_fields_once(run_turn, monk
 
 
 @pytest.mark.asyncio
+async def test_start_turn_asks_next_field_without_remedy_model(run_turn, monkeypatch) -> None:
+    async def fail_if_called(_state):
+        raise AssertionError("start turn must not call the remedy model")
+
+    monkeypatch.setattr(workflow, "run_remedy_agent", fail_if_called)
+    await run_turn.save()
+    await run_turn.docs("진정서 작성을 시작해줘")
+
+    state = await run_turn.read()
+    assert state["form_initialized"] is True
+    assert state["form_drafts"]["LABOR_COMPLAINT_001"]["complainant"]["fullName"] is None
+
+
+@pytest.mark.asyncio
+async def test_pending_name_is_saved_without_remedy_model(run_turn, monkeypatch) -> None:
+    async def fail_if_called(_state):
+        raise AssertionError("a direct pending-field answer must not call the remedy model")
+
+    monkeypatch.setattr(workflow, "run_remedy_agent", fail_if_called)
+    await run_turn.save()
+    await run_turn.docs("진정서 작성을 시작해줘")
+    await run_turn.docs("박명수")
+
+    state = await run_turn.read()
+    assert state["form_drafts"]["LABOR_COMPLAINT_001"]["complainant"]["fullName"] == "박명수"
+    assert state.get("input_error") is None
+
+
+@pytest.mark.asyncio
+async def test_invalid_pending_name_keeps_field_empty_and_sets_error(run_turn, monkeypatch) -> None:
+    async def fail_if_called(_state):
+        raise AssertionError("an invalid pending-field answer must not call the remedy model")
+
+    monkeypatch.setattr(workflow, "run_remedy_agent", fail_if_called)
+    await run_turn.save()
+    await run_turn.docs("진정서 작성을 시작해줘")
+    await run_turn.docs("1234")
+
+    state = await run_turn.read()
+    assert state["form_drafts"]["LABOR_COMPLAINT_001"]["complainant"]["fullName"] is None
+    assert state["input_error"] == "INVALID_FIELD_VALUE"
+
+
+def test_form_updates_change_only_named_fields() -> None:
+    form = workflow.apply_form_updates(
+        {"complainant": {"fullName": "박명수", "address": "서울시 종로구"}},
+        [FormFieldUpdate(field_id="complainant.mobilePhone", value="010-1234-5678")],
+    )
+
+    assert form.complainant.fullName == "박명수"
+    assert form.complainant.address == "서울시 종로구"
+    assert form.complainant.mobilePhone == "010-1234-5678"
+
+
+@pytest.mark.asyncio
+async def test_structured_output_retries_up_to_three_times_with_clean_input() -> None:
+    messages_seen = []
+
+    class Model:
+        async def ainvoke(self, messages):
+            messages_seen.append(messages)
+            if len(messages_seen) < 4:
+                raise ValueError("invalid JSON")
+            return RemedyTurn(intent=AuthoringIntent.FORM_INPUT)
+
+    messages = [HumanMessage("입력")]
+    result = await workflow.invoke_structured(Model(), messages)
+
+    assert result.intent is AuthoringIntent.FORM_INPUT
+    assert messages_seen == [messages] * 4
+
+
+@pytest.mark.asyncio
+async def test_repeated_structured_output_failure_preserves_form(monkeypatch) -> None:
+    async def fail(_state):
+        raise ValueError("invalid JSON")
+
+    monkeypatch.setattr(workflow, "run_remedy_agent", fail)
+    state = await workflow.remedy(
+        {
+            "messages": [HumanMessage("주소 대신 다른 내용을 함께 설명합니다")],
+            "form_initialized": True,
+            "form_drafts": {
+                "LABOR_COMPLAINT_001": {"complainant": {"fullName": "박명수"}}
+            },
+        }
+    )
+
+    assert state["form_drafts"]["LABOR_COMPLAINT_001"]["complainant"]["fullName"] == "박명수"
+    assert state["input_error"] == "MODEL_RESPONSE_INVALID"
+
+
+@pytest.mark.asyncio
+async def test_repeated_document_extraction_failure_falls_back_to_empty_form(
+    monkeypatch,
+) -> None:
+    async def fail(_documents):
+        raise ValueError("invalid JSON")
+
+    monkeypatch.setattr(workflow, "extract_document_form", fail)
+    state = await workflow.remedy(
+        {
+            "messages": [HumanMessage("진정서 작성을 시작해줘")],
+            "documents": [{"documentId": "doc-1", "pages": []}],
+        }
+    )
+
+    form = LaborComplaintFormData(**state["form_drafts"]["LABOR_COMPLAINT_001"])
+    assert form.complainant.fullName is None
+    assert state["form_initialized"] is True
+
+
+@pytest.mark.asyncio
 async def test_free_talk_updates_multiple_fields_without_losing_state(
     run_turn, monkeypatch
 ) -> None:
@@ -148,18 +259,18 @@ async def test_free_talk_updates_multiple_fields_without_losing_state(
             RemedyTurn(
                 intent=AuthoringIntent.FORM_INPUT,
                 remedy_plan=["임금체불 진정"],
-                form_data=LaborComplaintFormData(
-                    complainant=ComplainantData(fullName="응우옌 반 남")
-                ),
+                form_updates=[
+                    FormFieldUpdate(field_id="complainant.fullName", value="응우옌 반 남")
+                ],
             ),
             RemedyTurn(
                 intent=AuthoringIntent.FORM_INPUT,
-                form_data=LaborComplaintFormData(
-                    complainant=ComplainantData(
-                        fullName="응우옌 반 남", mobilePhone="010-1234-5678"
+                form_updates=[
+                    FormFieldUpdate(
+                        field_id="complainant.mobilePhone", value="010-1234-5678"
                     ),
-                    respondent=RespondentData(workplaceName="대한농장"),
-                ),
+                    FormFieldUpdate(field_id="respondent.workplaceName", value="대한농장"),
+                ],
             ),
         ]
     )
@@ -184,12 +295,14 @@ async def test_review_refresh_preserves_existing_form_draft(run_turn, monkeypatc
     async def decide(state):
         return RemedyTurn(
             intent=AuthoringIntent.FORM_INPUT,
-            form_data=LaborComplaintFormData(complainant=ComplainantData(fullName="응우옌 반 남")),
+            form_updates=[
+                FormFieldUpdate(field_id="complainant.fullName", value="응우옌 반 남")
+            ],
         )
 
     monkeypatch.setattr(workflow, "run_remedy_agent", decide)
     await run_turn.save()
-    await run_turn.docs("진정서를 작성해줘")
+    await run_turn.docs("제 이름은 응우옌 반 남입니다")
     await run_turn.save()
 
     state = await run_turn.read()
@@ -215,21 +328,17 @@ def test_recent_conversation_excludes_current_user_message() -> None:
 async def test_remedy_agent_includes_pending_field_context(monkeypatch) -> None:
     captured = {}
 
-    class Agent:
-        async def ainvoke(self, request):
-            captured.update(json.loads(request["messages"][0].text))
-            return {
-                "structured_response": RemedyTurn(
-                    intent=AuthoringIntent.FORM_INPUT,
-                    form_data=LaborComplaintFormData(
-                        complainant=ComplainantData(
-                            fullName="응우옌 반 남", address="배곧 1로 27-16"
-                        )
-                    ),
-                )
-            }
+    class Model:
+        async def ainvoke(self, messages):
+            captured.update(json.loads(messages[1].text))
+            return RemedyTurn(
+                intent=AuthoringIntent.FORM_INPUT,
+                form_updates=[
+                    FormFieldUpdate(field_id="complainant.address", value="배곧 1로 27-16")
+                ],
+            )
 
-    monkeypatch.setattr(workflow, "get_remedy_agent", lambda: Agent())
+    monkeypatch.setattr(workflow, "get_remedy_model", lambda: Model())
     await workflow.run_remedy_agent(
         {
             "messages": [HumanMessage("배곧 1로 27-16")],
@@ -256,20 +365,23 @@ async def test_remedy_agent_includes_pending_field_context(monkeypatch) -> None:
     ],
 )
 def test_remedy_turn_rejects_non_korean_form_narratives(complaint) -> None:
-    with pytest.raises(ValidationError, match="form_data must be written in Korean"):
-        RemedyTurn(
-            intent=AuthoringIntent.FORM_INPUT,
-            form_data=LaborComplaintFormData(complaint=complaint),
+    with pytest.raises(ValueError, match="form data narratives must be written in Korean"):
+        workflow.apply_form_updates(
+            {},
+            [
+                FormFieldUpdate(field_id=f"complaint.{field}", value=value)
+                for field, value in complaint.items()
+            ],
         )
 
-    RemedyTurn(
-        intent=AuthoringIntent.FORM_INPUT,
-        form_data=LaborComplaintFormData(
-            complaint={
-                "jobDescription": "제품 포장",
-                "details": "사업주가 임금을 지급하지 않았습니다.",
-            }
-        ),
+    workflow.apply_form_updates(
+        {},
+        [
+            FormFieldUpdate(field_id="complaint.jobDescription", value="제품 포장"),
+            FormFieldUpdate(
+                field_id="complaint.details", value="사업주가 임금을 지급하지 않았습니다."
+            ),
+        ],
     )
 
 
@@ -286,7 +398,8 @@ def test_document_authoring_prompt_uses_integrated_form_contract() -> None:
     assert "사용자에게 관할 관서를" in DOCUMENT_AUTHORING_SYSTEM_PROMPT
     assert "conversationLanguage" in DOCUMENT_AUTHORING_SYSTEM_PROMPT
     assert "documentLanguage" in DOCUMENT_AUTHORING_SYSTEM_PROMPT
-    assert "form_data의 자연어 문장" in DOCUMENT_AUTHORING_SYSTEM_PROMPT
+    assert "form_updates의 자연어 문장" in DOCUMENT_AUTHORING_SYSTEM_PROMPT
+    assert "기존 값과 확인되지 않은 필드는 반환하지 않는다" in DOCUMENT_AUTHORING_SYSTEM_PROMPT
     assert "항상 한국어로 번역" in DOCUMENT_AUTHORING_SYSTEM_PROMPT
 
 
@@ -312,5 +425,15 @@ def test_labor_office_is_not_user_required_form_input() -> None:
         },
     )
 
-    assert form.submission.recipientLaborOfficeName is None
+    form = workflow.apply_form_updates(
+        form.model_dump(mode="json"),
+        [
+            FormFieldUpdate(
+                field_id="submission.recipientLaborOfficeName",
+                value="안산지청",
+            )
+        ],
+    )
+
+    assert form.submission.recipientLaborOfficeName == "안산지청"
     assert form.required_missing_field_ids() == []

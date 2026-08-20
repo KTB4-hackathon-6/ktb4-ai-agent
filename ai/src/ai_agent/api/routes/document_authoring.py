@@ -41,6 +41,26 @@ FIELD_REQUEST_MESSAGES = {
     "ko": "다음 정보를 알려주세요: {field}.",
 }
 
+INVALID_FIELD_MESSAGES = {
+    "vi": "Không thể xác nhận định dạng của {field}. Vui lòng nhập lại.",
+    "en": "The {field} format was not recognized. Please enter it again.",
+    "th": "ไม่สามารถตรวจสอบรูปแบบของ {field} ได้ โปรดป้อนอีกครั้ง",
+    "id": "Format {field} tidak dapat dikenali. Silakan masukkan kembali.",
+    "mn": "{field}-ийн хэлбэрийг таньсангүй. Дахин оруулна уу.",
+    "km": "មិនអាចស្គាល់ទម្រង់ {field} បានទេ។ សូមបញ្ចូលម្ដងទៀត។",
+    "ko": "입력한 {field} 형식을 확인하지 못했습니다. 다시 입력해 주세요.",
+}
+
+MODEL_FAILURE_MESSAGES = {
+    "vi": "Không thể xử lý câu trả lời. Nội dung trước đó vẫn được giữ nguyên.",
+    "en": "The answer could not be processed. Your previous entries are unchanged.",
+    "th": "ไม่สามารถประมวลผลคำตอบได้ ข้อมูลที่กรอกไว้ก่อนหน้ายังคงเดิม",
+    "id": "Jawaban tidak dapat diproses. Isian sebelumnya tetap tersimpan.",
+    "mn": "Хариултыг боловсруулж чадсангүй. Өмнөх мэдээлэл хэвээр хадгалагдсан.",
+    "km": "មិនអាចដំណើរការចម្លើយបានទេ។ ទិន្នន័យមុននៅដដែល។",
+    "ko": "답변을 처리하지 못했습니다. 이전에 입력한 내용은 그대로 유지됩니다.",
+}
+
 FIELD_SPECS = {
     "complainant.fullName": ("성명", MissingFieldInputType.TEXT, True, 100, []),
     "complainant.address": ("주소", MissingFieldInputType.TEXT, True, 300, []),
@@ -188,6 +208,11 @@ async def document_authoring(
         if state.get("authoring_intent") in {"QUESTION", "MIXED"} and question_answer
         else progress_answer
     )
+    input_error = state.get("input_error")
+    if input_error == "INVALID_FIELD_VALUE" and missing_ids:
+        answer = INVALID_FIELD_MESSAGES[request.preferredLanguage].format(field=display_name)
+    elif input_error == "MODEL_RESPONSE_INVALID":
+        answer = MODEL_FAILURE_MESSAGES[request.preferredLanguage]
     draft = DocumentDraft(
         status=DocumentDraftStatus.NEEDS_INPUT if missing_ids else DocumentDraftStatus.READY,
         data=data,
