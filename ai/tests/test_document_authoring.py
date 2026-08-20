@@ -307,6 +307,34 @@ def test_guide_returns_contract_response_for_ready_document(monkeypatch) -> None
     )
 
 
+def test_guide_falls_back_when_jurisdiction_lookup_fails(monkeypatch) -> None:
+    fixture = Path(__file__).parents[2] / "test-fixtures/analysis/labor-complaint-ready.json"
+    data = json.loads(fixture.read_text())["result"]["documentDrafts"][0]["data"]
+    data["submission"]["recipientLaborOfficeName"] = None
+    monkeypatch.setattr(guidance, "get_document_form", AsyncMock(return_value=data))
+    monkeypatch.setattr(
+        guidance,
+        "resolve_jurisdiction",
+        AsyncMock(side_effect=TimeoutError("labor office search timed out")),
+    )
+
+    response = TestClient(app).post(
+        "/guide",
+        json={
+            "requestId": "guide-1",
+            "sessionId": "session-1",
+            "preferredLanguage": "ko",
+            "input": {"text": "어디에 제출해야 해?"},
+        },
+    )
+
+    assert response.status_code == 200
+    result = response.json()["result"]
+    assert result["jurisdictionOfficeName"] == "관할 지방고용노동관서"
+    assert result["submissionOptions"][0]["url"].startswith("https://labor.moel.go.kr/")
+    assert "관할관서 찾기" in result["notes"]
+
+
 def test_parse_official_labor_office_results() -> None:
     page = """
     <th class="tit"><a href="http://www.moel.go.kr/ansan/" target="_blank">
