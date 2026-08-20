@@ -3,18 +3,20 @@ from unittest.mock import AsyncMock, Mock
 
 import pytest
 from fastapi.testclient import TestClient
+from langchain_core.messages import ToolMessage
 
 from ai_agent.api.routes import analyze
 from ai_agent.main import app
 from ai_agent.services import agent as agent_service
 from ai_agent.services import reviewer as reviewer_service
 from ai_agent.services.rag.retriever import search_labor_law
-from ai_agent.services.remedy.models import DetectedIssue, IssueType
+from ai_agent.services.remedy.models import DetectedIssue
 from ai_agent.services.reviewer import DocumentReview, deduplicate_issues
 
 REQUEST = {
     "requestId": "req-1",
     "sessionId": "session-1",
+    "preferredLanguage": "vi",
     "input": {"text": "관리비를 회사가 빼도 돼?", "documentIds": ["doc-1"]},
     "documents": [
         {
@@ -25,17 +27,8 @@ REQUEST = {
     ],
     "legalChecks": [
         {
-            "checkId": "check-1",
-            "legalReference": {
-                "lawName": "근로기준법",
-                "article": "제43조",
-                "paragraph": None,
-                "item": None,
-            },
-            "result": "UNKNOWN",
-            "reason": None,
-            "relatedDocumentIds": ["doc-1"],
-            "values": {},
+            "checkId": "ACCOMMODATION_DEDUCTION_HIGH",
+            "result": "REVIEW_REQUIRED",
         }
     ],
 }
@@ -51,7 +44,7 @@ def test_analyze_uses_only_input_text(monkeypatch) -> None:
         "legalChecks": [],
     }
 
-    response = TestClient(app).post("/analyze", json=request)
+    response = TestClient(app).post("/review", json=request)
 
     assert response.status_code == 200
     assert response.json() == {
@@ -61,13 +54,13 @@ def test_analyze_uses_only_input_text(monkeypatch) -> None:
         "result": {"answer": "확인이 필요합니다.", "analysis": None},
         "error": None,
     }
-    answer_question.assert_awaited_once_with("관리비를 회사가 빼도 돼?", "session-1")
+    answer_question.assert_awaited_once_with("관리비를 회사가 빼도 돼?", "session-1", "vi")
 
 
 def test_analyze_returns_document_review_without_starting_remedy(monkeypatch) -> None:
     issue = DetectedIssue(
         issue_id="housing-1",
-        issue_type=IssueType.HOUSING_DEDUCTION,
+        title="계약보다 많은 숙식비 공제",
         summary="계약과 다른 숙식비가 공제됐습니다.",
         facts={"contract_fee": "80000", "deducted_fee": "200000"},
         severity="HIGH",
@@ -83,10 +76,12 @@ def test_analyze_returns_document_review_without_starting_remedy(monkeypatch) ->
         )
     )
     answer_question = AsyncMock()
+    save_review_context = AsyncMock()
     monkeypatch.setattr(analyze, "review_documents", review_documents)
     monkeypatch.setattr(analyze, "answer_question", answer_question)
+    monkeypatch.setattr(analyze, "save_review_context", save_review_context)
 
-    response = TestClient(app).post("/analyze", json=REQUEST)
+    response = TestClient(app).post("/review", json=REQUEST)
 
     assert response.status_code == 200
     assert response.json()["result"] == {
@@ -95,10 +90,9 @@ def test_analyze_returns_document_review_without_starting_remedy(monkeypatch) ->
             "summary": "숙식비 공제 문제를 확인했습니다.",
             "findings": [
                 {
-                    "title": "HOUSING_DEDUCTION",
+                    "title": "계약보다 많은 숙식비 공제",
                     "description": "계약과 다른 숙식비가 공제됐습니다.",
                     "severity": "HIGH",
-                    "relatedCheckIds": ["check-1"],
                     "relatedDocumentIds": ["doc-1"],
                 }
             ],
@@ -106,19 +100,21 @@ def test_analyze_returns_document_review_without_starting_remedy(monkeypatch) ->
         },
     }
     review_documents.assert_awaited_once()
+    assert review_documents.await_args.kwargs["preferred_language"] == "vi"
     answer_question.assert_not_awaited()
+    save_review_context.assert_awaited_once()
 
 
 def test_document_review_deduplicates_same_legal_check() -> None:
     first = DetectedIssue(
         issue_id="housing-1",
-        issue_type=IssueType.HOUSING_DEDUCTION,
+        title="계약보다 많은 숙식비 공제",
         summary="숙식비가 계약보다 많이 공제됐습니다.",
         related_check_ids=["check-1"],
     )
     duplicate = DetectedIssue(
         issue_id="wage-1",
-        issue_type=IssueType.UNPAID_WAGE,
+        title="같은 숙식비 초과 공제",
         summary="같은 공제액이 임금 미지급일 수 있습니다.",
         related_check_ids=["check-1"],
     )
@@ -135,34 +131,14 @@ def test_document_reviewer_limits_law_search_and_model_calls(monkeypatch) -> Non
     reviewer_service.get_reviewer_agent.cache_clear()
 
     assert reviewer_service.get_reviewer_agent() is agent
-    tool_limiter, stop_search, model_limiter = agent_factory.call_args.kwargs["middleware"]
+    tool_limiter, model_limiter = agent_factory.call_args.kwargs["middleware"]
     assert tool_limiter.tool_name == "search_labor_law"
     assert tool_limiter.run_limit == 5
-    assert tool_limiter.exit_behavior == "continue"
-    assert stop_search is reviewer_service.stop_search_after_limit
+    assert tool_limiter.exit_behavior == "end"
     assert model_limiter.run_limit == 7
     assert model_limiter.exit_behavior == "error"
 
     reviewer_service.get_reviewer_agent.cache_clear()
-
-
-@pytest.mark.asyncio
-async def test_document_reviewer_hides_search_tool_after_five_calls() -> None:
-    search_tool = SimpleNamespace(name="search_labor_law")
-    remaining_tool = SimpleNamespace(name="DocumentReview")
-    updated_request = object()
-    request = SimpleNamespace(
-        state={"run_tool_call_count": {"search_labor_law": 5}},
-        tools=[search_tool, remaining_tool],
-        override=Mock(return_value=updated_request),
-    )
-    handler = AsyncMock(return_value="response")
-
-    result = await reviewer_service.stop_search_after_limit.awrap_model_call(request, handler)
-
-    assert result == "response"
-    request.override.assert_called_once_with(tools=[remaining_tool])
-    handler.assert_awaited_once_with(updated_request)
 
 
 @pytest.mark.asyncio
@@ -174,7 +150,12 @@ async def test_document_review_passes_trace_metadata(monkeypatch) -> None:
     monkeypatch.setattr(reviewer_service, "get_langsmith_tracer", lambda: tracer)
 
     result = await reviewer_service.review_documents(
-        "확인해줘", [], [], request_id="req-1", session_id="session-1"
+        "확인해줘",
+        [],
+        [],
+        request_id="req-1",
+        session_id="session-1",
+        preferred_language="vi",
     )
 
     assert result == review
@@ -189,22 +170,71 @@ async def test_document_review_passes_trace_metadata(monkeypatch) -> None:
     }
 
 
-def test_analyze_accepts_null_text() -> None:
+@pytest.mark.asyncio
+async def test_document_review_finalizes_after_search_limit(monkeypatch) -> None:
+    review = DocumentReview(answer="현재 근거로 답변", summary="검토 완료")
+    agent = SimpleNamespace(
+        ainvoke=AsyncMock(
+            return_value={
+                "messages": [
+                    ToolMessage(
+                        content="근로기준법 제43조 검색 결과",
+                        tool_call_id="call-1",
+                        status="success",
+                    )
+                ]
+            }
+        )
+    )
+    finalizer = SimpleNamespace(ainvoke=AsyncMock(return_value={"structured_response": review}))
+    monkeypatch.setattr(reviewer_service, "get_reviewer_agent", lambda: agent)
+    monkeypatch.setattr(reviewer_service, "get_reviewer_finalizer", lambda: finalizer)
+    monkeypatch.setattr(reviewer_service, "get_langsmith_tracer", lambda: None)
+
+    result = await reviewer_service.review_documents(
+        "확인해줘",
+        [],
+        [],
+        request_id="req-1",
+        session_id="session-1",
+        preferred_language="vi",
+    )
+
+    assert result == review
+    finalizer.ainvoke.assert_awaited_once()
+    messages = finalizer.ainvoke.await_args.args[0]["messages"]
+    assert messages[0].content
+    assert messages[1].content == "확보한 법령 검색 결과:\n근로기준법 제43조 검색 결과"
+
+
+def test_analyze_rejects_null_text_with_documents() -> None:
     request = {**REQUEST, "input": {"text": None, "documentIds": ["doc-1"]}}
 
-    response = TestClient(app).post("/analyze", json=request)
+    response = TestClient(app).post("/review", json=request)
+
+    assert response.status_code == 422
+
+
+def test_analyze_rejects_empty_request() -> None:
+    request = {
+        **REQUEST,
+        "input": {"text": "  ", "documentIds": []},
+        "documents": [],
+        "legalChecks": [],
+    }
+
+    response = TestClient(app).post("/review", json=request)
 
     assert response.status_code == 400
-    assert response.json() == {
-        "requestId": "req-1",
-        "sessionId": "session-1",
-        "status": "FAILED",
-        "result": None,
-        "error": {
-            "code": "TEXT_INPUT_REQUIRED",
-            "message": "현재는 input.text가 필요합니다.",
-        },
-    }
+    assert response.json()["error"]["code"] == "TEXT_INPUT_REQUIRED"
+
+
+def test_analyze_rejects_mismatched_document_ids() -> None:
+    request = {**REQUEST, "input": {"text": "검토해줘", "documentIds": []}}
+
+    response = TestClient(app).post("/review", json=request)
+
+    assert response.status_code == 422
 
 
 def test_analyze_returns_structured_model_error(monkeypatch) -> None:
@@ -214,8 +244,13 @@ def test_analyze_returns_structured_model_error(monkeypatch) -> None:
         AsyncMock(side_effect=RuntimeError("provider error")),
     )
 
-    request = {**REQUEST, "documents": [], "legalChecks": []}
-    response = TestClient(app).post("/analyze", json=request)
+    request = {
+        **REQUEST,
+        "input": {"text": "관리비를 회사가 빼도 돼?", "documentIds": []},
+        "documents": [],
+        "legalChecks": [],
+    }
+    response = TestClient(app).post("/review", json=request)
 
     assert response.status_code == 502
     assert response.json() == {
@@ -249,6 +284,7 @@ def test_review_agent_uses_deepseek(monkeypatch) -> None:
     model_factory.assert_called_once_with(
         model="deepseek-v4-flash",
         api_key="key",
+        temperature=0,
         extra_body={"thinking": {"type": "disabled"}},
     )
     # 체크포인트는 상위 workflow가 갖는다. review agent는 subgraph처럼 호출된다.
@@ -284,11 +320,16 @@ async def test_answer_question_uses_session_as_thread_id(monkeypatch, tmp_path) 
     monkeypatch.setattr(agent_service.AsyncSqliteSaver, "from_conn_string", from_conn_string)
     monkeypatch.setattr(agent_service, "get_agent", Mock(return_value=agent))
 
-    answer = await agent_service.answer_question("앞선 질문 기억해?", "session-1")
+    answer = await agent_service.answer_question("앞선 질문 기억해?", "session-1", "vi")
 
     assert answer == "확인이 필요합니다."
     from_conn_string.assert_called_once_with(str(tmp_path / "checkpoints.sqlite3"))
     agent.ainvoke.assert_awaited_once_with(
-        {"messages": [{"role": "user", "content": "앞선 질문 기억해?"}]},
+        {
+            "messages": [
+                {"role": "user", "content": "preferredLanguage=vi\n앞선 질문 기억해?"}
+            ],
+            "preferred_language": "vi",
+        },
         {"configurable": {"thread_id": "session-1"}},
     )

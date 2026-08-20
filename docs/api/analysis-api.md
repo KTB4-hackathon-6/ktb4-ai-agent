@@ -4,10 +4,8 @@
 `POST /analyze`는 제거하고 문제 검토는 `POST /review`, 문서 작성은 `POST /docs`, 해결 및
 제출 안내는 `POST /guide`로 분리한다.
 
-> 상태: **구현 목표 계약(초안)**. Spring 클라이언트와 Java 응답 모델은 이 계약으로 변경 중이지만,
-> Python 서버는 아직 `POST /analyze`와 기존 `AnalyzeRequest`/`AnalyzeResponse`만 구현한다.
-> 따라서 이 문서의 세 API는 현재 통합 환경에서 호출 가능한 API를 설명하는 문서가 아니라,
-> 양쪽 구현이 맞춰야 할 목표 계약이다.
+> 상태: **통합 계약**. Python 서버의 `POST /review`, `POST /docs`, `POST /guide` 요청·응답
+> 스키마와 Spring 클라이언트의 Java record가 이 계약을 사용한다.
 
 | 단계 | Method | Path | 역할 |
 |---|---|---|---|
@@ -507,10 +505,10 @@ class ContractModel(BaseModel):
 
 | 영역 | 현재 상태 | 계약 충족을 위해 필요한 작업 |
 |---|---|---|
-| Spring | `/review`, `/docs`, `/guide` 클라이언트와 Java record 변경 중 | 최종 계약 테스트와 필드 validator 정합성 확인 |
-| 선호 언어 전달 | Frontend와 Spring에서 `preferredLanguage` 전달 | Python이 응답 생성에 적용하는 작업은 후속 구현 |
-| Python 라우트 | `POST /analyze`만 등록 | 세 라우트 추가 후 `/analyze` 제거 시점 합의 |
-| Python 요청 모델 | 구 `LegalCheck`와 `CheckResult` 사용 | 새 enum과 단순화된 검사 모델로 교체 |
-| Python 응답 모델 | 문서 초안과 제출 안내 없음 | 세 응답 모델 추가 |
-| Python 문맥 | 대화 checkpointer는 있으나 이 계약의 검토·초안 저장소 없음 | 30분 TTL 문맥 저장소 추가 |
-| 엄격한 검증 | Pydantic 기본값으로 알 수 없는 필드 허용 | 공통 `extra="forbid"` 적용 |
+| Spring | `/review`, `/docs`, `/guide` 클라이언트와 Java record 적용 | 최종 통합 호출 확인 |
+| 선호 언어 전달 | 모든 요청에서 `preferredLanguage` 전달·검증 | 최종 통합 호출 확인 |
+| Python 라우트 | `POST /review`, `POST /docs`, `POST /guide` 등록 | 없음 |
+| Python 요청 모델 | 공통 필드와 엔드포인트별 입력 계약 적용 | 없음 |
+| Python 응답 모델 | 검토, 진정서 초안, 제출 안내 계약 적용 | 없음 |
+| Python 문맥 | SQLite checkpointer로 검토 결과와 진정서 초안을 `sessionId`에 저장 | 30분 TTL 적용 |
+| 엄격한 검증 | 공통 `extra="forbid"`와 응답 불변식 적용 | 없음 |

@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 
-from ai_agent.api.routes import analyze, health, ocr, rag
+from ai_agent.api.routes import analyze, document_authoring, guidance, health, ocr, rag
 
 app = FastAPI(title="ai-agent", version="0.1.0")
 
@@ -8,6 +8,8 @@ app.include_router(health.router)
 app.include_router(analyze.router)
 app.include_router(ocr.router)
 app.include_router(rag.router)
+app.include_router(document_authoring.router)
+app.include_router(guidance.router)
 
 
 def main() -> None:
