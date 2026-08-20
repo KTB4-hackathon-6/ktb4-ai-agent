@@ -1,0 +1,3 @@
+illo.kro.kr {
+	reverse_proxy frontend:80
+}
