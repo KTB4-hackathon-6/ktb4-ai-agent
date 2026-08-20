@@ -255,8 +255,14 @@ def test_review_and_docs_share_state_by_session_id(monkeypatch, tmp_path) -> Non
     assert data["complainant"]["fullName"] == "NGUYEN VAN TEST"
 
 
-def test_guide_requires_ready_document(monkeypatch) -> None:
-    monkeypatch.setattr(guidance, "get_document_form", AsyncMock(return_value={}))
+def test_guide_returns_generic_guidance_when_document_was_skipped(monkeypatch) -> None:
+    monkeypatch.setattr(
+        guidance,
+        "get_document_form",
+        AsyncMock(side_effect=LookupError("document form not found")),
+    )
+    resolve = AsyncMock()
+    monkeypatch.setattr(guidance, "resolve_jurisdiction", resolve)
 
     response = TestClient(app).post(
         "/guide",
@@ -268,8 +274,12 @@ def test_guide_requires_ready_document(monkeypatch) -> None:
         },
     )
 
-    assert response.status_code == 400
-    assert response.json()["error"]["code"] == "DOCUMENT_NOT_READY"
+    assert response.status_code == 200
+    result = response.json()["result"]
+    assert result["jurisdictionOfficeName"] == "관할 지방고용노동관서"
+    assert result["submissionOptions"][0]["url"].startswith("https://labor.moel.go.kr/")
+    assert "진정서 작성 전" in result["notes"]
+    resolve.assert_not_awaited()
 
 
 def test_guide_returns_contract_response_for_ready_document(monkeypatch) -> None:
