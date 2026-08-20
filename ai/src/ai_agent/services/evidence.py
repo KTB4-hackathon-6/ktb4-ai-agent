@@ -57,9 +57,13 @@ def weekly_holidays(ev: str) -> int | None:
     """주휴일 부여 여부. 체크된 표기 + 요일/주N회 문구."""
     e = ev or ''
     checked = r'(?:☑|■|▣|\[\s*[VvXxOo]\s*\])'
-    if re.search(rf'{checked}\s*[^\n]{{0,6}}?일요일', e) or re.search(rf'{checked}\s*주\s*1\s*회', e):
+    if re.search(rf'{checked}\s*[^\n]{{0,6}}?일요일', e) or re.search(
+        rf'{checked}\s*주\s*1\s*회', e
+    ):
         return 1
-    if re.search(r'주휴일\s*(?:매주|은)?\s*\S*요일', e) or re.search(r'약정\s*휴일은\s*매주\s*\S+요일', e):
+    if re.search(r'주휴일\s*(?:매주|은)?\s*\S*요일', e) or re.search(
+        r'약정\s*휴일은\s*매주\s*\S+요일', e
+    ):
         return 1
     if re.search(r'주\s*1\s*회', e):
         return 1

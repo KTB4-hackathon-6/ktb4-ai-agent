@@ -24,7 +24,9 @@ def check_payslip(
     facts: PayslipFacts, unverified_fields: list[str] | None = None
 ) -> list[RuleViolation]:
     missing = {
-        "근로자를 특정할 수 있는 정보(성명·생년월일·사원번호 등)": facts.worker_identifier_specified,
+        "근로자를 특정할 수 있는 정보(성명·생년월일·사원번호 등)": (
+            facts.worker_identifier_specified
+        ),
         "임금 지급일": facts.payment_date_specified,
         "임금총액": facts.total_pay_specified,
         "임금의 구성항목별 금액(기본급·수당 등)": facts.pay_items_specified,

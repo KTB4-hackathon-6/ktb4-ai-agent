@@ -45,13 +45,34 @@ FIELD_REQUEST_MESSAGES = {
 # 항목이다. FIELD_REQUEST_MESSAGES의 "~을(를) 알려주세요" 문구를 그대로 쓰면 사용자에게 진정
 # 내용을 대신 써 달라는 요청으로 읽혀, 사실(날짜·금액·경위)만 묻는 전용 문구를 따로 둔다.
 DETAILS_FACT_REQUEST_MESSAGES = {
-    "vi": "Tôi sẽ soạn nội dung đơn khiếu nại giúp bạn. Vấn đề là gì, từ khi nào đến khi nào, và số tiền là bao nhiêu?",
-    "en": "I'll write the complaint content for you. What happened, over what period, and for how much?",
-    "th": "ฉันจะเขียนเนื้อหาคำร้องให้คุณเอง มีปัญหาอะไร ตั้งแต่เมื่อไหร่ถึงเมื่อไหร่ และจำนวนเงินเท่าไหร่",
-    "id": "Saya akan menuliskan isi pengaduan untuk Anda. Apa masalahnya, periode kejadiannya, dan berapa jumlahnya?",
-    "mn": "Би өргөдлийн агуулгыг таны өмнөөс бичиж өгье. Ямар асуудал байсан, хэзээнээс хэзээ хүртэл, хэдэн төгрөг вэ?",
-    "km": "ខ្ញុំនឹងសរសេរខ្លឹមសារពាក្យបណ្ដឹងជូនអ្នក។ តើមានបញ្ហាអ្វី តាំងពីពេលណាដល់ពេលណា និងចំនួនប៉ុន្មាន?",
-    "ko": "제가 진정 내용을 작성해드릴게요. 어떤 문제가, 언제부터 언제까지, 얼마 규모로 있었는지 알려주시겠어요?",
+    "vi": (
+        "Tôi sẽ soạn nội dung đơn khiếu nại giúp bạn. Vấn đề là gì, từ khi nào đến khi nào, "
+        "và số tiền là bao nhiêu?"
+    ),
+    "en": (
+        "I'll write the complaint content for you. What happened, over what period, "
+        "and for how much?"
+    ),
+    "th": (
+        "ฉันจะเขียนเนื้อหาคำร้องให้คุณเอง มีปัญหาอะไร "
+        "ตั้งแต่เมื่อไหร่ถึงเมื่อไหร่ และจำนวนเงินเท่าไหร่"
+    ),
+    "id": (
+        "Saya akan menuliskan isi pengaduan untuk Anda. Apa masalahnya, periode kejadiannya, "
+        "dan berapa jumlahnya?"
+    ),
+    "mn": (
+        "Би өргөдлийн агуулгыг таны өмнөөс бичиж өгье. Ямар асуудал байсан, "
+        "хэзээнээс хэзээ хүртэл, хэдэн төгрөг вэ?"
+    ),
+    "km": (
+        "ខ្ញុំនឹងសរសេរខ្លឹមសារពាក្យបណ្ដឹងជូនអ្នក។ "
+        "តើមានបញ្ហាអ្វី តាំងពីពេលណាដល់ពេលណា និងចំនួនប៉ុន្មាន?"
+    ),
+    "ko": (
+        "제가 진정 내용을 작성해드릴게요. 어떤 문제가, 언제부터 언제까지, "
+        "얼마 규모로 있었는지 알려주시겠어요?"
+    ),
 }
 
 INVALID_FIELD_MESSAGES = {

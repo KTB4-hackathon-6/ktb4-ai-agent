@@ -6,7 +6,7 @@
 
 import json
 import uuid
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
 
 from ai_agent.config import get_settings
@@ -20,7 +20,7 @@ def save_diagnosis_snapshot(
     storage_dir = Path(get_settings().diagnosis_storage_dir)
     storage_dir.mkdir(parents=True, exist_ok=True)
 
-    timestamp = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%S%f")
+    timestamp = datetime.now(UTC).strftime("%Y%m%dT%H%M%S%f")
     snapshot_path = storage_dir / f"{timestamp}-{uuid.uuid4().hex[:8]}.json"
 
     snapshot = {

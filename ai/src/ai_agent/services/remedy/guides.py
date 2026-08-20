@@ -69,8 +69,8 @@ complaint.details는 아래 세 부분을 이 순서로 문단을 나누어 작�
    해당합니다"). law 이름과 조항을 임의로 만들어내지 않으며, 대응하는 legalChecks 항목이 없는
    사실에는 법령을 인용하지 않고 사실관계로만 남긴다.
 3. 진정 취지: 마지막 문단에 피진정인에 대한 요구를 명시한다("피진정인은 진정인에게 미지급 임금 등을
-   즉시 지급하고 위 위반사항을 시정하여 주시기 바랍니다"에 해당하는 문장). complaint.unpaidWagesTotal이
-   채워져 있으면 그 금액과 일치하는 숫자를 언급한다.
+   즉시 지급하고 위 위반사항을 시정하여 주시기 바랍니다"에 해당하는 문장).
+   complaint.unpaidWagesTotal이 채워져 있으면 그 금액과 일치하는 숫자를 언급한다.
 
 출처에 없는 주소, 연락처, 관할 관서는 추측하지 않는다. 관할 관서가 userMessage나 reviewResult에
 명시되면 submission.recipientLaborOfficeName에 반영하되, 사용자에게 관할 관서를 질문하지 않는다.

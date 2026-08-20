@@ -23,9 +23,9 @@ from langchain_deepseek import ChatDeepSeek
 from pydantic import BaseModel
 
 from ai_agent.config import get_settings
-from ai_agent.services import evidence as evidence_rules
 from ai_agent.schemas.extraction import ExtractionResult
 from ai_agent.schemas.rules import ContractFacts, IndustryCategory
+from ai_agent.services import evidence as evidence_rules
 
 _SYSTEM_PROMPT = """너는 대한민국 표준근로계약서(외국인근로자의 고용 등에 관한 법률 시행규칙
 별지 제6호서식 및 제6호의2서식)의 OCR 인식 결과에서 정해진 필드를 그대로 읽어
@@ -171,9 +171,12 @@ def _recompute_from_evidence(
     return values, unverified
 
 
+def _squash(s: str) -> str:
+    return re.sub(r"\s+", "", s)
+
+
 def _appears_in(evidence: str, raw_text: str) -> bool:
-    squash = lambda s: re.sub(r"\s+", "", s)
-    return squash(evidence) in squash(raw_text)
+    return _squash(evidence) in _squash(raw_text)
 
 
 def _grounding_warnings(facts: ContractFacts, raw_text: str) -> list[str]:

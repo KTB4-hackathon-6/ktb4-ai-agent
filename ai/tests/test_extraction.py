@@ -97,7 +97,10 @@ def test_whitespace_differences_do_not_break_evidence_matching(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     # OCR은 같은 줄을 "09 시 00 분"처럼 띄어 읽기도 한다.
-    raw = "소정근로시간 : 09 시 00 분 ~ 18 시 00 분\n휴게 1일 60 분\n주휴일 매주 일요일\n( 36 ) 개월\n월급 2,300,000원\n숙박비 80,000원"
+    raw = (
+        "소정근로시간 : 09 시 00 분 ~ 18 시 00 분\n휴게 1일 60 분\n주휴일 매주 일요일\n"
+        "( 36 ) 개월\n월급 2,300,000원\n숙박비 80,000원"
+    )
     result = _run(
         monkeypatch,
         raw_text=raw,
@@ -111,7 +114,10 @@ def test_whitespace_differences_do_not_break_evidence_matching(
 
 def test_hours_and_minutes_split_rest_time_is_summed(monkeypatch: pytest.MonkeyPatch) -> None:
     # 농업/축산업/어업 서식: "(1) 시간 (30) 분" -> 90분
-    raw = "휴게시간 1일 (2)회, (1) 시간 (30) 분\n근무시간 08시 00분 ~ 18시 00분\n휴일 주1회\n계약기간 ( 24 ) 개월"
+    raw = (
+        "휴게시간 1일 (2)회, (1) 시간 (30) 분\n근무시간 08시 00분 ~ 18시 00분\n"
+        "휴일 주1회\n계약기간 ( 24 ) 개월"
+    )
     result = _run(
         monkeypatch,
         raw_text=raw,
