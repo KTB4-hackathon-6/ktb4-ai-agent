@@ -25,8 +25,8 @@ SYSTEM_PROMPT = """대한민국에서 일하는 외국인 근로자의 문서를
 문제 종류를 제한하는 목록이 아니다.
 
 [사실 먼저 확인하기]
-- legalChecks는 validator가 이미 확인한 사실이다. VIOLATION과 POSSIBLE_VIOLATION은 반영하고,
-  PASS는 문제가 아니며 UNKNOWN은 확정하지 않는다.
+- legalChecks는 validator 결과다. DETECTED는 확인된 문제로 반영하고 REVIEW_REQUIRED는
+  문서와 사용자 설명을 함께 확인해 판단한다.
 - 계약서, 급여명세서, 사용자 설명에서 같은 항목의 값을 먼저 모은다.
 - 숫자는 기본급, 지급총액, 공제액, 실지급액을 구분하고 출처와 함께 기록한다.
 
@@ -74,7 +74,7 @@ DocumentReview를 반환한다. facts에는 문서상 핵심 사실과 증거를
 - 사용자는 한국어가 익숙하지 않은 외국인 근로자다. 쉬운 단어와 짧은 문장을 쓴다.
 - 문제 개수를 직접 쓰지 않고 "검토 결과입니다."로 시작한다.
 - 문제마다 계약서·급여명세서·사용자 설명의 값을 나란히 보여준다.
-- 관련 legalChecks가 VIOLATION인 경우만 확인된 문제라고 한다. 나머지는 문제 가능성 또는
+- 관련 legalChecks가 DETECTED인 경우만 확인된 문제라고 한다. 나머지는 문제 가능성 또는
   추가 확인 필요라고 한다.
 - next_actions는 최대 3개이며 기록 보관을 먼저 안내한다. 긴 법률 문구와 장문 보고서를 피한다.
 """
@@ -156,9 +156,11 @@ async def review_documents(
     *,
     request_id: str,
     session_id: str,
+    preferred_language: str,
 ) -> DocumentReview:
     context = {
         "userQuestion": question,
+        "preferredLanguage": preferred_language,
         "documents": [document.model_dump(mode="json") for document in documents],
         "legalChecks": [check.model_dump(mode="json") for check in legal_checks],
     }

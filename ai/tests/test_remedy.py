@@ -4,9 +4,14 @@ import pytest
 from langchain_core.messages import AIMessage
 from langgraph.checkpoint.sqlite.aio import AsyncSqliteSaver
 
+from ai_agent.schemas.document_authoring import (
+    ComplainantData,
+    LaborComplaintFormData,
+    RespondentData,
+)
 from ai_agent.services import agent as agent_service
 from ai_agent.services.remedy import workflow
-from ai_agent.services.remedy.guides import REMEDY_GUIDES
+from ai_agent.services.remedy.guides import DOCUMENT_AUTHORING_SYSTEM_PROMPT
 from ai_agent.services.remedy.models import DetectedIssue
 from ai_agent.services.remedy.workflow import RemedyTurn
 
@@ -28,7 +33,7 @@ def run_turn(monkeypatch, tmp_path):
     )
 
     async def turn(text: str, session_id: str = "session-1", injected: dict | None = None) -> str:
-        return await agent_service.answer_question(text, session_id, injected)
+        return await agent_service.answer_question(text, session_id, "ko", injected)
 
     async def read(session_id: str = "session-1"):
         async with AsyncSqliteSaver.from_conn_string(str(path)) as checkpointer:
@@ -44,10 +49,11 @@ def run_turn(monkeypatch, tmp_path):
             legal_checks=[],
             review_result={"answer": "임금체불 가능성", "issues": ["housing-1"]},
             issues=[housing_issue().model_dump(mode="json")],
+            preferred_language="ko",
         )
 
     async def docs(text: str, session_id: str = "session-1"):
-        return await agent_service.run_document_authoring(text, session_id)
+        return await agent_service.run_document_authoring(text, session_id, "ko")
 
     turn.read = read
     turn.save = save
@@ -73,13 +79,9 @@ async def test_document_authoring_uses_review_state_and_fixed_sn001(run_turn, mo
         return RemedyTurn(
             answer="근로자 연락처를 알려주세요.",
             remedy_plan=["SN001 작성"],
-            selected_forms=["SN001"],
-            field_updates={
-                "SN001": {
-                    "workerName": "응우옌 반 남",
-                    "claimAmount": "월 20만원",
-                }
-            },
+            form_data=LaborComplaintFormData(
+                complainant=ComplainantData(fullName="응우옌 반 남"),
+            ),
         )
 
     monkeypatch.setattr(workflow, "run_remedy_agent", decide)
@@ -89,11 +91,9 @@ async def test_document_authoring_uses_review_state_and_fixed_sn001(run_turn, mo
     state = await run_turn.read()
 
     assert result["messages"][-1].text == "근로자 연락처를 알려주세요."
-    assert state["selected_forms"] == ["SN001"]
-    assert state["form_drafts"]["SN001"] == {
-        "workerName": "응우옌 반 남",
-        "claimAmount": "월 20만원",
-    }
+    assert state["form_drafts"]["LABOR_COMPLAINT_001"]["complainant"]["fullName"] == (
+        "응우옌 반 남"
+    )
 
 
 @pytest.mark.asyncio
@@ -105,18 +105,18 @@ async def test_free_talk_updates_multiple_fields_without_losing_state(
             RemedyTurn(
                 answer="사업장 정보를 알려주세요.",
                 remedy_plan=["임금체불 진정"],
-                selected_forms=["SN001"],
-                field_updates={"SN001": {"workerName": "응우옌 반 남"}},
+                form_data=LaborComplaintFormData(
+                    complainant=ComplainantData(fullName="응우옌 반 남")
+                ),
             ),
             RemedyTurn(
                 answer="두 항목을 반영했습니다.",
-                selected_forms=["SN001"],
-                field_updates={
-                    "SN001": {
-                        "workplaceName": "대한농장",
-                        "workerPhone": "010-1234-5678",
-                    }
-                },
+                form_data=LaborComplaintFormData(
+                    complainant=ComplainantData(
+                        fullName="응우옌 반 남", mobilePhone="010-1234-5678"
+                    ),
+                    respondent=RespondentData(workplaceName="대한농장"),
+                ),
             ),
         ]
     )
@@ -131,11 +131,9 @@ async def test_free_talk_updates_multiple_fields_without_losing_state(
     state = await run_turn.read()
 
     assert state["remedy_plan"] == ["임금체불 진정"]
-    assert state["form_drafts"]["SN001"] == {
-        "workerName": "응우옌 반 남",
-        "workplaceName": "대한농장",
-        "workerPhone": "010-1234-5678",
-    }
+    form = state["form_drafts"]["LABOR_COMPLAINT_001"]
+    assert form["complainant"]["mobilePhone"] == "010-1234-5678"
+    assert form["respondent"]["workplaceName"] == "대한농장"
 
 
 @pytest.mark.asyncio
@@ -144,6 +142,6 @@ async def test_document_authoring_requires_same_session_review(run_turn) -> None
         await run_turn.docs("작성해줘", session_id="other-session")
 
 
-def test_document_authoring_guide_is_fixed_to_sn001() -> None:
-    assert "SN001" in REMEDY_GUIDES
-    assert "A522A" not in REMEDY_GUIDES
+def test_document_authoring_prompt_uses_integrated_form_contract() -> None:
+    assert "complainant" in DOCUMENT_AUTHORING_SYSTEM_PROMPT
+    assert "LABOR_COMPLAINT_001" not in DOCUMENT_AUTHORING_SYSTEM_PROMPT

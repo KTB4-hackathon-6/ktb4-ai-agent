@@ -16,6 +16,7 @@ from ai_agent.services.reviewer import DocumentReview, deduplicate_issues
 REQUEST = {
     "requestId": "req-1",
     "sessionId": "session-1",
+    "preferredLanguage": "vi",
     "input": {"text": "관리비를 회사가 빼도 돼?", "documentIds": ["doc-1"]},
     "documents": [
         {
@@ -26,17 +27,8 @@ REQUEST = {
     ],
     "legalChecks": [
         {
-            "checkId": "check-1",
-            "legalReference": {
-                "lawName": "근로기준법",
-                "article": "제43조",
-                "paragraph": None,
-                "item": None,
-            },
-            "result": "UNKNOWN",
-            "reason": None,
-            "relatedDocumentIds": ["doc-1"],
-            "values": {},
+            "checkId": "ACCOMMODATION_DEDUCTION_HIGH",
+            "result": "REVIEW_REQUIRED",
         }
     ],
 }
@@ -62,7 +54,7 @@ def test_analyze_uses_only_input_text(monkeypatch) -> None:
         "result": {"answer": "확인이 필요합니다.", "analysis": None},
         "error": None,
     }
-    answer_question.assert_awaited_once_with("관리비를 회사가 빼도 돼?", "session-1")
+    answer_question.assert_awaited_once_with("관리비를 회사가 빼도 돼?", "session-1", "vi")
 
 
 def test_analyze_returns_document_review_without_starting_remedy(monkeypatch) -> None:
@@ -101,7 +93,6 @@ def test_analyze_returns_document_review_without_starting_remedy(monkeypatch) ->
                     "title": "계약보다 많은 숙식비 공제",
                     "description": "계약과 다른 숙식비가 공제됐습니다.",
                     "severity": "HIGH",
-                    "relatedCheckIds": ["check-1"],
                     "relatedDocumentIds": ["doc-1"],
                 }
             ],
@@ -109,6 +100,7 @@ def test_analyze_returns_document_review_without_starting_remedy(monkeypatch) ->
         },
     }
     review_documents.assert_awaited_once()
+    assert review_documents.await_args.kwargs["preferred_language"] == "vi"
     answer_question.assert_not_awaited()
     save_review_context.assert_awaited_once()
 
@@ -158,7 +150,12 @@ async def test_document_review_passes_trace_metadata(monkeypatch) -> None:
     monkeypatch.setattr(reviewer_service, "get_langsmith_tracer", lambda: tracer)
 
     result = await reviewer_service.review_documents(
-        "확인해줘", [], [], request_id="req-1", session_id="session-1"
+        "확인해줘",
+        [],
+        [],
+        request_id="req-1",
+        session_id="session-1",
+        preferred_language="vi",
     )
 
     assert result == review
@@ -195,7 +192,12 @@ async def test_document_review_finalizes_after_search_limit(monkeypatch) -> None
     monkeypatch.setattr(reviewer_service, "get_langsmith_tracer", lambda: None)
 
     result = await reviewer_service.review_documents(
-        "확인해줘", [], [], request_id="req-1", session_id="session-1"
+        "확인해줘",
+        [],
+        [],
+        request_id="req-1",
+        session_id="session-1",
+        preferred_language="vi",
     )
 
     assert result == review
@@ -205,33 +207,12 @@ async def test_document_review_finalizes_after_search_limit(monkeypatch) -> None
     assert messages[1].content == "확보한 법령 검색 결과:\n근로기준법 제43조 검색 결과"
 
 
-def test_analyze_accepts_null_text_with_documents(monkeypatch) -> None:
-    review_documents = AsyncMock(
-        return_value=DocumentReview(answer="문서를 검토했습니다.", summary="검토 완료")
-    )
-    monkeypatch.setattr(analyze, "review_documents", review_documents)
-    monkeypatch.setattr(analyze, "save_review_context", AsyncMock())
+def test_analyze_rejects_null_text_with_documents() -> None:
     request = {**REQUEST, "input": {"text": None, "documentIds": ["doc-1"]}}
 
     response = TestClient(app).post("/review", json=request)
 
-    assert response.status_code == 200
-    assert response.json() == {
-        "requestId": "req-1",
-        "sessionId": "session-1",
-        "status": "COMPLETED",
-        "result": {
-            "answer": "문서를 검토했습니다.",
-            "analysis": {
-                "summary": "검토 완료",
-                "findings": [],
-                "nextActions": [],
-            },
-        },
-        "error": None,
-    }
-    review_documents.assert_awaited_once()
-    assert review_documents.await_args.args[0] == ""
+    assert response.status_code == 422
 
 
 def test_analyze_rejects_empty_request() -> None:
@@ -245,10 +226,15 @@ def test_analyze_rejects_empty_request() -> None:
     response = TestClient(app).post("/review", json=request)
 
     assert response.status_code == 400
-    assert response.json()["error"] == {
-        "code": "TEXT_INPUT_REQUIRED",
-        "message": "input.text 또는 검토할 문서가 필요합니다.",
-    }
+    assert response.json()["error"]["code"] == "TEXT_INPUT_REQUIRED"
+
+
+def test_analyze_rejects_mismatched_document_ids() -> None:
+    request = {**REQUEST, "input": {"text": "검토해줘", "documentIds": []}}
+
+    response = TestClient(app).post("/review", json=request)
+
+    assert response.status_code == 422
 
 
 def test_analyze_returns_structured_model_error(monkeypatch) -> None:
@@ -258,7 +244,12 @@ def test_analyze_returns_structured_model_error(monkeypatch) -> None:
         AsyncMock(side_effect=RuntimeError("provider error")),
     )
 
-    request = {**REQUEST, "documents": [], "legalChecks": []}
+    request = {
+        **REQUEST,
+        "input": {"text": "관리비를 회사가 빼도 돼?", "documentIds": []},
+        "documents": [],
+        "legalChecks": [],
+    }
     response = TestClient(app).post("/review", json=request)
 
     assert response.status_code == 502
@@ -329,11 +320,16 @@ async def test_answer_question_uses_session_as_thread_id(monkeypatch, tmp_path) 
     monkeypatch.setattr(agent_service.AsyncSqliteSaver, "from_conn_string", from_conn_string)
     monkeypatch.setattr(agent_service, "get_agent", Mock(return_value=agent))
 
-    answer = await agent_service.answer_question("앞선 질문 기억해?", "session-1")
+    answer = await agent_service.answer_question("앞선 질문 기억해?", "session-1", "vi")
 
     assert answer == "확인이 필요합니다."
     from_conn_string.assert_called_once_with(str(tmp_path / "checkpoints.sqlite3"))
     agent.ainvoke.assert_awaited_once_with(
-        {"messages": [{"role": "user", "content": "앞선 질문 기억해?"}]},
+        {
+            "messages": [
+                {"role": "user", "content": "preferredLanguage=vi\n앞선 질문 기억해?"}
+            ],
+            "preferred_language": "vi",
+        },
         {"configurable": {"thread_id": "session-1"}},
     )

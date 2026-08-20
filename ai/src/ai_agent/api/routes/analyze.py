@@ -39,13 +39,13 @@ def error_response(
     responses={400: {"model": AnalyzeResponse}, 502: {"model": AnalyzeResponse}},
 )
 async def analyze(request: AnalyzeRequest) -> AnalyzeResponse | JSONResponse:
-    question = (request.input.text or "").strip()
-    if not question and not (request.documents or request.legalChecks):
+    question = request.input.text
+    if not question:
         return error_response(
             request,
             status_code=400,
             code="TEXT_INPUT_REQUIRED",
-            message="input.text 또는 검토할 문서가 필요합니다.",
+            message="input.text를 입력해야 합니다.",
         )
 
     try:
@@ -57,8 +57,15 @@ async def analyze(request: AnalyzeRequest) -> AnalyzeResponse | JSONResponse:
                 request.legalChecks,
                 request_id=request.requestId,
                 session_id=request.sessionId,
+                preferred_language=request.preferredLanguage,
             )
-        answer = review.answer if review else await answer_question(question, request.sessionId)
+        answer = (
+            review.answer
+            if review
+            else await answer_question(
+                question, request.sessionId, request.preferredLanguage
+            )
+        )
         if review:
             await save_review_context(
                 request.sessionId,
@@ -66,6 +73,7 @@ async def analyze(request: AnalyzeRequest) -> AnalyzeResponse | JSONResponse:
                 legal_checks=[check.model_dump(mode="json") for check in request.legalChecks],
                 review_result=review.model_dump(mode="json"),
                 issues=[issue.model_dump(mode="json") for issue in review.issues],
+                preferred_language=request.preferredLanguage,
             )
     except Exception:
         # 로그가 없으면 502만 남고 원인(모델 오류·타임아웃·검색 실패)이 사라진다.
@@ -92,7 +100,6 @@ async def analyze(request: AnalyzeRequest) -> AnalyzeResponse | JSONResponse:
                             title=issue.title,
                             description=issue.summary,
                             severity=issue.severity,
-                            relatedCheckIds=issue.related_check_ids,
                             relatedDocumentIds=issue.related_document_ids,
                         )
                         for issue in review.issues
