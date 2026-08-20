@@ -15,6 +15,7 @@ class PreferredLanguage(StrEnum):
     ID = "id"
     MN = "mn"
     KM = "km"
+    KO = "ko"
 
 
 class AnalyzeInput(ContractModel):
