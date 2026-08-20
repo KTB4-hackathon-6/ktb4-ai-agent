@@ -103,6 +103,12 @@ def test_analyze_returns_document_review_without_starting_remedy(monkeypatch) ->
     assert review_documents.await_args.kwargs["preferred_language"] == "vi"
     answer_question.assert_not_awaited()
     save_review_context.assert_awaited_once()
+    assert save_review_context.await_args.kwargs["user_message"] == (
+        "관리비를 회사가 빼도 돼?"
+    )
+    assert save_review_context.await_args.kwargs["assistant_message"] == (
+        "계약과 다른 숙식비 공제 가능성이 있습니다."
+    )
 
 
 def test_document_review_deduplicates_same_legal_check() -> None:
@@ -337,7 +343,10 @@ async def test_answer_question_uses_session_as_thread_id(monkeypatch, tmp_path) 
 
 def test_every_language_has_localized_messages():
     """언어 추가 시 응답 문구 dict 누락을 막는다."""
+    from ai_agent.api.routes.document_authoring import READY_MESSAGES
     from ai_agent.api.routes.guidance import ANSWERS
     from ai_agent.schemas.analyze import PreferredLanguage
 
-    assert {language.value for language in PreferredLanguage} <= ANSWERS.keys()
+    codes = {language.value for language in PreferredLanguage}
+    assert codes <= ANSWERS.keys()
+    assert codes <= READY_MESSAGES.keys()

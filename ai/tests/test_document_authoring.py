@@ -3,16 +3,19 @@ from pathlib import Path
 from types import SimpleNamespace
 from unittest.mock import AsyncMock
 
+import pytest
 from fastapi.testclient import TestClient
 from langchain_core.messages import AIMessage
 
 from ai_agent.api.routes import analyze as review_route
 from ai_agent.api.routes import document_authoring, guidance
+from ai_agent.api.routes.guidance import JurisdictionDecision, parse_offices
 from ai_agent.main import app
 from ai_agent.schemas.document_authoring import (
     ComplainantData,
     DocumentAuthoringResponse,
     LaborComplaintFormData,
+    RespondentData,
 )
 from ai_agent.services import agent as agent_service
 from ai_agent.services.remedy import workflow
@@ -35,9 +38,7 @@ def test_docs_returns_one_missing_field(monkeypatch) -> None:
         return_value={
             "messages": [AIMessage("주소를 알려주세요.")],
             "form_drafts": {
-                "LABOR_COMPLAINT_001": {
-                    "complainant": {"fullName": "NGUYEN VAN TEST"}
-                }
+                "LABOR_COMPLAINT_001": {"complainant": {"fullName": "NGUYEN VAN TEST"}}
             },
             "authoring_intent": "FORM_INPUT",
             "question_answer": None,
@@ -65,9 +66,7 @@ def test_docs_answers_question_then_repeats_current_missing_field(monkeypatch) -
         AsyncMock(
             return_value={
                 "form_drafts": {
-                    "LABOR_COMPLAINT_001": {
-                        "complainant": {"fullName": "NGUYEN VAN TEST"}
-                    }
+                    "LABOR_COMPLAINT_001": {"complainant": {"fullName": "NGUYEN VAN TEST"}}
                 },
                 "authoring_intent": "QUESTION",
                 "question_answer": "주소는 진정인 확인을 위해 필요합니다.",
@@ -76,18 +75,39 @@ def test_docs_answers_question_then_repeats_current_missing_field(monkeypatch) -
         ),
     )
 
-    response = TestClient(app).post(
-        "/docs", json=docs_request("주소는 왜 필요한가요?")
-    )
+    response = TestClient(app).post("/docs", json=docs_request("주소는 왜 필요한가요?"))
 
     assert response.status_code == 200
     result = response.json()["result"]
-    assert result["answer"] == (
-        "주소는 진정인 확인을 위해 필요합니다.\n\n현재 주소를 알려주세요."
-    )
+    assert result["answer"] == ("주소는 진정인 확인을 위해 필요합니다.\n\n현재 주소를 알려주세요.")
     draft = result["documentDrafts"][0]
     assert draft["missingFields"][0]["fieldId"] == "complainant.address"
     assert draft["missingFields"][0]["question"] == "현재 주소를 알려주세요."
+
+
+def test_docs_localizes_fallback_field_question(monkeypatch) -> None:
+    monkeypatch.setattr(
+        document_authoring,
+        "run_document_authoring",
+        AsyncMock(
+            return_value={
+                "form_drafts": {"LABOR_COMPLAINT_001": {}},
+                "authoring_intent": "FORM_INPUT",
+                "field_questions": {},
+            }
+        ),
+    )
+    request = docs_request()
+    request["preferredLanguage"] = "ko"
+
+    response = TestClient(app).post("/docs", json=request)
+
+    assert response.status_code == 200
+    result = response.json()["result"]
+    assert result["answer"] == "다음 정보를 알려주세요: 성명."
+    assert result["documentDrafts"][0]["missingFields"][0]["question"] == (
+        "다음 정보를 알려주세요: 성명."
+    )
 
 
 def test_docs_requires_review_context(monkeypatch) -> None:
@@ -152,8 +172,26 @@ def test_review_and_docs_share_state_by_session_id(monkeypatch, tmp_path) -> Non
         ),
     )
 
+    monkeypatch.setattr(
+        workflow,
+        "extract_document_form",
+        AsyncMock(
+            return_value=LaborComplaintFormData(
+                complainant=ComplainantData(fullName="NGUYEN VAN TEST")
+            )
+        ),
+    )
+
     async def write_form(state):
         assert state["issues"][0]["issue_id"] == "wage-1"
+        assert (
+            state["form_drafts"]["LABOR_COMPLAINT_001"]["complainant"]["fullName"]
+            == "NGUYEN VAN TEST"
+        )
+        assert workflow.recent_conversation(state) == [
+            {"role": "user", "content": "계약서를 검토해줘"},
+            {"role": "assistant", "content": "기본급 차이가 있습니다."},
+        ]
         return RemedyTurn(
             intent=AuthoringIntent.FORM_INPUT,
             form_data=LaborComplaintFormData(
@@ -211,7 +249,14 @@ def test_guide_requires_ready_document(monkeypatch) -> None:
 def test_guide_returns_contract_response_for_ready_document(monkeypatch) -> None:
     fixture = Path(__file__).parents[2] / "test-fixtures/analysis/labor-complaint-ready.json"
     data = json.loads(fixture.read_text())["result"]["documentDrafts"][0]["data"]
+    data["submission"]["recipientLaborOfficeName"] = None
     monkeypatch.setattr(guidance, "get_document_form", AsyncMock(return_value=data))
+    resolve = AsyncMock(
+        return_value=JurisdictionDecision(
+            officeName="고용노동부 안산지청",
+        )
+    )
+    monkeypatch.setattr(guidance, "resolve_jurisdiction", resolve)
 
     response = TestClient(app).post(
         "/guide",
@@ -226,5 +271,52 @@ def test_guide_returns_contract_response_for_ready_document(monkeypatch) -> None
     assert response.status_code == 200
     result = response.json()["result"]
     assert result["agencyCode"] == "MOEL"
-    assert result["submissionOptions"][0]["channel"] == "VISIT"
+    assert result["jurisdictionOfficeName"] == "고용노동부 안산지청"
+    assert result["submissionOptions"][0]["channel"] == "ONLINE"
+    assert result["submissionOptions"][0]["url"].startswith("https://labor.moel.go.kr/")
     assert result["answer"].startswith("You can submit")
+    resolved_form = resolve.await_args.args[0]
+    assert resolved_form.respondent.actualWorkplaceAddress == (
+        "경기도 안산시 단원구 공단테스트로 30"
+    )
+
+
+def test_parse_official_labor_office_results() -> None:
+    page = """
+    <th class="tit"><a href="http://www.moel.go.kr/ansan/" target="_blank">
+    경기지방고용노동청안산지청</a></th>
+    <td>경기도 안산시, 시흥시</td>
+    """
+
+    assert parse_offices(page) == [
+        {
+            "officeName": "경기지방고용노동청안산지청",
+            "jurisdiction": "경기도 안산시, 시흥시",
+            "homepageUrl": "https://www.moel.go.kr/ansan/",
+        }
+    ]
+
+
+@pytest.mark.asyncio
+async def test_resolve_jurisdiction_uses_official_search(monkeypatch) -> None:
+    search = AsyncMock(
+        side_effect=[
+            [],
+            [
+                {
+                    "officeName": "경기지방고용노동청안산지청",
+                    "jurisdiction": "경기도 안산시, 시흥시",
+                    "homepageUrl": "https://www.moel.go.kr/ansan/",
+                }
+            ],
+        ]
+    )
+    monkeypatch.setattr(guidance, "search_labor_office", search)
+    form = LaborComplaintFormData(
+        respondent=RespondentData(actualWorkplaceAddress="경기도 안산시 단원구 공단로 1")
+    )
+
+    decision = await guidance.resolve_jurisdiction(form)
+
+    assert decision.officeName == "경기지방고용노동청안산지청"
+    assert [call.args[0] for call in search.await_args_list] == ["단원구", "안산시"]
