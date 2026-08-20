@@ -16,12 +16,16 @@ import ContractFlow from './components/chatbot/ContractFlow'
 import { normalizeLanguage } from './i18n'
 import { detectReviewIssue } from './review/presentation'
 import type { ComplaintChatMessage, FlowState, UploadState } from './types/chatbot'
+import illoLogo from './assets/illo-logo.png'
 import illoMascot from './assets/illo-mascot.png'
 import './App.css'
 
 function App() {
   const { t, i18n } = useTranslation()
   const language = normalizeLanguage(i18n.resolvedLanguage ?? i18n.language)
+  const landingTitle = t('landing.title')
+  const brandIndex = landingTitle.indexOf('ILLO')
+  const landingDescriptionLines = t('landing.description').split('\n')
   const [flowState, setFlowState] = useState<FlowState>('UPLOAD')
   const [contractResult, setContractResult] = useState<ContractAnalysisResponse | null>(null)
   const [contractProgress, setContractProgress] = useState<ContractAnalysisJob | null>(null)
@@ -242,8 +246,14 @@ function App() {
         <section className="landing-hero" aria-labelledby="landing-title">
           <div className="landing-copy">
             <p className="landing-eyebrow">{t('landing.eyebrow')}</p>
-            <h1 id="landing-title">{t('landing.title')}</h1>
-            <p className="landing-description">{t('landing.description')}</p>
+            <h1 id="landing-title">
+              {brandIndex >= 0 ? (
+                <>{landingTitle.slice(0, brandIndex)}<img className="landing-inline-logo" src={illoLogo} alt="ILLO" />{landingTitle.slice(brandIndex + 4)}</>
+              ) : landingTitle}
+            </h1>
+            <p className="landing-description">
+              {landingDescriptionLines.map((line) => <span key={line}>{line}</span>)}
+            </p>
 
             <button
               className="landing-start"
