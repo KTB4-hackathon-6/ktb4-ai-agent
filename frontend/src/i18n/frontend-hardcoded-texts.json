@@ -1,0 +1,3935 @@
+{
+  "_meta": {
+    "generatedAt": "2026-08-20T09:19:03.595Z",
+    "sourceRef": "feat/frontend-i18n working tree",
+    "entryCount": 228,
+    "targetLanguages": [
+      "ko",
+      "en",
+      "vi",
+      "th",
+      "id",
+      "mn",
+      "km"
+    ],
+    "translationMethod": "Google Translate machine translation; unreviewed",
+    "scope": "Current frontend static UI, including manual redaction flow"
+  },
+  "entries": [
+    {
+      "key": "app.analysis.requestPrompt",
+      "sources": [
+        "frontend/src/App.tsx:67"
+      ],
+      "kind": "backend_prompt",
+      "values": {
+        "ko": "근로계약서와 급여명세서를 비교해 주의할 점과 대응 방법을 설명해 주세요."
+      },
+      "machineTranslations": {
+        "ko": "근로계약서와 급여명세서를 비교해 주의할 점과 대응 방법을 설명해 주세요.",
+        "en": "Please compare the employment contract and pay stub and explain what to watch out for and how to respond.",
+        "vi": "Vui lòng so sánh hợp đồng lao động và cuống phiếu lương và giải thích những điều cần chú ý và cách phản hồi.",
+        "th": "กรุณาเปรียบเทียบสัญญาจ้างงานและต้นขั้วค่าจ้าง และอธิบายว่าควรระวังอะไรและควรตอบสนองอย่างไร",
+        "id": "Silakan bandingkan kontrak kerja dan potongan gaji serta jelaskan apa yang harus diperhatikan dan bagaimana menyikapinya.",
+        "mn": "Хөдөлмөрийн гэрээ, төлбөрийн баримтыг харьцуулж, юуг анхаарах, хэрхэн хариу өгөх талаар тайлбарлана уу.",
+        "km": "សូមប្រៀបធៀបកិច្ចសន្យាការងារ និងចុងសន្លឹកបើកប្រាក់ ហើយពន្យល់ពីអ្វីដែលត្រូវប្រុងប្រយ័ត្ន និងរបៀបឆ្លើយតប។"
+      }
+    },
+    {
+      "key": "app.analysis.compareFailed",
+      "sources": [
+        "frontend/src/App.tsx:76"
+      ],
+      "kind": "error",
+      "values": {
+        "ko": "문서를 비교하지 못했습니다. 다시 시도해주세요."
+      },
+      "machineTranslations": {
+        "ko": "문서를 비교하지 못했습니다. 다시 시도해주세요.",
+        "en": "Failed to compare documents. Please try again.",
+        "vi": "Không thể so sánh các tài liệu. Vui lòng thử lại.",
+        "th": "การเปรียบเทียบเอกสารล้มเหลว โปรดลองอีกครั้ง",
+        "id": "Gagal membandingkan dokumen. Silakan coba lagi.",
+        "mn": "Баримт бичгийг харьцуулж чадсангүй. Дахин оролдоно уу.",
+        "km": "បរាជ័យក្នុងការប្រៀបធៀបឯកសារ។ សូមព្យាយាមម្តងទៀត។"
+      }
+    },
+    {
+      "key": "app.complaint.createFailed",
+      "sources": [],
+      "kind": "ui_static",
+      "values": {
+        "ko": "진정서를 만들지 못했습니다. 다시 시도해주세요."
+      },
+      "machineTranslations": {
+        "ko": "진정서를 만들지 못했습니다. 다시 시도해주세요.",
+        "en": "A complaint could not be made. Please try again.",
+        "vi": "Một khiếu nại không thể được thực hiện. Vui lòng thử lại.",
+        "th": "ไม่สามารถร้องเรียนได้ โปรดลองอีกครั้ง",
+        "id": "Keluhan tidak dapat diajukan. Silakan coba lagi.",
+        "mn": "Гомдол гаргах боломжгүй. Дахин оролдоно уу.",
+        "km": "មិន​អាច​ធ្វើ​ការ​តវ៉ា​បាន​ទេ។ សូមព្យាយាមម្តងទៀត។"
+      }
+    },
+    {
+      "key": "app.complaint.startPrompt",
+      "sources": [],
+      "kind": "ui_static",
+      "values": {
+        "ko": "진정서 작성을 시작해줘"
+      },
+      "machineTranslations": {
+        "ko": "진정서 작성을 시작해줘",
+        "en": "Start writing a complaint",
+        "vi": "Bắt đầu viết đơn khiếu nại",
+        "th": "เริ่มเขียนเรื่องร้องเรียน",
+        "id": "Mulailah menulis keluhan",
+        "mn": "Гомдол бичиж эхлээрэй",
+        "km": "ចាប់ផ្តើមសរសេរពាក្យបណ្តឹង"
+      }
+    },
+    {
+      "key": "header.home",
+      "sources": [],
+      "kind": "ui_static",
+      "values": {
+        "ko": "ILLO 처음 화면으로 돌아가기"
+      },
+      "machineTranslations": {
+        "ko": "ILLO 처음 화면으로 돌아가기",
+        "en": "Return to ILLO home screen",
+        "vi": "Quay lại màn hình chính ILLO",
+        "th": "กลับไปที่หน้าจอหลักของ ILLO",
+        "id": "Kembali ke layar beranda ILLO",
+        "mn": "ILLO үндсэн дэлгэц рүү буцах",
+        "km": "ត្រឡប់ទៅអេក្រង់ដើម ILLO"
+      }
+    },
+    {
+      "key": "header.language.chooseWithCurrent",
+      "sources": [
+        "frontend/src/components/chatbot/ChatHeader.tsx:51"
+      ],
+      "kind": "aria_label",
+      "values": {
+        "ko": "언어 선택 ({current})"
+      },
+      "machineTranslations": {
+        "ko": "언어 선택 ({current})",
+        "en": "Select language ({current})",
+        "vi": "Chọn ngôn ngữ ({current})",
+        "th": "เลือกภาษา ({current})",
+        "id": "Pilih bahasa ({current})",
+        "mn": "Хэл сонгох ({current})",
+        "km": "ជ្រើសរើសភាសា ({current})"
+      }
+    },
+    {
+      "key": "header.language.choose",
+      "sources": [
+        "frontend/src/components/chatbot/ChatHeader.tsx:65"
+      ],
+      "kind": "aria_label",
+      "values": {
+        "ko": "언어 선택"
+      },
+      "machineTranslations": {
+        "ko": "언어 선택",
+        "en": "Select language",
+        "vi": "Chọn ngôn ngữ",
+        "th": "เลือกภาษา",
+        "id": "Pilih bahasa",
+        "mn": "Хэл сонгоно уу",
+        "km": "ជ្រើសរើសភាសា"
+      }
+    },
+    {
+      "key": "header.progress",
+      "sources": [],
+      "kind": "ui_static",
+      "values": {
+        "ko": "서비스 진행 상황"
+      },
+      "machineTranslations": {
+        "ko": "서비스 진행 상황",
+        "en": "Service progress",
+        "vi": "Tiến độ dịch vụ",
+        "th": "ความคืบหน้าการบริการ",
+        "id": "Kemajuan layanan",
+        "mn": "Үйлчилгээний явц",
+        "km": "វឌ្ឍនភាពសេវាកម្ម"
+      }
+    },
+    {
+      "key": "language.km",
+      "sources": [
+        "frontend/src/mocks/chatbot.ts:9"
+      ],
+      "kind": "language_name",
+      "values": {
+        "ko": "크메르어"
+      },
+      "machineTranslations": {
+        "ko": "크메르어",
+        "en": "Khmer",
+        "vi": "tiếng Khmer",
+        "th": "เขมร",
+        "id": "Khmer",
+        "mn": "кхмер",
+        "km": "ខ្មែរ"
+      }
+    },
+    {
+      "key": "language.vi",
+      "sources": [
+        "frontend/src/mocks/chatbot.ts:4"
+      ],
+      "kind": "language_name",
+      "values": {
+        "ko": "베트남어"
+      },
+      "machineTranslations": {
+        "ko": "베트남어",
+        "en": "Vietnamese",
+        "vi": "Tiếng Việt",
+        "th": "ภาษาเวียดนาม",
+        "id": "Vietnam",
+        "mn": "вьетнам",
+        "km": "វៀតណាម"
+      }
+    },
+    {
+      "key": "language.th",
+      "sources": [
+        "frontend/src/mocks/chatbot.ts:6"
+      ],
+      "kind": "language_name",
+      "values": {
+        "ko": "태국어"
+      },
+      "machineTranslations": {
+        "ko": "태국어",
+        "en": "Thai",
+        "vi": "tiếng Thái",
+        "th": "ไทย",
+        "id": "Thailand",
+        "mn": "Тайланд",
+        "km": "ថៃ"
+      }
+    },
+    {
+      "key": "language.id",
+      "sources": [
+        "frontend/src/mocks/chatbot.ts:7"
+      ],
+      "kind": "language_name",
+      "values": {
+        "ko": "인도네시아어"
+      },
+      "machineTranslations": {
+        "ko": "인도네시아어",
+        "en": "Indonesian",
+        "vi": "tiếng Indonesia",
+        "th": "อินโดนีเซีย",
+        "id": "bahasa Indonesia",
+        "mn": "Индонез",
+        "km": "ឥណ្ឌូនេស៊ី"
+      }
+    },
+    {
+      "key": "language.mn",
+      "sources": [
+        "frontend/src/mocks/chatbot.ts:8"
+      ],
+      "kind": "language_name",
+      "values": {
+        "ko": "몽골어"
+      },
+      "machineTranslations": {
+        "ko": "몽골어",
+        "en": "Mongolian",
+        "vi": "tiếng Mông Cổ",
+        "th": "มองโกเลีย",
+        "id": "Mongolia",
+        "mn": "Монгол",
+        "km": "ម៉ុងហ្គោលី"
+      }
+    },
+    {
+      "key": "language.ko",
+      "sources": [
+        "frontend/src/mocks/chatbot.ts:10"
+      ],
+      "kind": "language_name",
+      "values": {
+        "ko": "한국어"
+      },
+      "machineTranslations": {
+        "ko": "한국어",
+        "en": "Korean",
+        "vi": "Tiếng Hàn",
+        "th": "เกาหลี",
+        "id": "Korea",
+        "mn": "Солонгос",
+        "km": "កូរ៉េ"
+      }
+    },
+    {
+      "key": "language.en",
+      "sources": [
+        "frontend/src/mocks/chatbot.ts:5"
+      ],
+      "kind": "language_name",
+      "values": {
+        "ko": "영어"
+      },
+      "machineTranslations": {
+        "ko": "영어",
+        "en": "english",
+        "vi": "tiếng anh",
+        "th": "อังกฤษ",
+        "id": "bahasa inggris",
+        "mn": "англи",
+        "km": "ភាសាអង់គ្លេស"
+      }
+    },
+    {
+      "key": "stage.aria",
+      "sources": [],
+      "kind": "ui_static",
+      "values": {
+        "ko": "진행 단계"
+      },
+      "machineTranslations": {
+        "ko": "진행 단계",
+        "en": "progress stage",
+        "vi": "giai đoạn tiến triển",
+        "th": "ขั้นตอนความคืบหน้า",
+        "id": "tahap kemajuan",
+        "mn": "ахиц дэвшлийн үе шат",
+        "km": "ដំណាក់កាលរីកចម្រើន"
+      }
+    },
+    {
+      "key": "stage.upload",
+      "sources": [],
+      "kind": "ui_static",
+      "values": {
+        "ko": "업로드"
+      },
+      "machineTranslations": {
+        "ko": "업로드",
+        "en": "upload",
+        "vi": "tải lên",
+        "th": "อัปโหลด",
+        "id": "unggah",
+        "mn": "байршуулах",
+        "km": "ផ្ទុកឡើង"
+      }
+    },
+    {
+      "key": "stage.analyze",
+      "sources": [],
+      "kind": "ui_static",
+      "values": {
+        "ko": "분석"
+      },
+      "machineTranslations": {
+        "ko": "분석",
+        "en": "analysis",
+        "vi": "phân tích",
+        "th": "การวิเคราะห์",
+        "id": "analisis",
+        "mn": "шинжилгээ",
+        "km": "ការវិភាគ"
+      }
+    },
+    {
+      "key": "stage.review",
+      "sources": [],
+      "kind": "ui_static",
+      "values": {
+        "ko": "검토"
+      },
+      "machineTranslations": {
+        "ko": "검토",
+        "en": "review",
+        "vi": "đánh giá",
+        "th": "ทบทวน",
+        "id": "ulasan",
+        "mn": "хянан үзэх",
+        "km": "ពិនិត្យ"
+      }
+    },
+    {
+      "key": "stage.draft",
+      "sources": [],
+      "kind": "ui_static",
+      "values": {
+        "ko": "진정서"
+      },
+      "machineTranslations": {
+        "ko": "진정서",
+        "en": "petition",
+        "vi": "lời thỉnh cầu",
+        "th": "คำร้อง",
+        "id": "petisi",
+        "mn": "өргөдөл",
+        "km": "ញត្តិ"
+      }
+    },
+    {
+      "key": "stage.agency",
+      "sources": [],
+      "kind": "ui_static",
+      "values": {
+        "ko": "기관 안내"
+      },
+      "machineTranslations": {
+        "ko": "기관 안내",
+        "en": "Institution information",
+        "vi": "Thông tin tổ chức",
+        "th": "ข้อมูลสถาบัน",
+        "id": "Informasi institusi",
+        "mn": "Байгууллагын мэдээлэл",
+        "km": "ព័ត៌មានអំពីស្ថាប័ន"
+      }
+    },
+    {
+      "key": "stage.done",
+      "sources": [],
+      "kind": "ui_static",
+      "values": {
+        "ko": "완료"
+      },
+      "machineTranslations": {
+        "ko": "완료",
+        "en": "done",
+        "vi": "xong",
+        "th": "เสร็จแล้ว",
+        "id": "selesai",
+        "mn": "хийсэн",
+        "km": "រួចរាល់"
+      }
+    },
+    {
+      "key": "mascot.helper",
+      "sources": [],
+      "kind": "ui_static",
+      "values": {
+        "ko": "ILLO 도우미"
+      },
+      "machineTranslations": {
+        "ko": "ILLO 도우미",
+        "en": "ILLO helper",
+        "vi": "người trợ giúp ILLO",
+        "th": "ผู้ช่วยอิลโล",
+        "id": "pembantu ILO",
+        "mn": "ILLO туслах",
+        "km": "ជំនួយ ILLO"
+      }
+    },
+    {
+      "key": "mascot.aria",
+      "sources": [],
+      "kind": "ui_static",
+      "values": {
+        "ko": "ILLO 도우미: {mood}"
+      },
+      "machineTranslations": {
+        "ko": "ILLO 도우미: {mood}",
+        "en": "ILLO helper: {mood}",
+        "vi": "Người trợ giúp ILLO: {mood}",
+        "th": "ผู้ช่วย ILLO: {mood}",
+        "id": "Pembantu ILO: {mood}",
+        "mn": "ILLO туслах: {mood}",
+        "km": "ជំនួយ ILLO៖ {mood}"
+      }
+    },
+    {
+      "key": "mascot.upload",
+      "sources": [],
+      "kind": "ui_static",
+      "values": {
+        "ko": "문서를 기다리고 있어요"
+      },
+      "machineTranslations": {
+        "ko": "문서를 기다리고 있어요",
+        "en": "I'm waiting for the document",
+        "vi": "Tôi đang đợi tài liệu",
+        "th": "ฉันกำลังรอเอกสารอยู่",
+        "id": "Saya sedang menunggu dokumennya",
+        "mn": "Би бичиг баримтаа хүлээж байна",
+        "km": "ខ្ញុំកំពុងរង់ចាំឯកសារ"
+      }
+    },
+    {
+      "key": "mascot.analyzing",
+      "sources": [],
+      "kind": "ui_static",
+      "values": {
+        "ko": "꼼꼼히 읽고 있어요"
+      },
+      "machineTranslations": {
+        "ko": "꼼꼼히 읽고 있어요",
+        "en": "I'm reading it carefully",
+        "vi": "Tôi đang đọc nó một cách cẩn thận",
+        "th": "ฉันกำลังอ่านมันอย่างระมัดระวัง",
+        "id": "Saya membacanya dengan cermat",
+        "mn": "Би үүнийг анхааралтай уншиж байна",
+        "km": "ខ្ញុំកំពុងអានវាដោយប្រុងប្រយ័ត្ន"
+      }
+    },
+    {
+      "key": "mascot.review",
+      "sources": [],
+      "kind": "ui_static",
+      "values": {
+        "ko": "함께 확인해볼게요"
+      },
+      "machineTranslations": {
+        "ko": "함께 확인해볼게요",
+        "en": "Let’s check it out together.",
+        "vi": "Chúng ta hãy cùng nhau kiểm tra nó.",
+        "th": "มาตรวจสอบด้วยกัน",
+        "id": "Mari kita periksa bersama.",
+        "mn": "Үүнийг хамтдаа шалгацгаая.",
+        "km": "តោះ​ពិនិត្យ​មើល​ទាំង​អស់​គ្នា។"
+      }
+    },
+    {
+      "key": "mascot.drafting",
+      "sources": [],
+      "kind": "ui_static",
+      "values": {
+        "ko": "내용을 정리하고 있어요"
+      },
+      "machineTranslations": {
+        "ko": "내용을 정리하고 있어요",
+        "en": "I'm organizing the contents.",
+        "vi": "Tôi đang sắp xếp nội dung.",
+        "th": "ฉันกำลังจัดเนื้อหา.",
+        "id": "Saya sedang mengatur isinya.",
+        "mn": "Би агуулгыг цэгцэлж байна.",
+        "km": "ខ្ញុំកំពុងរៀបចំមាតិកា។"
+      }
+    },
+    {
+      "key": "mascot.ready",
+      "sources": [],
+      "kind": "ui_static",
+      "values": {
+        "ko": "초안을 확인해주세요"
+      },
+      "machineTranslations": {
+        "ko": "초안을 확인해주세요",
+        "en": "Please check the draft",
+        "vi": "Vui lòng kiểm tra dự thảo",
+        "th": "กรุณาตรวจสอบร่าง",
+        "id": "Silakan periksa drafnya",
+        "mn": "Төслийг шалгана уу",
+        "km": "សូមពិនិត្យមើលសេចក្តីព្រាង"
+      }
+    },
+    {
+      "key": "mascot.agency",
+      "sources": [],
+      "kind": "ui_static",
+      "values": {
+        "ko": "도움받을 곳을 찾았어요"
+      },
+      "machineTranslations": {
+        "ko": "도움받을 곳을 찾았어요",
+        "en": "I found a place to get help",
+        "vi": "Tôi đã tìm thấy một nơi để được giúp đỡ",
+        "th": "ฉันพบสถานที่ที่จะขอความช่วยเหลือ",
+        "id": "Saya menemukan tempat untuk mendapatkan bantuan",
+        "mn": "Би тусламж авах газар оллоо",
+        "km": "ខ្ញុំបានរកឃើញកន្លែងមួយដើម្បីទទួលជំនួយ"
+      }
+    },
+    {
+      "key": "mascot.completed",
+      "sources": [],
+      "kind": "ui_static",
+      "values": {
+        "ko": "수고하셨어요!"
+      },
+      "machineTranslations": {
+        "ko": "수고하셨어요!",
+        "en": "Thank you for your hard work!",
+        "vi": "Cảm ơn bạn đã làm việc chăm chỉ!",
+        "th": "ขอบคุณสำหรับการทำงานหนักของคุณ!",
+        "id": "Terima kasih atas kerja keras Anda!",
+        "mn": "Таны шаргуу хөдөлмөрт баярлалаа!",
+        "km": "សូមអរគុណចំពោះការខិតខំប្រឹងប្រែងរបស់អ្នក!"
+      }
+    },
+    {
+      "key": "composer.aria",
+      "sources": [],
+      "kind": "ui_static",
+      "values": {
+        "ko": "AI 챗봇"
+      },
+      "machineTranslations": {
+        "ko": "AI 챗봇",
+        "en": "AI chatbot",
+        "vi": "Chatbot AI",
+        "th": "เอไอ แชทบอท",
+        "id": "bot obrolan AI",
+        "mn": "AI чатбот",
+        "km": "AI chatbot"
+      }
+    },
+    {
+      "key": "composer.inputLabel",
+      "sources": [
+        "frontend/src/components/chatbot/ChatComposer.tsx:18"
+      ],
+      "kind": "screen_reader_label",
+      "values": {
+        "ko": "AI 챗봇에게 질문하기"
+      },
+      "machineTranslations": {
+        "ko": "AI 챗봇에게 질문하기",
+        "en": "Ask a question to the AI chatbot",
+        "vi": "Đặt câu hỏi cho chatbot AI",
+        "th": "ถามคำถามกับแชทบอท AI",
+        "id": "Ajukan pertanyaan ke chatbot AI",
+        "mn": "AI чатботоос асуулт асуу",
+        "km": "សួរសំណួរទៅកាន់ AI chatbot"
+      }
+    },
+    {
+      "key": "composer.send",
+      "sources": [
+        "frontend/src/components/chatbot/ChatComposer.tsx:26"
+      ],
+      "kind": "button",
+      "values": {
+        "ko": "보내기"
+      },
+      "machineTranslations": {
+        "ko": "보내기",
+        "en": "send",
+        "vi": "gửi",
+        "th": "ส่ง",
+        "id": "kirim",
+        "mn": "илгээх",
+        "km": "ផ្ញើ"
+      }
+    },
+    {
+      "key": "composer.busy",
+      "sources": [],
+      "kind": "ui_static",
+      "values": {
+        "ko": "답변을 반영하고 있습니다…"
+      },
+      "machineTranslations": {
+        "ko": "답변을 반영하고 있습니다…",
+        "en": "Reflecting on the answers…",
+        "vi": "Suy ngẫm về câu trả lời…",
+        "th": "ทบทวนคำตอบ...",
+        "id": "Merefleksikan jawaban…",
+        "mn": "Хариултуудыг эргэцүүлэн бодоход…",
+        "km": "កំពុង​ពិចារណា​លើ​ចម្លើយ…"
+      }
+    },
+    {
+      "key": "composer.placeholder.upload",
+      "sources": [],
+      "kind": "ui_static",
+      "values": {
+        "ko": "문서 업로드나 서비스 이용에 대해 궁금한 점을 물어보세요"
+      },
+      "machineTranslations": {
+        "ko": "문서 업로드나 서비스 이용에 대해 궁금한 점을 물어보세요",
+        "en": "Ask any questions you have about uploading documents or using the service.",
+        "vi": "Hãy hỏi bất kỳ câu hỏi nào của bạn về việc tải tài liệu lên hoặc sử dụng dịch vụ.",
+        "th": "ถามคำถามที่คุณมีเกี่ยวกับการอัพโหลดเอกสารหรือการใช้บริการ",
+        "id": "Ajukan pertanyaan apa pun yang Anda miliki tentang mengunggah dokumen atau menggunakan layanan ini.",
+        "mn": "Баримт бичгийг байршуулах эсвэл үйлчилгээг ашиглах талаар асуух зүйлээ асуугаарай.",
+        "km": "សួរសំណួរណាមួយដែលអ្នកមានអំពីការបង្ហោះឯកសារ ឬប្រើប្រាស់សេវាកម្ម។"
+      }
+    },
+    {
+      "key": "composer.placeholder.analyzing",
+      "sources": [],
+      "kind": "ui_static",
+      "values": {
+        "ko": "문서를 분석하고 있습니다. 잠시만 기다려주세요…"
+      },
+      "machineTranslations": {
+        "ko": "문서를 분석하고 있습니다. 잠시만 기다려주세요…",
+        "en": "The document is being analyzed. please wait for a moment…",
+        "vi": "Tài liệu đang được phân tích. xin vui lòng chờ một chút…",
+        "th": "กำลังวิเคราะห์เอกสาร กรุณารอสักครู่...",
+        "id": "Dokumen tersebut sedang dianalisis. mohon tunggu sebentar…",
+        "mn": "Баримт бичигт дүн шинжилгээ хийж байна. түр хүлээнэ үү...",
+        "km": "ឯកសារកំពុងត្រូវបានវិភាគ។ សូមរង់ចាំមួយភ្លែត…"
+      }
+    },
+    {
+      "key": "composer.placeholder.review",
+      "sources": [],
+      "kind": "ui_static",
+      "values": {
+        "ko": "분석 결과를 확인한 뒤 다음 단계를 선택해주세요"
+      },
+      "machineTranslations": {
+        "ko": "분석 결과를 확인한 뒤 다음 단계를 선택해주세요",
+        "en": "Please check the analysis results and select the next step.",
+        "vi": "Vui lòng kiểm tra kết quả phân tích và chọn bước tiếp theo.",
+        "th": "โปรดตรวจสอบผลการวิเคราะห์และเลือกขั้นตอนถัดไป",
+        "id": "Silakan periksa hasil analisis dan pilih langkah berikutnya.",
+        "mn": "Шинжилгээний үр дүнг шалгаад дараагийн алхамыг сонгоно уу.",
+        "km": "សូមពិនិត្យមើលលទ្ធផលនៃការវិភាគ ហើយជ្រើសរើសជំហានបន្ទាប់។"
+      }
+    },
+    {
+      "key": "composer.placeholder.drafting",
+      "sources": [],
+      "kind": "ui_static",
+      "values": {
+        "ko": "ILLO의 질문에 답해주세요"
+      },
+      "machineTranslations": {
+        "ko": "ILLO의 질문에 답해주세요",
+        "en": "Please answer ILLO’s questions",
+        "vi": "Hãy trả lời các câu hỏi của ILLO",
+        "th": "กรุณาตอบคำถามของ ILLO",
+        "id": "Mohon jawab pertanyaan ILLO",
+        "mn": "ILLO-ийн асуултад хариулна уу",
+        "km": "សូមឆ្លើយសំណួររបស់ ILLO"
+      }
+    },
+    {
+      "key": "composer.placeholder.ready",
+      "sources": [],
+      "kind": "ui_static",
+      "values": {
+        "ko": "초안을 확인하고 내려받아 주세요"
+      },
+      "machineTranslations": {
+        "ko": "초안을 확인하고 내려받아 주세요",
+        "en": "Please check and download the draft",
+        "vi": "Vui lòng kiểm tra và tải về bản dự thảo",
+        "th": "โปรดตรวจสอบและดาวน์โหลดฉบับร่าง",
+        "id": "Silakan periksa dan unduh drafnya",
+        "mn": "Төслийг шалгаад татаж авна уу",
+        "km": "សូមពិនិត្យ និងទាញយកសេចក្តីព្រាង"
+      }
+    },
+    {
+      "key": "composer.placeholder.agency",
+      "sources": [],
+      "kind": "ui_static",
+      "values": {
+        "ko": "기관 안내에 대해 물어보고 싶은 내용을 적어주세요"
+      },
+      "machineTranslations": {
+        "ko": "기관 안내에 대해 물어보고 싶은 내용을 적어주세요",
+        "en": "Please write what you would like to ask about the institution.",
+        "vi": "Hãy viết những gì bạn muốn hỏi về tổ chức.",
+        "th": "กรุณาเขียนสิ่งที่คุณต้องการถามเกี่ยวกับสถาบัน",
+        "id": "Silakan tulis apa yang ingin Anda tanyakan tentang institusi tersebut.",
+        "mn": "Байгууллагын талаар асуух зүйлээ бичнэ үү.",
+        "km": "សូមសរសេរអ្វីដែលអ្នកចង់សួរអំពីស្ថាប័ន។"
+      }
+    },
+    {
+      "key": "composer.placeholder.completed",
+      "sources": [],
+      "kind": "ui_static",
+      "values": {
+        "ko": "추가로 궁금한 점이 있으면 언제든 물어보세요"
+      },
+      "machineTranslations": {
+        "ko": "추가로 궁금한 점이 있으면 언제든 물어보세요",
+        "en": "If you have any additional questions, please feel free to ask",
+        "vi": "Nếu bạn có thêm bất kỳ câu hỏi nào, xin vui lòng hỏi",
+        "th": "หากคุณมีคำถามเพิ่มเติม โปรดอย่าลังเลที่จะถาม",
+        "id": "Jika Anda memiliki pertanyaan tambahan, silakan bertanya",
+        "mn": "Хэрэв танд нэмэлт асуулт байвал чөлөөтэй асуугаарай",
+        "km": "ប្រសិនបើអ្នកមានចម្ងល់បន្ថែម សូមសួរដោយសេរី"
+      }
+    },
+    {
+      "key": "upload.heading",
+      "sources": [],
+      "kind": "ui_static",
+      "values": {
+        "ko": "근로계약서와 급여명세서를 올려주세요"
+      },
+      "machineTranslations": {
+        "ko": "근로계약서와 급여명세서를 올려주세요",
+        "en": "Please upload your employment contract and pay stub.",
+        "vi": "Vui lòng tải lên hợp đồng lao động của bạn và cuống phiếu lương.",
+        "th": "กรุณาอัพโหลดสัญญาจ้างงานของคุณและชำระเงินต้นขั้ว",
+        "id": "Silakan unggah kontrak kerja dan slip gaji Anda.",
+        "mn": "Та хөдөлмөрийн гэрээ, цалин хөлсөө байршуулна уу.",
+        "km": "សូមផ្ទុកឡើងនូវកិច្ចសន្យាការងារ និងលិខិតបញ្ជាក់ប្រាក់ខែ។"
+      }
+    },
+    {
+      "key": "upload.description",
+      "sources": [],
+      "kind": "ui_static",
+      "values": {
+        "ko": "사진이나 PDF 모두 괜찮습니다. 두 문서를 비교해서 확인이 필요한 부분을 찾아드려요."
+      },
+      "machineTranslations": {
+        "ko": "사진이나 PDF 모두 괜찮습니다. 두 문서를 비교해서 확인이 필요한 부분을 찾아드려요.",
+        "en": "Photos and PDFs are both fine. We compare the two documents and find the parts that need confirmation.",
+        "vi": "Hình ảnh và PDF đều ổn. Chúng tôi so sánh hai tài liệu và tìm ra những phần cần xác nhận.",
+        "th": "ทั้งรูปถ่ายและ PDF ก็ดี เราเปรียบเทียบเอกสารทั้งสองฉบับและค้นหาชิ้นส่วนที่ต้องการการยืนยัน",
+        "id": "Foto dan PDF keduanya baik-baik saja. Kami membandingkan kedua dokumen tersebut dan menemukan bagian yang memerlukan konfirmasi.",
+        "mn": "Зураг болон PDF аль аль нь сайн. Бид хоёр баримт бичгийг харьцуулж, баталгаажуулах шаардлагатай хэсгийг олно.",
+        "km": "រូបថត និង PDF គឺល្អទាំងពីរ។ យើងប្រៀបធៀបឯកសារទាំងពីរ ហើយស្វែងរកផ្នែកដែលត្រូវការការបញ្ជាក់។"
+      }
+    },
+    {
+      "key": "upload.features.aria",
+      "sources": [],
+      "kind": "ui_static",
+      "values": {
+        "ko": "문서 분석 기능"
+      },
+      "machineTranslations": {
+        "ko": "문서 분석 기능",
+        "en": "Document analysis function",
+        "vi": "Chức năng phân tích tài liệu",
+        "th": "ฟังก์ชั่นการวิเคราะห์เอกสาร",
+        "id": "Fungsi analisis dokumen",
+        "mn": "Баримт бичгийн дүн шинжилгээ хийх функц",
+        "km": "មុខងារវិភាគឯកសារ"
+      }
+    },
+    {
+      "key": "upload.features.redaction",
+      "sources": [],
+      "kind": "ui_static",
+      "values": {
+        "ko": "기기 내 개인정보 가림"
+      },
+      "machineTranslations": {
+        "ko": "기기 내 개인정보 가림",
+        "en": "Hide personal information on your device",
+        "vi": "Ẩn thông tin cá nhân trên thiết bị của bạn",
+        "th": "ซ่อนข้อมูลส่วนบุคคลบนอุปกรณ์ของคุณ",
+        "id": "Sembunyikan informasi pribadi di perangkat Anda",
+        "mn": "Төхөөрөмж дээрээ хувийн мэдээллээ нуу",
+        "km": "លាក់ព័ត៌មានផ្ទាល់ខ្លួននៅលើឧបករណ៍របស់អ្នក។"
+      }
+    },
+    {
+      "key": "upload.features.compare",
+      "sources": [],
+      "kind": "ui_static",
+      "values": {
+        "ko": "두 문서 비교"
+      },
+      "machineTranslations": {
+        "ko": "두 문서 비교",
+        "en": "Compare two documents",
+        "vi": "So sánh hai tài liệu",
+        "th": "เปรียบเทียบเอกสารสองฉบับ",
+        "id": "Bandingkan dua dokumen",
+        "mn": "Хоёр баримт бичгийг харьцуул",
+        "km": "ប្រៀបធៀបឯកសារពីរ"
+      }
+    },
+    {
+      "key": "upload.features.guidance",
+      "sources": [],
+      "kind": "ui_static",
+      "values": {
+        "ko": "쉬운 결과 안내"
+      },
+      "machineTranslations": {
+        "ko": "쉬운 결과 안내",
+        "en": "Easy results guide",
+        "vi": "Hướng dẫn kết quả dễ dàng",
+        "th": "คู่มือผลลัพธ์ง่ายๆ",
+        "id": "Panduan hasil yang mudah",
+        "mn": "Үр дүнгийн хялбар гарын авлага",
+        "km": "ការណែនាំអំពីលទ្ធផលងាយស្រួល"
+      }
+    },
+    {
+      "key": "upload.filesReady",
+      "sources": [],
+      "kind": "ui_static",
+      "values": {
+        "ko": "{count}개 파일이 준비되었습니다"
+      },
+      "machineTranslations": {
+        "ko": "{count}개 파일이 준비되었습니다",
+        "en": "{count} files are ready",
+        "vi": "Tệp {count} đã sẵn sàng",
+        "th": "ไฟล์ {count} พร้อมแล้ว",
+        "id": "{count} file sudah siap",
+        "mn": "{count} файлууд бэлэн боллоо",
+        "km": "ឯកសារ {count} រួចរាល់ហើយ។"
+      }
+    },
+    {
+      "key": "upload.choosePrompt",
+      "sources": [],
+      "kind": "ui_static",
+      "values": {
+        "ko": "파일을 선택하세요"
+      },
+      "machineTranslations": {
+        "ko": "파일을 선택하세요",
+        "en": "Select a file",
+        "vi": "Chọn một tập tin",
+        "th": "เลือกไฟล์",
+        "id": "Pilih file",
+        "mn": "Файл сонгоно уу",
+        "km": "ជ្រើសរើសឯកសារ"
+      }
+    },
+    {
+      "key": "upload.formats",
+      "sources": [],
+      "kind": "ui_static",
+      "values": {
+        "ko": "JPG · PNG · PDF / 한 장씩 추가하거나 여러 장을 한 번에 올릴 수 있습니다"
+      },
+      "machineTranslations": {
+        "ko": "JPG · PNG · PDF / 한 장씩 추가하거나 여러 장을 한 번에 올릴 수 있습니다",
+        "en": "JPG · PNG · PDF / You can add sheets one by one or upload multiple sheets at once.",
+        "vi": "JPG · PNG · PDF / Bạn có thể thêm từng trang một hoặc tải lên nhiều trang cùng một lúc.",
+        "th": "JPG · PNG · PDF / คุณสามารถเพิ่มแผ่นงานทีละแผ่นหรืออัปโหลดหลายแผ่นพร้อมกันได้",
+        "id": "JPG · PNG · PDF / Anda dapat menambahkan lembar satu per satu atau mengunggah beberapa lembar sekaligus.",
+        "mn": "JPG · PNG · PDF / Та хуудаснуудыг нэг нэгээр нь нэмэх эсвэл нэг дор олон хуудас байршуулах боломжтой.",
+        "km": "JPG · PNG · PDF / អ្នកអាចបន្ថែមសន្លឹកម្តងមួយៗ ឬបង្ហោះសន្លឹកច្រើនក្នុងពេលតែមួយ។"
+      }
+    },
+    {
+      "key": "upload.selectedFiles",
+      "sources": [],
+      "kind": "ui_static",
+      "values": {
+        "ko": "선택한 문서 파일"
+      },
+      "machineTranslations": {
+        "ko": "선택한 문서 파일",
+        "en": "selected document file",
+        "vi": "tập tin tài liệu đã chọn",
+        "th": "ไฟล์เอกสารที่เลือก",
+        "id": "file dokumen yang dipilih",
+        "mn": "сонгосон баримт бичгийн файл",
+        "km": "ឯកសារដែលបានជ្រើសរើស"
+      }
+    },
+    {
+      "key": "upload.addFiles",
+      "sources": [],
+      "kind": "ui_static",
+      "values": {
+        "ko": "파일 추가"
+      },
+      "machineTranslations": {
+        "ko": "파일 추가",
+        "en": "Add file",
+        "vi": "Thêm tập tin",
+        "th": "เพิ่มไฟล์",
+        "id": "Tambahkan berkas",
+        "mn": "Файл нэмэх",
+        "km": "បន្ថែមឯកសារ"
+      }
+    },
+    {
+      "key": "upload.chooseFiles",
+      "sources": [],
+      "kind": "ui_static",
+      "values": {
+        "ko": "파일 선택"
+      },
+      "machineTranslations": {
+        "ko": "파일 선택",
+        "en": "Select file",
+        "vi": "Chọn tập tin",
+        "th": "เลือกไฟล์",
+        "id": "Pilih berkas",
+        "mn": "Файл сонгоно уу",
+        "km": "ជ្រើសរើសឯកសារ"
+      }
+    },
+    {
+      "key": "upload.redact",
+      "sources": [],
+      "kind": "ui_static",
+      "values": {
+        "ko": "민감정보 가리기"
+      },
+      "machineTranslations": {
+        "ko": "민감정보 가리기",
+        "en": "Hiding sensitive information",
+        "vi": "Ẩn thông tin nhạy cảm",
+        "th": "การซ่อนข้อมูลที่ละเอียดอ่อน",
+        "id": "Menyembunyikan informasi sensitif",
+        "mn": "Нууц мэдээллийг нуух",
+        "km": "លាក់ព័ត៌មានរសើប"
+      }
+    },
+    {
+      "key": "upload.privacyNote",
+      "sources": [],
+      "kind": "ui_static",
+      "values": {
+        "ko": "직접 가린 사본만 서버로 전송됩니다."
+      },
+      "machineTranslations": {
+        "ko": "직접 가린 사본만 서버로 전송됩니다.",
+        "en": "Only the manually masked copy is sent to the server.",
+        "vi": "Chỉ bản sao được che dấu thủ công mới được gửi đến máy chủ.",
+        "th": "เฉพาะสำเนาที่ปกปิดด้วยตนเองเท่านั้นที่ถูกส่งไปยังเซิร์ฟเวอร์",
+        "id": "Hanya salinan yang disamarkan secara manual yang dikirim ke server.",
+        "mn": "Зөвхөн гараар далдлагдсан хуулбарыг сервер рүү илгээдэг.",
+        "km": "មានតែច្បាប់ចម្លងបិទមុខដោយដៃប៉ុណ្ណោះដែលត្រូវបានផ្ញើទៅកាន់ម៉ាស៊ីនមេ។"
+      }
+    },
+    {
+      "key": "redaction.preparing.heading",
+      "sources": [],
+      "kind": "ui_static",
+      "values": {
+        "ko": "문서를 기기에서 준비하고 있습니다"
+      },
+      "machineTranslations": {
+        "ko": "문서를 기기에서 준비하고 있습니다",
+        "en": "The document is being prepared on the device",
+        "vi": "Tài liệu đang được chuẩn bị trên thiết bị",
+        "th": "กำลังเตรียมเอกสารบนอุปกรณ์",
+        "id": "Dokumen sedang disiapkan di perangkat",
+        "mn": "Баримт бичгийг төхөөрөмж дээр бэлтгэж байна",
+        "km": "ឯកសារកំពុងត្រូវបានរៀបចំនៅលើឧបករណ៍"
+      }
+    },
+    {
+      "key": "redaction.preparing.description",
+      "sources": [],
+      "kind": "ui_static",
+      "values": {
+        "ko": "서버에는 아직 전송되지 않았습니다."
+      },
+      "machineTranslations": {
+        "ko": "서버에는 아직 전송되지 않았습니다.",
+        "en": "It hasn't been sent to the server yet.",
+        "vi": "Nó chưa được gửi đến máy chủ.",
+        "th": "ยังไม่ได้ส่งไปยังเซิร์ฟเวอร์",
+        "id": "Itu belum dikirim ke server.",
+        "mn": "Энэ нь сервер рүү хараахан илгээгдээгүй байна.",
+        "km": "វាមិនទាន់ត្រូវបានផ្ញើទៅម៉ាស៊ីនមេនៅឡើយទេ។"
+      }
+    },
+    {
+      "key": "redaction.preparing.pages",
+      "sources": [],
+      "kind": "ui_static",
+      "values": {
+        "ko": "{count}개 페이지 준비됨"
+      },
+      "machineTranslations": {
+        "ko": "{count}개 페이지 준비됨",
+        "en": "{count} pages ready",
+        "vi": "{count} trang đã sẵn sàng",
+        "th": "{count} พร้อมแล้ว",
+        "id": "{count} halaman sudah siap",
+        "mn": "{count} хуудас бэлэн боллоо",
+        "km": "{count} ទំព័ររួចរាល់"
+      }
+    },
+    {
+      "key": "redaction.cancel",
+      "sources": [],
+      "kind": "ui_static",
+      "values": {
+        "ko": "취소"
+      },
+      "machineTranslations": {
+        "ko": "취소",
+        "en": "Cancel",
+        "vi": "Hủy bỏ",
+        "th": "ยกเลิก",
+        "id": "Batalkan",
+        "mn": "Цуцлах",
+        "km": "បោះបង់"
+      }
+    },
+    {
+      "key": "redaction.error.prepare",
+      "sources": [],
+      "kind": "ui_static",
+      "values": {
+        "ko": "문서를 기기에서 준비하지 못했습니다."
+      },
+      "machineTranslations": {
+        "ko": "문서를 기기에서 준비하지 못했습니다.",
+        "en": "The document could not be prepared on the device.",
+        "vi": "Không thể chuẩn bị tài liệu trên thiết bị.",
+        "th": "ไม่สามารถเตรียมเอกสารบนอุปกรณ์ได้",
+        "id": "Dokumen tidak dapat disiapkan di perangkat.",
+        "mn": "Баримт бичгийг төхөөрөмж дээр бэлтгэх боломжгүй байна.",
+        "km": "ឯកសារមិនអាចត្រូវបានរៀបចំនៅលើឧបករណ៍បានទេ។"
+      }
+    },
+    {
+      "key": "redaction.error.export",
+      "sources": [],
+      "kind": "ui_static",
+      "values": {
+        "ko": "가린 문서를 만들지 못했습니다."
+      },
+      "machineTranslations": {
+        "ko": "가린 문서를 만들지 못했습니다.",
+        "en": "Failed to create masked document.",
+        "vi": "Không tạo được tài liệu bị ẩn.",
+        "th": "ไม่สามารถสร้างเอกสารที่มาสก์ได้",
+        "id": "Gagal membuat dokumen bertopeng.",
+        "mn": "Бүрхэгдсэн баримт бичгийг үүсгэж чадсангүй.",
+        "km": "បរាជ័យក្នុងការបង្កើតឯកសារបិទបាំង។"
+      }
+    },
+    {
+      "key": "redaction.status",
+      "sources": [],
+      "kind": "ui_static",
+      "values": {
+        "ko": "기기에서 처리 중"
+      },
+      "machineTranslations": {
+        "ko": "기기에서 처리 중",
+        "en": "Processing on device",
+        "vi": "Xử lý trên thiết bị",
+        "th": "กำลังประมวลผลบนอุปกรณ์",
+        "id": "Memproses di perangkat",
+        "mn": "Төхөөрөмж дээр боловсруулж байна",
+        "km": "ដំណើរការនៅលើឧបករណ៍"
+      }
+    },
+    {
+      "key": "redaction.heading",
+      "sources": [],
+      "kind": "ui_static",
+      "values": {
+        "ko": "서버로 보내기 전에 민감정보를 가려주세요"
+      },
+      "machineTranslations": {
+        "ko": "서버로 보내기 전에 민감정보를 가려주세요",
+        "en": "Please mask sensitive information before sending it to the server.",
+        "vi": "Vui lòng che giấu thông tin nhạy cảm trước khi gửi nó đến máy chủ.",
+        "th": "กรุณาปิดบังข้อมูลที่ละเอียดอ่อนก่อนที่จะส่งไปยังเซิร์ฟเวอร์",
+        "id": "Harap sembunyikan informasi sensitif sebelum mengirimkannya ke server.",
+        "mn": "Сервер рүү илгээхээсээ өмнө нууц мэдээллийг нууж дарна уу.",
+        "km": "សូមបិទបាំងព័ត៌មានរសើប មុនពេលបញ្ជូនវាទៅម៉ាស៊ីនមេ។"
+      }
+    },
+    {
+      "key": "redaction.description",
+      "sources": [],
+      "kind": "ui_static",
+      "values": {
+        "ko": "이 화면을 완료하기 전에는 문서가 서버에 전송되지 않습니다."
+      },
+      "machineTranslations": {
+        "ko": "이 화면을 완료하기 전에는 문서가 서버에 전송되지 않습니다.",
+        "en": "Your document will not be sent to the server until you complete this screen.",
+        "vi": "Tài liệu của bạn sẽ không được gửi đến máy chủ cho đến khi bạn hoàn thành màn hình này.",
+        "th": "เอกสารของคุณจะไม่ถูกส่งไปยังเซิร์ฟเวอร์จนกว่าคุณจะเสร็จสิ้นหน้าจอนี้",
+        "id": "Dokumen Anda tidak akan dikirim ke server sampai Anda menyelesaikan layar ini.",
+        "mn": "Энэ дэлгэцийг дуусгах хүртэл таны баримтыг сервер рүү илгээхгүй.",
+        "km": "ឯកសាររបស់អ្នកនឹងមិនត្រូវបានផ្ញើទៅម៉ាស៊ីនមេទេ រហូតដល់អ្នកបញ្ចប់អេក្រង់នេះ។"
+      }
+    },
+    {
+      "key": "redaction.confirmedCount",
+      "sources": [],
+      "kind": "ui_static",
+      "values": {
+        "ko": "{confirmed}/{total} 페이지 확인"
+      },
+      "machineTranslations": {
+        "ko": "{confirmed}/{total} 페이지 확인",
+        "en": "Check {confirmed}/{total} pages",
+        "vi": "Kiểm tra các trang {confirmed}/{total}",
+        "th": "ตรวจสอบ {confirmed}/{total} หน้า",
+        "id": "Periksa halaman {confirmed}/{total}",
+        "mn": "{confirmed}/{total} хуудсыг шалгана уу",
+        "km": "ពិនិត្យទំព័រ {confirmed}/{total}"
+      }
+    },
+    {
+      "key": "redaction.previous",
+      "sources": [],
+      "kind": "ui_static",
+      "values": {
+        "ko": "이전"
+      },
+      "machineTranslations": {
+        "ko": "이전",
+        "en": "Previous",
+        "vi": "trước đó",
+        "th": "ก่อนหน้า",
+        "id": "Sebelumnya",
+        "mn": "Өмнөх",
+        "km": "មុន"
+      }
+    },
+    {
+      "key": "redaction.next",
+      "sources": [],
+      "kind": "ui_static",
+      "values": {
+        "ko": "다음"
+      },
+      "machineTranslations": {
+        "ko": "다음",
+        "en": "next",
+        "vi": "tiếp theo",
+        "th": "ถัดไป",
+        "id": "berikutnya",
+        "mn": "дараагийн",
+        "km": "បន្ទាប់"
+      }
+    },
+    {
+      "key": "redaction.zoom",
+      "sources": [],
+      "kind": "ui_static",
+      "values": {
+        "ko": "확대"
+      },
+      "machineTranslations": {
+        "ko": "확대",
+        "en": "zoom in",
+        "vi": "phóng to",
+        "th": "ซูมเข้า",
+        "id": "memperbesar",
+        "mn": "томруулах",
+        "km": "ពង្រីក"
+      }
+    },
+    {
+      "key": "redaction.pageAlt",
+      "sources": [],
+      "kind": "ui_static",
+      "values": {
+        "ko": "확인 중인 문서 {page}페이지"
+      },
+      "machineTranslations": {
+        "ko": "확인 중인 문서 {page}페이지",
+        "en": "Document being checked Page {page}",
+        "vi": "Tài liệu đang được kiểm tra Trang {page}",
+        "th": "กำลังตรวจสอบเอกสาร หน้า {page}",
+        "id": "Dokumen sedang diperiksa Halaman {page}",
+        "mn": "Баримт бичгийг шалгаж байна Хуудас {page}",
+        "km": "ឯកសារកំពុងពិនិត្យទំព័រ {page}"
+      }
+    },
+    {
+      "key": "redaction.regions.heading",
+      "sources": [],
+      "kind": "ui_static",
+      "values": {
+        "ko": "이 페이지의 가림 영역"
+      },
+      "machineTranslations": {
+        "ko": "이 페이지의 가림 영역",
+        "en": "Masked area on this page",
+        "vi": "Khu vực bị che trên trang này",
+        "th": "พื้นที่สวมหน้ากากในหน้านี้",
+        "id": "Area bertopeng di halaman ini",
+        "mn": "Энэ хуудсан дээрх масктай хэсэг",
+        "km": "របាំងមុខនៅលើទំព័រនេះ។"
+      }
+    },
+    {
+      "key": "redaction.regions.description",
+      "sources": [],
+      "kind": "ui_static",
+      "values": {
+        "ko": "이름, 번호, 개인 주소, 서명과 도장을 문서 위에서 직접 드래그해 가려주세요."
+      },
+      "machineTranslations": {
+        "ko": "이름, 번호, 개인 주소, 서명과 도장을 문서 위에서 직접 드래그해 가려주세요.",
+        "en": "Hide names, numbers, personal addresses, signatures, and stamps by dragging them directly on the document.",
+        "vi": "Ẩn tên, số, địa chỉ cá nhân, chữ ký và tem bằng cách kéo chúng trực tiếp trên tài liệu.",
+        "th": "ซ่อนชื่อ ตัวเลข ที่อยู่ส่วนตัว ลายเซ็น และตราประทับโดยการลากไปบนเอกสารโดยตรง",
+        "id": "Sembunyikan nama, nomor, alamat pribadi, tanda tangan, dan stempel dengan menyeretnya langsung ke dokumen.",
+        "mn": "Нэр, дугаар, хувийн хаяг, гарын үсэг, тамга тэмдгийг шууд баримт дээр чирж нуу.",
+        "km": "លាក់ឈ្មោះ លេខ អាសយដ្ឋានផ្ទាល់ខ្លួន ហត្ថលេខា និងត្រាដោយអូសពួកវាដោយផ្ទាល់នៅលើឯកសារ។"
+      }
+    },
+    {
+      "key": "redaction.regions.add",
+      "sources": [],
+      "kind": "ui_static",
+      "values": {
+        "ko": "가림 영역 추가"
+      },
+      "machineTranslations": {
+        "ko": "가림 영역 추가",
+        "en": "Add blocking area",
+        "vi": "Thêm khu vực chặn",
+        "th": "เพิ่มพื้นที่ปิดกั้น",
+        "id": "Tambahkan area pemblokiran",
+        "mn": "Блоклох хэсгийг нэмнэ үү",
+        "km": "បន្ថែមតំបន់ទប់ស្កាត់"
+      }
+    },
+    {
+      "key": "redaction.regions.empty",
+      "sources": [],
+      "kind": "ui_static",
+      "values": {
+        "ko": "추가된 가림 영역이 없습니다."
+      },
+      "machineTranslations": {
+        "ko": "추가된 가림 영역이 없습니다.",
+        "en": "There are no masking areas added.",
+        "vi": "Không có khu vực mặt nạ nào được thêm vào.",
+        "th": "ไม่มีการเพิ่มพื้นที่กำบัง",
+        "id": "Tidak ada area masking yang ditambahkan.",
+        "mn": "Нэмэгдсэн маск хийх хэсэг байхгүй.",
+        "km": "មិនមានបន្ថែមតំបន់របាំងមុខទេ។"
+      }
+    },
+    {
+      "key": "redaction.regions.item",
+      "sources": [],
+      "kind": "ui_static",
+      "values": {
+        "ko": "영역 {number}"
+      },
+      "machineTranslations": {
+        "ko": "영역 {number}",
+        "en": "Area {number}",
+        "vi": "Diện tích {number}",
+        "th": "พื้นที่ {number}",
+        "id": "Daerah {number}",
+        "mn": "Талбай {number}",
+        "km": "តំបន់ {number}"
+      }
+    },
+    {
+      "key": "redaction.regions.remove",
+      "sources": [],
+      "kind": "ui_static",
+      "values": {
+        "ko": "삭제"
+      },
+      "machineTranslations": {
+        "ko": "삭제",
+        "en": "Delete",
+        "vi": "Xóa",
+        "th": "ลบ",
+        "id": "Hapus",
+        "mn": "Устгах",
+        "km": "លុប"
+      }
+    },
+    {
+      "key": "redaction.pageConfirmed",
+      "sources": [],
+      "kind": "ui_static",
+      "values": {
+        "ko": "✓ 이 페이지 확인됨"
+      },
+      "machineTranslations": {
+        "ko": "✓ 이 페이지 확인됨",
+        "en": "✓ This page is verified",
+        "vi": "✓ Trang này đã được xác minh",
+        "th": "✓ หน้านี้ได้รับการยืนยันแล้ว",
+        "id": "✓ Halaman ini telah diverifikasi",
+        "mn": "✓ Энэ хуудсыг баталгаажуулсан",
+        "km": "✓ ទំព័រនេះត្រូវបានផ្ទៀងផ្ទាត់"
+      }
+    },
+    {
+      "key": "redaction.confirmPage",
+      "sources": [],
+      "kind": "ui_static",
+      "values": {
+        "ko": "이 페이지 확인 완료"
+      },
+      "machineTranslations": {
+        "ko": "이 페이지 확인 완료",
+        "en": "Verified this page",
+        "vi": "Đã xác minh trang này",
+        "th": "ยืนยันหน้านี้แล้ว",
+        "id": "Verifikasi halaman ini",
+        "mn": "Энэ хуудсыг баталгаажуулсан",
+        "km": "បានផ្ទៀងផ្ទាត់ទំព័រនេះ។"
+      }
+    },
+    {
+      "key": "redaction.chooseAgain",
+      "sources": [],
+      "kind": "ui_static",
+      "values": {
+        "ko": "취소하고 파일 다시 선택"
+      },
+      "machineTranslations": {
+        "ko": "취소하고 파일 다시 선택",
+        "en": "Cancel and select file again",
+        "vi": "Hủy và chọn lại tập tin",
+        "th": "ยกเลิกและเลือกไฟล์อีกครั้ง",
+        "id": "Batalkan dan pilih file lagi",
+        "mn": "Цуцлаад дахин файл сонгоно уу",
+        "km": "បោះបង់ ហើយជ្រើសរើសឯកសារម្តងទៀត"
+      }
+    },
+    {
+      "key": "redaction.exporting",
+      "sources": [],
+      "kind": "ui_static",
+      "values": {
+        "ko": "가공본 만드는 중…"
+      },
+      "machineTranslations": {
+        "ko": "가공본 만드는 중…",
+        "en": "Making a processed copy...",
+        "vi": "Tạo một bản sao đã được xử lý...",
+        "th": "กำลังทำสำเนาที่ประมวลผล...",
+        "id": "Membuat salinan yang telah diproses...",
+        "mn": "Боловсруулсан хуулбарыг хийж байна...",
+        "km": "ការធ្វើច្បាប់ចម្លងដែលបានដំណើរការ..."
+      }
+    },
+    {
+      "key": "redaction.start",
+      "sources": [],
+      "kind": "ui_static",
+      "values": {
+        "ko": "가린 문서로 분석 시작"
+      },
+      "machineTranslations": {
+        "ko": "가린 문서로 분석 시작",
+        "en": "Start analysis with hidden document",
+        "vi": "Bắt đầu phân tích với tài liệu ẩn",
+        "th": "เริ่มการวิเคราะห์ด้วยเอกสารที่ซ่อนอยู่",
+        "id": "Mulai analisis dengan dokumen tersembunyi",
+        "mn": "Нуугдсан баримтаас дүн шинжилгээ хийж эхлээрэй",
+        "km": "ចាប់ផ្តើមការវិភាគជាមួយឯកសារលាក់"
+      }
+    },
+    {
+      "key": "analysis.heading",
+      "sources": [],
+      "kind": "ui_static",
+      "values": {
+        "ko": "문서를 확인하고 있습니다"
+      },
+      "machineTranslations": {
+        "ko": "문서를 확인하고 있습니다",
+        "en": "Checking the document",
+        "vi": "Kiểm tra tài liệu",
+        "th": "กำลังตรวจสอบเอกสาร",
+        "id": "Memeriksa dokumen",
+        "mn": "Баримт бичгийг шалгаж байна",
+        "km": "កំពុងពិនិត្យឯកសារ"
+      }
+    },
+    {
+      "key": "analysis.description",
+      "sources": [],
+      "kind": "ui_static",
+      "values": {
+        "ko": "잠시만 기다려 주세요. 1분 정도 걸릴 수 있습니다."
+      },
+      "machineTranslations": {
+        "ko": "잠시만 기다려 주세요. 1분 정도 걸릴 수 있습니다.",
+        "en": "Please wait a moment. This may take about a minute.",
+        "vi": "Xin vui lòng chờ một lát. Việc này có thể mất khoảng một phút.",
+        "th": "กรุณารอสักครู่. การดำเนินการนี้อาจใช้เวลาประมาณหนึ่งนาที",
+        "id": "Mohon tunggu sebentar. Ini mungkin memakan waktu sekitar satu menit.",
+        "mn": "Түр хүлээнэ үү. Үүнд нэг минут орчим болж магадгүй.",
+        "km": "សូមរង់ចាំបន្តិច។ វាអាចចំណាយពេលប្រហែលមួយនាទី។"
+      }
+    },
+    {
+      "key": "analysis.step.ocr",
+      "sources": [],
+      "kind": "ui_static",
+      "values": {
+        "ko": "문서 글자 읽기"
+      },
+      "machineTranslations": {
+        "ko": "문서 글자 읽기",
+        "en": "Reading document text",
+        "vi": "Đọc văn bản tài liệu",
+        "th": "กำลังอ่านข้อความในเอกสาร",
+        "id": "Membaca teks dokumen",
+        "mn": "Баримт бичгийн текстийг уншиж байна",
+        "km": "ការអានអត្ថបទឯកសារ"
+      }
+    },
+    {
+      "key": "analysis.step.structuring",
+      "sources": [],
+      "kind": "ui_static",
+      "values": {
+        "ko": "문서 정보 정리"
+      },
+      "machineTranslations": {
+        "ko": "문서 정보 정리",
+        "en": "Organize document information",
+        "vi": "Sắp xếp thông tin tài liệu",
+        "th": "จัดระเบียบข้อมูลเอกสาร",
+        "id": "Mengatur informasi dokumen",
+        "mn": "Баримт бичгийн мэдээллийг цэгцлэх",
+        "km": "រៀបចំព័ត៌មានឯកសារ"
+      }
+    },
+    {
+      "key": "analysis.step.generating",
+      "sources": [],
+      "kind": "ui_static",
+      "values": {
+        "ko": "문제점과 대응 방법 만들기"
+      },
+      "machineTranslations": {
+        "ko": "문제점과 대응 방법 만들기",
+        "en": "Create a problem and response method",
+        "vi": "Tạo vấn đề và phương pháp phản hồi",
+        "th": "สร้างปัญหาและวิธีการตอบสนอง",
+        "id": "Buat masalah dan metode respons",
+        "mn": "Асуудал, хариултын аргыг бий болгох",
+        "km": "បង្កើតបញ្ហា និងវិធីសាស្ត្រឆ្លើយតប"
+      }
+    },
+    {
+      "key": "analysis.processedFiles",
+      "sources": [],
+      "kind": "ui_static",
+      "values": {
+        "ko": "{processed}/{total}개 문서 처리 완료"
+      },
+      "machineTranslations": {
+        "ko": "{processed}/{total}개 문서 처리 완료",
+        "en": "{processed}/{total} documents completed",
+        "vi": "{processed}/{total} tài liệu đã hoàn tất",
+        "th": "{processed}/{total} เอกสารเสร็จสมบูรณ์",
+        "id": "{processed}/{total} dokumen selesai",
+        "mn": "{processed}/{total} бичиг баримтыг бөглөсөн",
+        "km": "ឯកសារ {processed}/{total} បានបញ្ចប់"
+      }
+    },
+    {
+      "key": "review.eyebrow",
+      "sources": [],
+      "kind": "ui_static",
+      "values": {
+        "ko": "결과 확인"
+      },
+      "machineTranslations": {
+        "ko": "결과 확인",
+        "en": "Check results",
+        "vi": "Kiểm tra kết quả",
+        "th": "ตรวจสอบผลลัพธ์",
+        "id": "Periksa hasilnya",
+        "mn": "Үр дүнг шалгана уу",
+        "km": "ពិនិត្យលទ្ធផល"
+      }
+    },
+    {
+      "key": "review.attentionCount",
+      "sources": [],
+      "kind": "ui_static",
+      "values": {
+        "ko": "확인이 필요한 항목이 {count}건 있습니다"
+      },
+      "machineTranslations": {
+        "ko": "확인이 필요한 항목이 {count}건 있습니다",
+        "en": "There are {count} items that need confirmation",
+        "vi": "Có {count} mục cần xác nhận",
+        "th": "มี {count} รายการที่ต้องการการยืนยัน",
+        "id": "Ada {count} item yang memerlukan konfirmasi",
+        "mn": "Баталгаажуулах шаардлагатай {count} зүйл байна",
+        "km": "មានធាតុ {count} ដែលត្រូវការការបញ្ជាក់"
+      }
+    },
+    {
+      "key": "review.noAttention",
+      "sources": [],
+      "kind": "ui_static",
+      "values": {
+        "ko": "현재 결과에서 주의 항목이 발견되지 않았습니다"
+      },
+      "machineTranslations": {
+        "ko": "현재 결과에서 주의 항목이 발견되지 않았습니다",
+        "en": "No items of note were found in the current results",
+        "vi": "Không có mục ghi chú nào được tìm thấy trong kết quả hiện tại",
+        "th": "ไม่พบรายการหมายเหตุในผลลัพธ์ปัจจุบัน",
+        "id": "Tidak ada item catatan yang ditemukan dalam hasil saat ini",
+        "mn": "Одоогийн үр дүнд тэмдэглэл олдсонгүй",
+        "km": "រកមិនឃើញធាតុនៃចំណាំនៅក្នុងលទ្ធផលបច្ចុប្បន្នទេ។"
+      }
+    },
+    {
+      "key": "review.summaryFallback",
+      "sources": [],
+      "kind": "ui_static",
+      "values": {
+        "ko": "분석 결과를 불러오지 못했습니다."
+      },
+      "machineTranslations": {
+        "ko": "분석 결과를 불러오지 못했습니다.",
+        "en": "Analysis results could not be loaded.",
+        "vi": "Không thể tải kết quả phân tích.",
+        "th": "ไม่สามารถโหลดผลการวิเคราะห์ได้",
+        "id": "Hasil analisis tidak dapat dimuat.",
+        "mn": "Шинжилгээний үр дүнг ачаалж чадсангүй.",
+        "km": "លទ្ធផលវិភាគមិនអាចផ្ទុកបានទេ។"
+      }
+    },
+    {
+      "key": "review.status.warn",
+      "sources": [],
+      "kind": "ui_static",
+      "values": {
+        "ko": "주의 필요"
+      },
+      "machineTranslations": {
+        "ko": "주의 필요",
+        "en": "need attention",
+        "vi": "cần chú ý",
+        "th": "ต้องการความสนใจ",
+        "id": "membutuhkan perhatian",
+        "mn": "анхаарал хандуулах хэрэгтэй",
+        "km": "ត្រូវការការយកចិត្តទុកដាក់"
+      }
+    },
+    {
+      "key": "review.status.check",
+      "sources": [],
+      "kind": "ui_static",
+      "values": {
+        "ko": "추가 확인 필요"
+      },
+      "machineTranslations": {
+        "ko": "추가 확인 필요",
+        "en": "Additional confirmation required",
+        "vi": "Yêu cầu xác nhận bổ sung",
+        "th": "จำเป็นต้องมีการยืนยันเพิ่มเติม",
+        "id": "Konfirmasi tambahan diperlukan",
+        "mn": "Нэмэлт баталгаажуулалт шаардлагатай",
+        "km": "ទាមទារការបញ្ជាក់បន្ថែម"
+      }
+    },
+    {
+      "key": "review.status.ok",
+      "sources": [],
+      "kind": "ui_static",
+      "values": {
+        "ko": "특이사항 없음"
+      },
+      "machineTranslations": {
+        "ko": "특이사항 없음",
+        "en": "Nothing special",
+        "vi": "Không có gì đặc biệt",
+        "th": "ไม่มีอะไรพิเศษ",
+        "id": "Tidak ada yang istimewa",
+        "mn": "Онцгой зүйл байхгүй",
+        "km": "គ្មានអ្វីពិសេសទេ។"
+      }
+    },
+    {
+      "key": "review.source.label",
+      "sources": [],
+      "kind": "ui_static",
+      "values": {
+        "ko": "판정 출처"
+      },
+      "machineTranslations": {
+        "ko": "판정 출처",
+        "en": "Judgment Source",
+        "vi": "Nguồn phán xét",
+        "th": "ที่มาคำพิพากษา",
+        "id": "Sumber Penghakiman",
+        "mn": "Шүүхийн эх сурвалж",
+        "km": "ប្រភពសាលក្រម"
+      }
+    },
+    {
+      "key": "review.source.ai",
+      "sources": [],
+      "kind": "ui_static",
+      "values": {
+        "ko": "AI 분석"
+      },
+      "machineTranslations": {
+        "ko": "AI 분석",
+        "en": "AI analytics",
+        "vi": "phân tích AI",
+        "th": "การวิเคราะห์เอไอ",
+        "id": "analitik AI",
+        "mn": "AI аналитик",
+        "km": "ការវិភាគ AI"
+      }
+    },
+    {
+      "key": "review.source.rule",
+      "sources": [],
+      "kind": "ui_static",
+      "values": {
+        "ko": "기준 대조"
+      },
+      "machineTranslations": {
+        "ko": "기준 대조",
+        "en": "baseline control",
+        "vi": "kiểm soát cơ bản",
+        "th": "การควบคุมพื้นฐาน",
+        "id": "kontrol dasar",
+        "mn": "суурь хяналт",
+        "km": "ការត្រួតពិនិត្យមូលដ្ឋាន"
+      }
+    },
+    {
+      "key": "review.relatedDocuments",
+      "sources": [],
+      "kind": "ui_static",
+      "values": {
+        "ko": "관련 문서"
+      },
+      "machineTranslations": {
+        "ko": "관련 문서",
+        "en": "Related documents",
+        "vi": "Tài liệu liên quan",
+        "th": "เอกสารที่เกี่ยวข้อง",
+        "id": "Dokumen terkait",
+        "mn": "Холбогдох баримт бичиг",
+        "km": "ឯកសារពាក់ព័ន្ធ"
+      }
+    },
+    {
+      "key": "review.legalBasis",
+      "sources": [],
+      "kind": "ui_static",
+      "values": {
+        "ko": "관련 기준"
+      },
+      "machineTranslations": {
+        "ko": "관련 기준",
+        "en": "Related criteria",
+        "vi": "Tiêu chí liên quan",
+        "th": "เกณฑ์ที่เกี่ยวข้อง",
+        "id": "Kriteria terkait",
+        "mn": "Холбогдох шалгуурууд",
+        "km": "លក្ខណៈវិនិច្ឆ័យពាក់ព័ន្ធ"
+      }
+    },
+    {
+      "key": "review.noItems",
+      "sources": [],
+      "kind": "ui_static",
+      "values": {
+        "ko": "분석 결과에 별도 문제 항목이 없습니다. 아래 한계와 준비자료를 함께 확인하세요."
+      },
+      "machineTranslations": {
+        "ko": "분석 결과에 별도 문제 항목이 없습니다. 아래 한계와 준비자료를 함께 확인하세요.",
+        "en": "There are no separate problem items in the analysis results. Please check the limitations and preparation materials below.",
+        "vi": "Không có mục vấn đề riêng biệt trong kết quả phân tích. Vui lòng kiểm tra những hạn chế và tài liệu chuẩn bị dưới đây.",
+        "th": "ไม่มีรายการปัญหาแยกกันในผลการวิเคราะห์ โปรดตรวจสอบข้อจำกัดและเอกสารการเตรียมการด้านล่าง",
+        "id": "Tidak ada item permasalahan tersendiri pada hasil analisis. Silakan periksa batasan dan materi persiapan di bawah ini.",
+        "mn": "Шинжилгээний үр дүнд тусдаа асуудал байхгүй. Доорх хязгаарлалт болон бэлтгэлийн материалыг шалгана уу.",
+        "km": "មិនមានធាតុបញ្ហាដាច់ដោយឡែកនៅក្នុងលទ្ធផលនៃការវិភាគទេ។ សូមពិនិត្យមើលដែនកំណត់ និងសម្ភារៈរៀបចំខាងក្រោម។"
+      }
+    },
+    {
+      "key": "review.nextActions",
+      "sources": [],
+      "kind": "ui_static",
+      "values": {
+        "ko": "권장되는 다음 행동"
+      },
+      "machineTranslations": {
+        "ko": "권장되는 다음 행동",
+        "en": "Recommended Next Action",
+        "vi": "Hành động tiếp theo được đề xuất",
+        "th": "การดำเนินการถัดไปที่แนะนำ",
+        "id": "Tindakan Berikutnya yang Direkomendasikan",
+        "mn": "Зөвлөмж болгож буй дараагийн үйлдэл",
+        "km": "សកម្មភាពបន្ទាប់ដែលបានណែនាំ"
+      }
+    },
+    {
+      "key": "review.evidence.heading",
+      "sources": [],
+      "kind": "ui_static",
+      "values": {
+        "ko": "앞으로 모아두면 좋은 자료"
+      },
+      "machineTranslations": {
+        "ko": "앞으로 모아두면 좋은 자료",
+        "en": "Good data to collect in the future",
+        "vi": "Dữ liệu tốt để thu thập trong tương lai",
+        "th": "ข้อมูลดีๆ ไว้สะสมในอนาคต",
+        "id": "Data bagus untuk dikumpulkan di masa depan",
+        "mn": "Ирээдүйд цуглуулах сайн мэдээлэл",
+        "km": "ទិន្នន័យល្អដើម្បីប្រមូលនៅពេលអនាគត"
+      }
+    },
+    {
+      "key": "review.evidence.timesheet",
+      "sources": [],
+      "kind": "ui_static",
+      "values": {
+        "ko": "출퇴근 기록 또는 근무표"
+      },
+      "machineTranslations": {
+        "ko": "출퇴근 기록 또는 근무표",
+        "en": "Attendance record or time sheet",
+        "vi": "Biên bản chấm công hoặc bảng chấm công",
+        "th": "บันทึกการเข้าร่วมหรือใบบันทึกเวลา",
+        "id": "Catatan kehadiran atau lembar waktu",
+        "mn": "Ирцийн бүртгэл эсвэл цагийн хуудас",
+        "km": "កំណត់ត្រាវត្តមាន ឬតារាងពេលវេលា"
+      }
+    },
+    {
+      "key": "review.evidence.orders",
+      "sources": [],
+      "kind": "ui_static",
+      "values": {
+        "ko": "작업지시 · 메시지 기록"
+      },
+      "machineTranslations": {
+        "ko": "작업지시 · 메시지 기록",
+        "en": "Work order/message record",
+        "vi": "Bản ghi lệnh/tin nhắn công việc",
+        "th": "สั่งงาน/บันทึกข้อความ",
+        "id": "Perintah kerja/catatan pesan",
+        "mn": "Ажлын захиалга / мессежийн бүртгэл",
+        "km": "ការបញ្ជាទិញការងារ / កំណត់ត្រាសារ"
+      }
+    },
+    {
+      "key": "review.evidence.payments",
+      "sources": [],
+      "kind": "ui_static",
+      "values": {
+        "ko": "월별 지급내역"
+      },
+      "machineTranslations": {
+        "ko": "월별 지급내역",
+        "en": "Monthly payment details",
+        "vi": "Chi tiết thanh toán hàng tháng",
+        "th": "รายละเอียดการชำระเงินรายเดือน",
+        "id": "Detail pembayaran bulanan",
+        "mn": "Сарын төлбөрийн дэлгэрэнгүй мэдээлэл",
+        "km": "ព័ត៌មានលម្អិតអំពីការទូទាត់ប្រចាំខែ"
+      }
+    },
+    {
+      "key": "review.evidence.notes",
+      "sources": [],
+      "kind": "ui_static",
+      "values": {
+        "ko": "날짜별 근무 메모"
+      },
+      "machineTranslations": {
+        "ko": "날짜별 근무 메모",
+        "en": "Work notes by date",
+        "vi": "Ghi chú công việc theo ngày",
+        "th": "บันทึกการทำงานตามวันที่",
+        "id": "Catatan kerja berdasarkan tanggal",
+        "mn": "Ажлын тэмдэглэлийг огноогоор нь",
+        "km": "កំណត់ចំណាំការងារតាមកាលបរិច្ឆេទ"
+      }
+    },
+    {
+      "key": "review.unverified",
+      "sources": [],
+      "kind": "ui_static",
+      "values": {
+        "ko": "문서에서 확인하지 못한 항목"
+      },
+      "machineTranslations": {
+        "ko": "문서에서 확인하지 못한 항목",
+        "en": "Items not identified in the document",
+        "vi": "Các mục không được xác định trong tài liệu",
+        "th": "รายการที่ไม่ได้ระบุไว้ในเอกสาร",
+        "id": "Item yang tidak teridentifikasi dalam dokumen",
+        "mn": "Баримт бичигт тодорхойлогдоогүй зүйлүүд",
+        "km": "ធាតុមិនត្រូវបានកំណត់អត្តសញ្ញាណនៅក្នុងឯកសារ"
+      }
+    },
+    {
+      "key": "review.limits.heading",
+      "sources": [],
+      "kind": "ui_static",
+      "values": {
+        "ko": "이 결과의 한계"
+      },
+      "machineTranslations": {
+        "ko": "이 결과의 한계",
+        "en": "Limitations of these results",
+        "vi": "Hạn chế của những kết quả này",
+        "th": "ข้อจำกัดของผลลัพธ์เหล่านี้",
+        "id": "Keterbatasan hasil ini",
+        "mn": "Эдгээр үр дүнгийн хязгаарлалт",
+        "km": "ដែនកំណត់នៃលទ្ធផលទាំងនេះ"
+      }
+    },
+    {
+      "key": "review.limits.userStatement",
+      "sources": [],
+      "kind": "ui_static",
+      "values": {
+        "ko": "사용자 설명만 있는 사실은 ‘사용자 설명상’으로 표시합니다."
+      },
+      "machineTranslations": {
+        "ko": "사용자 설명만 있는 사실은 ‘사용자 설명상’으로 표시합니다.",
+        "en": "Facts that only have user descriptions are marked as ‘according to user description’.",
+        "vi": "Các sự kiện chỉ có mô tả của người dùng sẽ được đánh dấu là 'theo mô tả của người dùng'.",
+        "th": "ข้อเท็จจริงที่มีเฉพาะคำอธิบายผู้ใช้จะถูกทำเครื่องหมายเป็น 'ตามคำอธิบายของผู้ใช้'",
+        "id": "Fakta yang hanya memiliki deskripsi pengguna ditandai sebagai 'sesuai deskripsi pengguna'.",
+        "mn": "Зөвхөн хэрэглэгчийн тайлбартай баримтуудыг \"хэрэглэгчийн тайлбарын дагуу\" гэж тэмдэглэнэ.",
+        "km": "ការពិត​ដែល​មាន​តែ​ការ​ពិពណ៌នា​អ្នក​ប្រើ​ប៉ុណ្ណោះ​ត្រូវ​បាន​សម្គាល់​ថា​ជា 'យោង​តាម​ការ​ពិពណ៌នា​របស់​អ្នក​ប្រើ'។"
+      }
+    },
+    {
+      "key": "review.limits.noPayslip",
+      "sources": [],
+      "kind": "ui_static",
+      "values": {
+        "ko": "급여명세서가 없으면 수당 지급 여부와 미지급액을 확정하지 않습니다."
+      },
+      "machineTranslations": {
+        "ko": "급여명세서가 없으면 수당 지급 여부와 미지급액을 확정하지 않습니다.",
+        "en": "Without a pay stub, it is not possible to confirm whether or not benefits are paid and how much is unpaid.",
+        "vi": "Nếu không có cuống phiếu lương thì không thể xác nhận liệu các khoản trợ cấp có được trả hay không và số tiền chưa được trả là bao nhiêu.",
+        "th": "หากไม่มีสลิปการจ่ายเงิน จะไม่สามารถยืนยันได้ว่ามีการจ่ายผลประโยชน์หรือไม่และยังไม่ได้จ่ายเป็นจำนวนเท่าใด",
+        "id": "Tanpa bukti pembayaran, tidak mungkin untuk memastikan apakah manfaat telah dibayarkan atau belum dan berapa jumlah manfaat yang belum dibayarkan.",
+        "mn": "Цалингийн стод байхгүй бол тэтгэмж олгосон эсэх, хэчнээн төгрөг төлөгдөөгүйг батлах боломжгүй.",
+        "km": "បើ​គ្មាន​ដើម​ប្រាក់​ខែ​ទេ វា​មិន​អាច​បញ្ជាក់​បាន​ថា​តើ​ប្រាក់​អត្ថប្រយោជន៍​ត្រូវ​បាន​បង់​ឬ​អត់ ហើយ​ចំនួន​ប៉ុន្មាន​ដែល​មិន​បាន​បង់។"
+      }
+    },
+    {
+      "key": "review.limits.noRecords",
+      "sources": [],
+      "kind": "ui_static",
+      "values": {
+        "ko": "근무기록이 없으면 설명한 시간은 주장값으로만 둡니다."
+      },
+      "machineTranslations": {
+        "ko": "근무기록이 없으면 설명한 시간은 주장값으로만 둡니다.",
+        "en": "If there is no work record, the hours described are only the claimed value.",
+        "vi": "Nếu không có hồ sơ công việc, số giờ được mô tả chỉ là giá trị được yêu cầu.",
+        "th": "หากไม่มีบันทึกการทำงาน ชั่วโมงที่อธิบายไว้เป็นเพียงมูลค่าที่อ้างสิทธิ์เท่านั้น",
+        "id": "Jika tidak ada catatan pekerjaan, jam yang dijelaskan hanya nilai yang diklaim.",
+        "mn": "Хэрэв ажлын бүртгэл байхгүй бол тодорхойлсон цаг нь зөвхөн нэхэмжилсэн үнэ юм.",
+        "km": "ប្រសិនបើមិនមានកំណត់ត្រាការងារទេ ម៉ោងដែលបានពិពណ៌នាគឺគ្រាន់តែជាតម្លៃដែលបានទាមទារប៉ុណ្ណោះ។"
+      }
+    },
+    {
+      "key": "review.limits.noLegalDecision",
+      "sources": [],
+      "kind": "ui_static",
+      "values": {
+        "ko": "현재 자료만으로 법 위반을 확정하지 않습니다."
+      },
+      "machineTranslations": {
+        "ko": "현재 자료만으로 법 위반을 확정하지 않습니다.",
+        "en": "Current data alone does not confirm violations of the law.",
+        "vi": "Chỉ riêng dữ liệu hiện tại không xác nhận hành vi vi phạm pháp luật.",
+        "th": "ข้อมูลปัจจุบันเพียงอย่างเดียวไม่ได้ยืนยันการละเมิดกฎหมาย",
+        "id": "Data terkini saja tidak mengkonfirmasi adanya pelanggaran hukum.",
+        "mn": "Зөвхөн одоогийн мэдээлэл нь хууль зөрчсөн гэдгийг батлахгүй.",
+        "km": "ទិន្នន័យបច្ចុប្បន្នតែម្នាក់ឯងមិនបញ្ជាក់ពីការបំពានច្បាប់ទេ។"
+      }
+    },
+    {
+      "key": "review.prepareComplaint",
+      "sources": [],
+      "kind": "ui_static",
+      "values": {
+        "ko": "진정서 작성하기"
+      },
+      "machineTranslations": {
+        "ko": "진정서 작성하기",
+        "en": "Write a complaint",
+        "vi": "Viết đơn khiếu nại",
+        "th": "เขียนเรื่องร้องเรียน",
+        "id": "Tulis keluhan",
+        "mn": "Гомдол бичих",
+        "km": "សរសេរពាក្យបណ្តឹង"
+      }
+    },
+    {
+      "key": "review.showAgencies",
+      "sources": [],
+      "kind": "ui_static",
+      "values": {
+        "ko": "기관 안내만 보기"
+      },
+      "machineTranslations": {
+        "ko": "기관 안내만 보기",
+        "en": "View agency information only",
+        "vi": "Chỉ xem thông tin đại lý",
+        "th": "ดูข้อมูลหน่วยงานเท่านั้น",
+        "id": "Lihat informasi agensi saja",
+        "mn": "Зөвхөн агентлагийн мэдээллийг үзэх",
+        "km": "មើលព័ត៌មានភ្នាក់ងារប៉ុណ្ណោះ។"
+      }
+    },
+    {
+      "key": "complaint.eyebrow",
+      "sources": [],
+      "kind": "ui_static",
+      "values": {
+        "ko": "진정서 작성"
+      },
+      "machineTranslations": {
+        "ko": "진정서 작성",
+        "en": "Write a complaint",
+        "vi": "Viết đơn khiếu nại",
+        "th": "เขียนเรื่องร้องเรียน",
+        "id": "Tulis keluhan",
+        "mn": "Гомдол бичих",
+        "km": "សរសេរពាក្យបណ្តឹង"
+      }
+    },
+    {
+      "key": "complaint.heading",
+      "sources": [],
+      "kind": "ui_static",
+      "values": {
+        "ko": "ILLO와 대화하며 진정서를 작성합니다"
+      },
+      "machineTranslations": {
+        "ko": "ILLO와 대화하며 진정서를 작성합니다",
+        "en": "Talk to ILLO and write a complaint",
+        "vi": "Nói chuyện với ILLO và viết đơn khiếu nại",
+        "th": "พูดคุยกับ ILLO และเขียนข้อร้องเรียน",
+        "id": "Bicaralah dengan ILLO dan tulis keluhan",
+        "mn": "ILLO-той ярилцаж, гомдол бичээрэй",
+        "km": "និយាយទៅកាន់ ILLO ហើយសរសេរពាក្យបណ្តឹង"
+      }
+    },
+    {
+      "key": "complaint.description",
+      "sources": [],
+      "kind": "ui_static",
+      "values": {
+        "ko": "AI가 필요한 항목을 한 번에 하나씩 질문합니다. 아래 입력창에 자연어로 답해주세요."
+      },
+      "machineTranslations": {
+        "ko": "AI가 필요한 항목을 한 번에 하나씩 질문합니다. 아래 입력창에 자연어로 답해주세요.",
+        "en": "Ask AI questions about what you need, one question at a time. Please answer in natural language in the input box below.",
+        "vi": "Đặt câu hỏi AI về những gì bạn cần, mỗi lần một câu hỏi. Vui lòng trả lời bằng ngôn ngữ tự nhiên vào hộp nhập bên dưới.",
+        "th": "ถามคำถาม AI เกี่ยวกับสิ่งที่คุณต้องการทีละคำถาม โปรดตอบเป็นภาษาธรรมชาติในช่องป้อนข้อมูลด้านล่าง",
+        "id": "Ajukan pertanyaan AI tentang apa yang Anda butuhkan, pertanyaan satu per satu. Harap jawab dalam bahasa alami pada kotak masukan di bawah.",
+        "mn": "Өөрт хэрэгтэй зүйлийн талаар AI-аас асуултуудыг нэг нэгээр нь асуу. Доорх оруулах талбарт байгалийн хэлээр хариулна уу.",
+        "km": "សួរសំណួរ AI អំពីអ្វីដែលអ្នកត្រូវការ សំណួរមួយក្នុងពេលតែមួយ។ សូមឆ្លើយជាភាសាធម្មជាតិក្នុងប្រអប់បញ្ចូលខាងក្រោម។"
+      }
+    },
+    {
+      "key": "complaint.progress",
+      "sources": [],
+      "kind": "ui_static",
+      "values": {
+        "ko": "필수 항목 확인 상황"
+      },
+      "machineTranslations": {
+        "ko": "필수 항목 확인 상황",
+        "en": "Confirmation of required items",
+        "vi": "Xác nhận các mục cần thiết",
+        "th": "การยืนยันรายการที่จำเป็น",
+        "id": "Konfirmasi item yang diperlukan",
+        "mn": "Шаардлагатай зүйлсийг баталгаажуулах",
+        "km": "ការបញ្ជាក់ពីធាតុដែលត្រូវការ"
+      }
+    },
+    {
+      "key": "complaint.chatAria",
+      "sources": [],
+      "kind": "ui_static",
+      "values": {
+        "ko": "진정서 작성 대화"
+      },
+      "machineTranslations": {
+        "ko": "진정서 작성 대화",
+        "en": "Complaint writing conversation",
+        "vi": "Đối thoại viết khiếu nại",
+        "th": "การสนทนาการเขียนเรื่องร้องเรียน",
+        "id": "Percakapan menulis keluhan",
+        "mn": "Гомдол бичих яриа",
+        "km": "ការសន្ទនាការសរសេរពាក្យបណ្តឹង"
+      }
+    },
+    {
+      "key": "complaint.me",
+      "sources": [],
+      "kind": "ui_static",
+      "values": {
+        "ko": "나"
+      },
+      "machineTranslations": {
+        "ko": "나",
+        "en": "me",
+        "vi": "tôi",
+        "th": "ฉัน",
+        "id": "saya",
+        "mn": "би",
+        "km": "ខ្ញុំ"
+      }
+    },
+    {
+      "key": "complaint.checking",
+      "sources": [],
+      "kind": "ui_static",
+      "values": {
+        "ko": "답변을 확인하고 있습니다…"
+      },
+      "machineTranslations": {
+        "ko": "답변을 확인하고 있습니다…",
+        "en": "Checking for answers…",
+        "vi": "Đang kiểm tra câu trả lời…",
+        "th": "กำลังตรวจสอบคำตอบ...",
+        "id": "Memeriksa jawaban…",
+        "mn": "Хариултуудыг шалгаж байна...",
+        "km": "កំពុងពិនិត្យមើលចម្លើយ..."
+      }
+    },
+    {
+      "key": "complaint.currentField",
+      "sources": [],
+      "kind": "ui_static",
+      "values": {
+        "ko": "현재 확인 항목 · {field}"
+      },
+      "machineTranslations": {
+        "ko": "현재 확인 항목 · {field}",
+        "en": "Current check item · {field}",
+        "vi": "Mục kiểm tra hiện tại · {field}",
+        "th": "รายการตรวจสอบปัจจุบัน · {field}",
+        "id": "Item cek saat ini · {field}",
+        "mn": "Одоогийн шалгах зүйл · {field}",
+        "km": "ធាតុពិនិត្យបច្ចុប្បន្ន · {field}"
+      }
+    },
+    {
+      "key": "complaint.sensitive",
+      "sources": [],
+      "kind": "ui_static",
+      "values": {
+        "ko": "민감정보가 포함될 수 있습니다. 공용 기기에서는 입력 후 화면을 닫아주세요."
+      },
+      "machineTranslations": {
+        "ko": "민감정보가 포함될 수 있습니다. 공용 기기에서는 입력 후 화면을 닫아주세요.",
+        "en": "It may contain sensitive information. On shared devices, please close the screen after entering.",
+        "vi": "Nó có thể chứa thông tin nhạy cảm. Trên các thiết bị dùng chung, vui lòng đóng màn hình sau khi vào.",
+        "th": "อาจมีข้อมูลที่ละเอียดอ่อน บนอุปกรณ์ที่ใช้ร่วมกันกรุณาปิดหน้าจอหลังจากเข้า",
+        "id": "Ini mungkin berisi informasi sensitif. Pada perangkat bersama, harap tutup layar setelah masuk.",
+        "mn": "Энэ нь эмзэг мэдээллийг агуулж болно. Хуваалцсан төхөөрөмжүүд дээр нэвтэрсний дараа дэлгэцийг хаана уу.",
+        "km": "វាអាចមានព័ត៌មានរសើប។ នៅលើឧបករណ៍ដែលបានចែករំលែក សូមបិទអេក្រង់បន្ទាប់ពីចូល។"
+      }
+    },
+    {
+      "key": "complaint.quickReplies",
+      "sources": [],
+      "kind": "ui_static",
+      "values": {
+        "ko": "{field} 빠른 답변"
+      },
+      "machineTranslations": {
+        "ko": "{field} 빠른 답변",
+        "en": "{field} Quick Answer",
+        "vi": "{field} Trả lời nhanh",
+        "th": "{field} ตอบด่วน",
+        "id": "{field} Jawaban Cepat",
+        "mn": "{field} Шуурхай хариулт",
+        "km": "{field} ចម្លើយរហ័ស"
+      }
+    },
+    {
+      "key": "complaint.preview",
+      "sources": [],
+      "kind": "ui_static",
+      "values": {
+        "ko": "현재까지 작성된 내용 확인"
+      },
+      "machineTranslations": {
+        "ko": "현재까지 작성된 내용 확인",
+        "en": "Check what has been written so far",
+        "vi": "Kiểm tra những gì đã được viết cho đến nay",
+        "th": "ตรวจสอบสิ่งที่เขียนไว้จนถึงตอนนี้",
+        "id": "Periksa apa yang telah ditulis sejauh ini",
+        "mn": "Одоогоор юу бичсэнийг шалгаарай",
+        "km": "ពិនិត្យមើលអ្វីដែលបានសរសេររហូតមកដល់ពេលនេះ"
+      }
+    },
+    {
+      "key": "complaint.review",
+      "sources": [],
+      "kind": "ui_static",
+      "values": {
+        "ko": "완성된 진정서 확인"
+      },
+      "machineTranslations": {
+        "ko": "완성된 진정서 확인",
+        "en": "Check the completed petition",
+        "vi": "Kiểm tra đơn đã hoàn thành",
+        "th": "ตรวจสอบคำร้องที่เสร็จสมบูรณ์",
+        "id": "Periksa petisi yang sudah selesai",
+        "mn": "Дууссан өргөдлийг шалгана уу",
+        "km": "ពិនិត្យញត្តិដែលបានបញ្ចប់"
+      }
+    },
+    {
+      "key": "complaint.back",
+      "sources": [],
+      "kind": "ui_static",
+      "values": {
+        "ko": "결과로 돌아가기"
+      },
+      "machineTranslations": {
+        "ko": "결과로 돌아가기",
+        "en": "return to results",
+        "vi": "quay lại kết quả",
+        "th": "กลับสู่ผลลัพธ์",
+        "id": "kembali ke hasil",
+        "mn": "үр дүн рүү буцах",
+        "km": "ត្រឡប់ទៅលទ្ធផល"
+      }
+    },
+    {
+      "key": "complaint.inputNote",
+      "sources": [],
+      "kind": "ui_static",
+      "values": {
+        "ko": "아래 채팅 입력창에 답변을 입력해주세요."
+      },
+      "machineTranslations": {
+        "ko": "아래 채팅 입력창에 답변을 입력해주세요.",
+        "en": "Please enter your answer in the chat input box below.",
+        "vi": "Vui lòng nhập câu trả lời của bạn vào hộp nhập trò chuyện bên dưới.",
+        "th": "กรุณากรอกคำตอบของคุณในช่องป้อนข้อมูลการแชทด้านล่าง",
+        "id": "Silakan masukkan jawaban Anda pada kotak masukan obrolan di bawah.",
+        "mn": "Доорх чат оруулах хэсэгт хариултаа оруулна уу.",
+        "km": "សូមបញ្ចូលចម្លើយរបស់អ្នកនៅក្នុងប្រអប់បញ្ចូលការជជែកខាងក្រោម។"
+      }
+    },
+    {
+      "key": "complaint.option.WORKPLACE",
+      "sources": [],
+      "kind": "ui_static",
+      "values": {
+        "ko": "사업장"
+      },
+      "machineTranslations": {
+        "ko": "사업장",
+        "en": "workplace",
+        "vi": "nơi làm việc",
+        "th": "ที่ทำงาน",
+        "id": "tempat kerja",
+        "mn": "ажлын байр",
+        "km": "កន្លែងធ្វើការ"
+      }
+    },
+    {
+      "key": "complaint.option.CONSTRUCTION_SITE",
+      "sources": [],
+      "kind": "ui_static",
+      "values": {
+        "ko": "공사현장"
+      },
+      "machineTranslations": {
+        "ko": "공사현장",
+        "en": "construction site",
+        "vi": "công trường xây dựng",
+        "th": "สถานที่ก่อสร้าง",
+        "id": "lokasi konstruksi",
+        "mn": "барилгын талбай",
+        "km": "ការដ្ឋានសំណង់"
+      }
+    },
+    {
+      "key": "complaint.option.RESIGNED",
+      "sources": [],
+      "kind": "ui_static",
+      "values": {
+        "ko": "퇴직"
+      },
+      "machineTranslations": {
+        "ko": "퇴직",
+        "en": "retirement",
+        "vi": "nghỉ hưu",
+        "th": "เกษียณอายุ",
+        "id": "pensiun",
+        "mn": "тэтгэвэр",
+        "km": "ការចូលនិវត្តន៍"
+      }
+    },
+    {
+      "key": "complaint.option.EMPLOYED",
+      "sources": [],
+      "kind": "ui_static",
+      "values": {
+        "ko": "재직 중"
+      },
+      "machineTranslations": {
+        "ko": "재직 중",
+        "en": "working",
+        "vi": "đang làm việc",
+        "th": "การทำงาน",
+        "id": "bekerja",
+        "mn": "ажиллаж байна",
+        "km": "ធ្វើការ"
+      }
+    },
+    {
+      "key": "complaint.option.WRITTEN",
+      "sources": [],
+      "kind": "ui_static",
+      "values": {
+        "ko": "서면 계약"
+      },
+      "machineTranslations": {
+        "ko": "서면 계약",
+        "en": "written contract",
+        "vi": "hợp đồng bằng văn bản",
+        "th": "สัญญาเป็นลายลักษณ์อักษร",
+        "id": "kontrak tertulis",
+        "mn": "бичгээр гэрээ",
+        "km": "កិច្ចសន្យាជាលាយលក្ខណ៍អក្សរ"
+      }
+    },
+    {
+      "key": "complaint.option.ORAL",
+      "sources": [],
+      "kind": "ui_static",
+      "values": {
+        "ko": "구두 계약"
+      },
+      "machineTranslations": {
+        "ko": "구두 계약",
+        "en": "oral contract",
+        "vi": "hợp đồng miệng",
+        "th": "สัญญาปากเปล่า",
+        "id": "kontrak lisan",
+        "mn": "аман гэрээ",
+        "km": "កិច្ចសន្យាផ្ទាល់មាត់"
+      }
+    },
+    {
+      "key": "draftReady.eyebrow",
+      "sources": [],
+      "kind": "ui_static",
+      "values": {
+        "ko": "진정서 완성"
+      },
+      "machineTranslations": {
+        "ko": "진정서 완성",
+        "en": "Completion of petition",
+        "vi": "Hoàn thành đơn khởi kiện",
+        "th": "เสร็จสิ้นคำร้อง",
+        "id": "Penyelesaian petisi",
+        "mn": "Өргөдөл бөглөх",
+        "km": "ការបំពេញញត្តិ"
+      }
+    },
+    {
+      "key": "draftReady.heading",
+      "sources": [],
+      "kind": "ui_static",
+      "values": {
+        "ko": "진정서 초안이 준비되었습니다"
+      },
+      "machineTranslations": {
+        "ko": "진정서 초안이 준비되었습니다",
+        "en": "A draft petition has been prepared",
+        "vi": "Một bản dự thảo kiến nghị đã được chuẩn bị",
+        "th": "ได้จัดทำร่างคำร้องแล้ว",
+        "id": "Draf petisi telah disiapkan",
+        "mn": "Өргөдлийн төслийг бэлтгэсэн",
+        "km": "សេចក្តីព្រាងញត្តិត្រូវបានរៀបចំឡើង"
+      }
+    },
+    {
+      "key": "draftReady.description",
+      "sources": [],
+      "kind": "ui_static",
+      "values": {
+        "ko": "AI와 대화하며 확인한 내용이 실제 SN001 HWPX 초안에 반영되었습니다."
+      },
+      "machineTranslations": {
+        "ko": "AI와 대화하며 확인한 내용이 실제 SN001 HWPX 초안에 반영되었습니다.",
+        "en": "What we confirmed while talking to AI was reflected in the actual SN001 HWPX draft.",
+        "vi": "Những gì chúng tôi xác nhận khi nói chuyện với AI đã được phản ánh trong bản dự thảo SN001 HWPX thực tế.",
+        "th": "สิ่งที่เรายืนยันขณะพูดคุยกับ AI นั้นสะท้อนให้เห็นในร่าง SN001 HWPX จริง",
+        "id": "Apa yang kami konfirmasikan saat berbicara dengan AI tercermin dalam draf SN001 HWPX yang sebenarnya.",
+        "mn": "AI-тай ярилцаж байхдаа бидний баталсан зүйл бол SN001 HWPX төсөлд тусгагдсан болно.",
+        "km": "អ្វីដែលយើងបានបញ្ជាក់នៅពេលនិយាយជាមួយ AI ត្រូវបានឆ្លុះបញ្ចាំងនៅក្នុងសេចក្តីព្រាង SN001 HWPX ពិតប្រាកដ។"
+      }
+    },
+    {
+      "key": "draftReady.title",
+      "sources": [],
+      "kind": "ui_static",
+      "values": {
+        "ko": "진정서 (SN001)"
+      },
+      "machineTranslations": {
+        "ko": "진정서 (SN001)",
+        "en": "Petition (SN001)",
+        "vi": "Đơn khởi kiện (SN001)",
+        "th": "คำร้อง (SN001)",
+        "id": "Petisi (SN001)",
+        "mn": "Өргөдөл (SN001)",
+        "km": "ញត្តិ (SN001)"
+      }
+    },
+    {
+      "key": "draftReady.notice.heading",
+      "sources": [],
+      "kind": "ui_static",
+      "values": {
+        "ko": "내려받기 전에 확인해 주세요"
+      },
+      "machineTranslations": {
+        "ko": "내려받기 전에 확인해 주세요",
+        "en": "Please check before downloading",
+        "vi": "Vui lòng kiểm tra trước khi tải xuống",
+        "th": "โปรดตรวจสอบก่อนดาวน์โหลด",
+        "id": "Silakan periksa sebelum mengunduh",
+        "mn": "Татаж авахаасаа өмнө шалгана уу",
+        "km": "សូមពិនិត្យមើលមុនពេលទាញយក"
+      }
+    },
+    {
+      "key": "draftReady.notice.draft",
+      "sources": [],
+      "kind": "ui_static",
+      "values": {
+        "ko": "이 파일은 사용자가 제공한 내용을 정리한 진정서 초안입니다."
+      },
+      "machineTranslations": {
+        "ko": "이 파일은 사용자가 제공한 내용을 정리한 진정서 초안입니다.",
+        "en": "This file is a draft complaint compiling the information provided by the user.",
+        "vi": "Tệp này là một bản khiếu nại dự thảo tổng hợp thông tin do người dùng cung cấp.",
+        "th": "ไฟล์นี้เป็นร่างข้อร้องเรียนที่รวบรวมข้อมูลที่ผู้ใช้ให้ไว้",
+        "id": "File ini adalah rancangan pengaduan yang mengumpulkan informasi yang diberikan oleh pengguna.",
+        "mn": "Энэ файл нь хэрэглэгчийн өгсөн мэдээллийг нэгтгэсэн гомдлын төсөл юм.",
+        "km": "ឯកសារនេះគឺជាបណ្តឹងព្រាងដែលចងក្រងព័ត៌មានដែលផ្តល់ដោយអ្នកប្រើប្រាស់។"
+      }
+    },
+    {
+      "key": "draftReady.notice.notSubmitted",
+      "sources": [],
+      "kind": "ui_static",
+      "values": {
+        "ko": "파일을 내려받는 것만으로 신고가 접수되지 않습니다."
+      },
+      "machineTranslations": {
+        "ko": "파일을 내려받는 것만으로 신고가 접수되지 않습니다.",
+        "en": "A report will not be submitted simply by downloading the file.",
+        "vi": "Báo cáo sẽ không được gửi chỉ bằng cách tải xuống tệp.",
+        "th": "รายงานจะไม่ถูกส่งเพียงโดยการดาวน์โหลดไฟล์",
+        "id": "Laporan tidak akan disampaikan hanya dengan mengunduh file.",
+        "mn": "Зөвхөн файлыг татаж аваад тайлан гаргахгүй.",
+        "km": "របាយការណ៍នឹងមិនត្រូវបានដាក់ស្នើដោយគ្រាន់តែទាញយកឯកសារនោះទេ។"
+      }
+    },
+    {
+      "key": "draftReady.notice.verify",
+      "sources": [],
+      "kind": "ui_static",
+      "values": {
+        "ko": "제출 전에 이름, 주소, 날짜, 금액과 사실관계를 다시 확인해 주세요."
+      },
+      "machineTranslations": {
+        "ko": "제출 전에 이름, 주소, 날짜, 금액과 사실관계를 다시 확인해 주세요.",
+        "en": "Please double-check your name, address, date, amount and facts before submitting.",
+        "vi": "Vui lòng kiểm tra kỹ tên, địa chỉ, ngày tháng, số tiền và thông tin thực tế của bạn trước khi gửi.",
+        "th": "โปรดตรวจสอบชื่อ ที่อยู่ วันที่ จำนวนเงิน และข้อเท็จจริงอีกครั้งก่อนส่ง",
+        "id": "Harap periksa kembali nama, alamat, tanggal, jumlah dan fakta Anda sebelum mengirimkan.",
+        "mn": "Илгээхээсээ өмнө нэр, хаяг, огноо, дүн, баримтаа давхар шалгана уу.",
+        "km": "សូមពិនិត្យមើលឈ្មោះ អាស័យដ្ឋាន កាលបរិច្ឆេទ ចំនួន និងអង្គហេតុរបស់អ្នកពីរដងមុនពេលដាក់ស្នើ។"
+      }
+    },
+    {
+      "key": "draftReady.download",
+      "sources": [],
+      "kind": "ui_static",
+      "values": {
+        "ko": "진정서 내려받기"
+      },
+      "machineTranslations": {
+        "ko": "진정서 내려받기",
+        "en": "Download the complaint",
+        "vi": "Tải đơn khiếu nại",
+        "th": "ดาวน์โหลดเรื่องร้องเรียน",
+        "id": "Unduh keluhannya",
+        "mn": "Гомдлыг татаж авах",
+        "km": "ទាញយកពាក្យបណ្តឹង"
+      }
+    },
+    {
+      "key": "draftReady.downloadAgain",
+      "sources": [],
+      "kind": "ui_static",
+      "values": {
+        "ko": "진정서 다시 내려받기"
+      },
+      "machineTranslations": {
+        "ko": "진정서 다시 내려받기",
+        "en": "Download the complaint again",
+        "vi": "Tải lại khiếu nại",
+        "th": "ดาวน์โหลดเรื่องร้องเรียนอีกครั้ง",
+        "id": "Unduh pengaduan lagi",
+        "mn": "Гомдлыг дахин татаж авна уу",
+        "km": "ទាញយកពាក្យបណ្តឹងម្តងទៀត"
+      }
+    },
+    {
+      "key": "draftReady.agencies",
+      "sources": [],
+      "kind": "ui_static",
+      "values": {
+        "ko": "접수할 기관 보기"
+      },
+      "machineTranslations": {
+        "ko": "접수할 기관 보기",
+        "en": "View organizations to apply to",
+        "vi": "Xem các tổ chức để đăng ký",
+        "th": "ดูองค์กรที่จะสมัคร",
+        "id": "Lihat organisasi untuk melamar",
+        "mn": "Өргөдөл гаргах байгууллагуудыг харна уу",
+        "km": "មើលអង្គការដើម្បីអនុវត្ត"
+      }
+    },
+    {
+      "key": "draftReady.conversation",
+      "sources": [],
+      "kind": "ui_static",
+      "values": {
+        "ko": "작성 대화 보기"
+      },
+      "machineTranslations": {
+        "ko": "작성 대화 보기",
+        "en": "View Compose Conversation",
+        "vi": "Xem cuộc trò chuyện soạn thư",
+        "th": "ดูเขียนบทสนทนา",
+        "id": "Lihat Tulis Percakapan",
+        "mn": "Харилцан яриа үүсгэхийг харах",
+        "km": "មើលការសន្ទនាសរសេរ"
+      }
+    },
+    {
+      "key": "agency.eyebrow",
+      "sources": [],
+      "kind": "ui_static",
+      "values": {
+        "ko": "기관 안내"
+      },
+      "machineTranslations": {
+        "ko": "기관 안내",
+        "en": "Institution information",
+        "vi": "Thông tin tổ chức",
+        "th": "ข้อมูลสถาบัน",
+        "id": "Informasi institusi",
+        "mn": "Байгууллагын мэдээлэл",
+        "km": "ព័ត៌មានអំពីស្ថាប័ន"
+      }
+    },
+    {
+      "key": "agency.heading",
+      "sources": [],
+      "kind": "ui_static",
+      "values": {
+        "ko": "이 문제는 여기에 물어보면 됩니다"
+      },
+      "machineTranslations": {
+        "ko": "이 문제는 여기에 물어보면 됩니다",
+        "en": "You can ask this question here",
+        "vi": "Bạn có thể đặt câu hỏi này tại đây",
+        "th": "คุณสามารถถามคำถามนี้ได้ที่นี่",
+        "id": "Anda dapat menanyakan pertanyaan ini di sini",
+        "mn": "Та энэ асуултыг эндээс асууж болно",
+        "km": "អ្នកអាចសួរសំណួរនេះនៅទីនេះ"
+      }
+    },
+    {
+      "key": "agency.description",
+      "sources": [],
+      "kind": "ui_static",
+      "values": {
+        "ko": "지금 확인된 문제는 {issue}에 해당합니다. 관련 기관을 먼저 보여드립니다."
+      },
+      "machineTranslations": {
+        "ko": "지금 확인된 문제는 {issue}에 해당합니다. 관련 기관을 먼저 보여드립니다.",
+        "en": "The currently identified issue corresponds to {issue}. We will show you the related organizations first.",
+        "vi": "Sự cố hiện được xác định tương ứng với {issue}. Chúng tôi sẽ cho bạn thấy các tổ chức liên quan trước tiên.",
+        "th": "ปัญหาที่ระบุในปัจจุบันสอดคล้องกับ {issue} เราจะแสดงให้คุณเห็นองค์กรที่เกี่ยวข้องก่อน",
+        "id": "Masalah yang teridentifikasi saat ini berhubungan dengan {issue}. Kami akan menunjukkan kepada Anda organisasi terkait terlebih dahulu.",
+        "mn": "Одоогоор тодорхойлсон асуудал нь {issue}-тай тохирч байна. Бид эхлээд холбогдох байгууллагуудыг харуулах болно.",
+        "km": "បញ្ហាដែលបានកំណត់អត្តសញ្ញាណបច្ចុប្បន្នត្រូវគ្នានឹង {issue} ។ យើងនឹងបង្ហាញអ្នកពីស្ថាប័នពាក់ព័ន្ធជាមុនសិន។"
+      }
+    },
+    {
+      "key": "agency.issue.wage",
+      "sources": [],
+      "kind": "ui_static",
+      "values": {
+        "ko": "임금 · 수당 · 공제"
+      },
+      "machineTranslations": {
+        "ko": "임금 · 수당 · 공제",
+        "en": "Wages, allowances, deductions",
+        "vi": "Tiền lương, phụ cấp, các khoản khấu trừ",
+        "th": "ค่าจ้าง เบี้ยเลี้ยง การหักเงิน",
+        "id": "Gaji, tunjangan, potongan",
+        "mn": "Цалин, тэтгэмж, суутгал",
+        "km": "ប្រាក់ឈ្នួល, ប្រាក់បំណាច់, ប្រាក់បំណាច់"
+      }
+    },
+    {
+      "key": "agency.issue.condition",
+      "sources": [],
+      "kind": "ui_static",
+      "values": {
+        "ko": "업무 · 근무장소 · 사업장"
+      },
+      "machineTranslations": {
+        "ko": "업무 · 근무장소 · 사업장",
+        "en": "Work, place of work, workplace",
+        "vi": "Việc làm, nơi làm việc, nơi làm việc",
+        "th": "ที่ทำงานสถานที่ทำงานที่ทำงาน",
+        "id": "Pekerjaan, tempat kerja, tempat kerja",
+        "mn": "Ажил, ажлын байр, ажлын байр",
+        "km": "កន្លែងធ្វើការ កន្លែងធ្វើការ"
+      }
+    },
+    {
+      "key": "agency.open",
+      "sources": [],
+      "kind": "ui_static",
+      "values": {
+        "ko": "열기"
+      },
+      "machineTranslations": {
+        "ko": "열기",
+        "en": "open",
+        "vi": "mở",
+        "th": "เปิด",
+        "id": "terbuka",
+        "mn": "нээлттэй",
+        "km": "បើក"
+      }
+    },
+    {
+      "key": "agency.call",
+      "sources": [],
+      "kind": "ui_static",
+      "values": {
+        "ko": "전화하기"
+      },
+      "machineTranslations": {
+        "ko": "전화하기",
+        "en": "call",
+        "vi": "gọi",
+        "th": "โทร",
+        "id": "panggilan",
+        "mn": "залгах",
+        "km": "ហៅ"
+      }
+    },
+    {
+      "key": "agency.note",
+      "sources": [],
+      "kind": "ui_static",
+      "values": {
+        "ko": "상담과 접수는 각 기관에서 직접 진행됩니다. ILLO는 접수를 대신하지 않습니다."
+      },
+      "machineTranslations": {
+        "ko": "상담과 접수는 각 기관에서 직접 진행됩니다. ILLO는 접수를 대신하지 않습니다.",
+        "en": "Consultation and application are conducted directly at each institution. ILLO is not a substitute for filing.",
+        "vi": "Việc tư vấn và nộp hồ sơ được thực hiện trực tiếp tại mỗi cơ sở. ILLO không phải là sự thay thế cho việc nộp đơn.",
+        "th": "การให้คำปรึกษาและการสมัครจะดำเนินการโดยตรงที่แต่ละสถาบัน ILLO ไม่สามารถใช้แทนการยื่นคำร้องได้",
+        "id": "Konsultasi dan pengajuan dilakukan langsung di masing-masing institusi. ILLO bukanlah pengganti pengarsipan.",
+        "mn": "Зөвлөгөө, өргөдлийг байгууллага бүр дээр шууд явуулдаг. ILLO нь мэдүүлгийг орлохгүй.",
+        "km": "ការពិគ្រោះយោបល់ និងការដាក់ពាក្យត្រូវបានធ្វើឡើងដោយផ្ទាល់នៅស្ថាប័ននីមួយៗ។ ILLO មិនមែនជាការជំនួសសម្រាប់ការដាក់ពាក្យនោះទេ។"
+      }
+    },
+    {
+      "key": "agency.done",
+      "sources": [],
+      "kind": "ui_static",
+      "values": {
+        "ko": "확인했습니다"
+      },
+      "machineTranslations": {
+        "ko": "확인했습니다",
+        "en": "Confirmed",
+        "vi": "Đã xác nhận",
+        "th": "ยืนยันแล้ว",
+        "id": "Dikonfirmasi",
+        "mn": "Батлагдсан",
+        "km": "បញ្ជាក់"
+      }
+    },
+    {
+      "key": "agency.back",
+      "sources": [],
+      "kind": "ui_static",
+      "values": {
+        "ko": "결과 다시 보기"
+      },
+      "machineTranslations": {
+        "ko": "결과 다시 보기",
+        "en": "View results again",
+        "vi": "Xem lại kết quả",
+        "th": "ดูผลลัพธ์อีกครั้ง",
+        "id": "Lihat hasilnya lagi",
+        "mn": "Үр дүнг дахин харах",
+        "km": "មើលលទ្ធផលម្តងទៀត"
+      }
+    },
+    {
+      "key": "agency.channel.laborPortal.name",
+      "sources": [],
+      "kind": "ui_static",
+      "values": {
+        "ko": "고용노동부 노동포털"
+      },
+      "machineTranslations": {
+        "ko": "고용노동부 노동포털",
+        "en": "Ministry of Employment and Labor Labor Portal",
+        "vi": "Cổng thông tin lao động Bộ Việc làm và Lao động",
+        "th": "พอร์ทัลกระทรวงการจ้างงานและแรงงาน",
+        "id": "Portal Tenaga Kerja Kementerian Ketenagakerjaan dan Tenaga Kerja",
+        "mn": "Хөдөлмөр эрхлэлт, хөдөлмөрийн яамны хөдөлмөрийн портал",
+        "km": "វិបផតថលក្រសួងការងារ និងការងារ"
+      }
+    },
+    {
+      "key": "agency.channel.laborPortal.detail",
+      "sources": [],
+      "kind": "ui_static",
+      "values": {
+        "ko": "진정서(SN001) 온라인 접수"
+      },
+      "machineTranslations": {
+        "ko": "진정서(SN001) 온라인 접수",
+        "en": "Submit petition (SN001) online",
+        "vi": "Nộp đơn (SN001) trực tuyến",
+        "th": "ยื่นคำร้อง (SN001) ทางออนไลน์",
+        "id": "Kirimkan petisi (SN001) secara online",
+        "mn": "Өргөдөл (SN001) онлайнаар илгээнэ үү",
+        "km": "ដាក់ញត្តិ (SN001) តាមអ៊ីនធឺណិត"
+      }
+    },
+    {
+      "key": "agency.channel.localOffice.name",
+      "sources": [],
+      "kind": "ui_static",
+      "values": {
+        "ko": "지방고용노동관서"
+      },
+      "machineTranslations": {
+        "ko": "지방고용노동관서",
+        "en": "Local employment and labor office",
+        "vi": "Văn phòng việc làm và lao động địa phương",
+        "th": "สำนักงานจัดหางานและแรงงานท้องถิ่น",
+        "id": "Kantor ketenagakerjaan dan tenaga kerja setempat",
+        "mn": "Орон нутгийн хөдөлмөр эрхлэлт, хөдөлмөрийн алба",
+        "km": "ការិយាល័យការងារ និងការងារក្នុងស្រុក"
+      }
+    },
+    {
+      "key": "agency.channel.localOffice.detail",
+      "sources": [],
+      "kind": "ui_static",
+      "values": {
+        "ko": "사업장 소재지 관할 관서 찾기"
+      },
+      "machineTranslations": {
+        "ko": "사업장 소재지 관할 관서 찾기",
+        "en": "Find the jurisdictional office where your business is located",
+        "vi": "Tìm văn phòng pháp lý nơi doanh nghiệp của bạn đặt trụ sở",
+        "th": "ค้นหาสำนักงานเขตอำนาจศาลที่ธุรกิจของคุณตั้งอยู่",
+        "id": "Temukan kantor yurisdiksi tempat bisnis Anda berada",
+        "mn": "Таны бизнес байрладаг харьяаллын оффисыг хайж олоорой",
+        "km": "ស្វែងរកការិយាល័យយុត្តាធិការដែលអាជីវកម្មរបស់អ្នកស្ថិតនៅ"
+      }
+    },
+    {
+      "key": "agency.channel.moel1350.name",
+      "sources": [],
+      "kind": "ui_static",
+      "values": {
+        "ko": "고용노동부 고객상담센터"
+      },
+      "machineTranslations": {
+        "ko": "고용노동부 고객상담센터",
+        "en": "Ministry of Employment and Labor Customer Service Center",
+        "vi": "Trung tâm Dịch vụ Khách hàng Bộ Việc làm và Lao động",
+        "th": "ศูนย์บริการลูกค้ากระทรวงแรงงานและแรงงาน",
+        "id": "Pusat Layanan Pelanggan Kementerian Ketenagakerjaan dan Tenaga Kerja",
+        "mn": "Хөдөлмөр эрхлэлт, хөдөлмөрийн яамны Хэрэглэгчдэд үйлчлэх төв",
+        "km": "មជ្ឈមណ្ឌលសេវាកម្មអតិថិជនរបស់ក្រសួងការងារ និងការងារ"
+      }
+    },
+    {
+      "key": "agency.channel.moel1350.detail",
+      "sources": [],
+      "kind": "ui_static",
+      "values": {
+        "ko": "1350 · 평일 09:00 ~ 18:00"
+      },
+      "machineTranslations": {
+        "ko": "1350 · 평일 09:00 ~ 18:00",
+        "en": "1350 · Weekdays 09:00 ~ 18:00",
+        "vi": "1350 · Ngày thường 09:00 ~ 18:00",
+        "th": "1350 · วันธรรมดา 09:00 ~ 18:00 น",
+        "id": "1350 · Hari kerja 09:00 ~ 18:00",
+        "mn": "1350 · Ажлын өдрүүдэд 09:00 ~ 18:00",
+        "km": "1350 · ថ្ងៃធ្វើការ 09:00 ~ 18:00"
+      }
+    },
+    {
+      "key": "agency.channel.foreignCentre.name",
+      "sources": [],
+      "kind": "ui_static",
+      "values": {
+        "ko": "외국인력상담센터"
+      },
+      "machineTranslations": {
+        "ko": "외국인력상담센터",
+        "en": "Foreign Workforce Counseling Center",
+        "vi": "Trung tâm tư vấn lao động nước ngoài",
+        "th": "ศูนย์ให้คำปรึกษาแรงงานต่างด้าว",
+        "id": "Pusat Konseling Tenaga Kerja Asing",
+        "mn": "Гадаад ажиллах хүчний зөвлөгөө өгөх төв",
+        "km": "មជ្ឈមណ្ឌលប្រឹក្សាការងារបរទេស"
+      }
+    },
+    {
+      "key": "agency.channel.foreignCentre.detail",
+      "sources": [],
+      "kind": "ui_static",
+      "values": {
+        "ko": "1577-0071 · 모국어 고충상담"
+      },
+      "machineTranslations": {
+        "ko": "1577-0071 · 모국어 고충상담",
+        "en": "1577-0071 · Mother tongue grievance counseling",
+        "vi": "1577-0071 · Tư vấn khiếu nại bằng tiếng mẹ đẻ",
+        "th": "1577-0071 · รับปรึกษาเรื่องร้องทุกข์ด้วยภาษาแม่",
+        "id": "1577-0071 · Konseling keluhan bahasa ibu",
+        "mn": "1577-0071 · Эх хэлний гомдлын зөвлөгөө",
+        "km": "1577-0071 · ការប្រឹក្សាយោបល់អំពីសារទុក្ខជាភាសាម្តាយ"
+      }
+    },
+    {
+      "key": "agency.channel.eps.name",
+      "sources": [],
+      "kind": "ui_static",
+      "values": {
+        "ko": "EPS · 관할 고용센터"
+      },
+      "machineTranslations": {
+        "ko": "EPS · 관할 고용센터",
+        "en": "EPS · Jurisdictional Employment Center",
+        "vi": "EPS · Trung tâm việc làm có thẩm quyền",
+        "th": "EPS · ศูนย์จัดหางานในเขตอำนาจศาล",
+        "id": "EPS · Pusat Ketenagakerjaan Yurisdiksi",
+        "mn": "EPS · Харьяаллын Хөдөлмөр эрхлэлтийн төв",
+        "km": "EPS · មជ្ឈមណ្ឌលការងារយុត្តាធិការ"
+      }
+    },
+    {
+      "key": "agency.channel.eps.detail",
+      "sources": [],
+      "kind": "ui_static",
+      "values": {
+        "ko": "근무장소 · 업무 · 사업장 변경 상담"
+      },
+      "machineTranslations": {
+        "ko": "근무장소 · 업무 · 사업장 변경 상담",
+        "en": "Consultation on changes to work location, job, or workplace",
+        "vi": "Tư vấn về việc thay đổi địa điểm làm việc, công việc hoặc nơi làm việc",
+        "th": "ให้คำปรึกษาเกี่ยวกับการเปลี่ยนแปลงสถานที่ทำงาน ที่ทำงาน หรือสถานที่ทำงาน",
+        "id": "Konsultasi perubahan lokasi kerja, pekerjaan, atau tempat kerja",
+        "mn": "Ажлын байршил, ажил, ажлын байранд өөрчлөлт оруулах талаар зөвлөлдөх",
+        "km": "ការពិគ្រោះយោបល់លើការផ្លាស់ប្តូរទីតាំងការងារ ការងារ ឬកន្លែងធ្វើការ"
+      }
+    },
+    {
+      "key": "completed.heading",
+      "sources": [],
+      "kind": "ui_static",
+      "values": {
+        "ko": "여기까지 잘 하셨습니다"
+      },
+      "machineTranslations": {
+        "ko": "여기까지 잘 하셨습니다",
+        "en": "Well done so far",
+        "vi": "Làm tốt lắm cho đến nay",
+        "th": "ทำได้ดีมากจนถึงตอนนี้",
+        "id": "Bagus sekali sejauh ini",
+        "mn": "Одоог хүртэл сайн байна",
+        "km": "ធ្វើបានល្អរហូតមកដល់ពេលនេះ"
+      }
+    },
+    {
+      "key": "completed.description",
+      "sources": [],
+      "kind": "ui_static",
+      "values": {
+        "ko": "확인한 내용과 진정서 초안을 정리했습니다. 다음 단계는 기관에 직접 접수하는 것입니다."
+      },
+      "machineTranslations": {
+        "ko": "확인한 내용과 진정서 초안을 정리했습니다. 다음 단계는 기관에 직접 접수하는 것입니다.",
+        "en": "We have compiled the confirmed details and the draft petition. The next step is to file directly with the agency.",
+        "vi": "Chúng tôi đã biên soạn các chi tiết đã được xác nhận và bản kiến nghị dự thảo. Bước tiếp theo là nộp hồ sơ trực tiếp với cơ quan.",
+        "th": "เราได้รวบรวมรายละเอียดที่ได้รับการยืนยันและร่างคำร้องแล้ว ขั้นตอนต่อไปคือการยื่นโดยตรงกับหน่วยงาน",
+        "id": "Kami telah mengumpulkan rincian yang dikonfirmasi dan rancangan petisi. Langkah selanjutnya adalah mengajukan langsung ke instansi tersebut.",
+        "mn": "Бид баталгаажуулсан дэлгэрэнгүй мэдээлэл болон өргөдлийн төслийг нэгтгэсэн. Дараагийн алхам бол агентлагт шууд өргөдөл гаргах явдал юм.",
+        "km": "យើងបានចងក្រងព័ត៌មានលម្អិតដែលបានបញ្ជាក់ និងសេចក្តីព្រាងញត្តិ។ ជំហានបន្ទាប់គឺត្រូវដាក់ពាក្យដោយផ្ទាល់ជាមួយភ្នាក់ងារ។"
+      }
+    },
+    {
+      "key": "completed.document.label",
+      "sources": [],
+      "kind": "ui_static",
+      "values": {
+        "ko": "문서 확인"
+      },
+      "machineTranslations": {
+        "ko": "문서 확인",
+        "en": "Document verification",
+        "vi": "Xác minh tài liệu",
+        "th": "การตรวจสอบเอกสาร",
+        "id": "Verifikasi dokumen",
+        "mn": "Баримт бичгийн баталгаажуулалт",
+        "km": "ការផ្ទៀងផ្ទាត់ឯកសារ"
+      }
+    },
+    {
+      "key": "completed.document.value",
+      "sources": [],
+      "kind": "ui_static",
+      "values": {
+        "ko": "계약서 · 급여명세서 비교 완료"
+      },
+      "machineTranslations": {
+        "ko": "계약서 · 급여명세서 비교 완료",
+        "en": "Comparison of contracts and pay stubs completed",
+        "vi": "So sánh các hợp đồng và phiếu lương đã hoàn thành",
+        "th": "เปรียบเทียบสัญญาและต้นขั้วการจ่ายเงินแล้วเสร็จ",
+        "id": "Perbandingan kontrak dan slip gaji selesai",
+        "mn": "Гэрээ, цалингийн тооцооны харьцуулалтыг хийж дуусгасан",
+        "km": "ការប្រៀបធៀបកិច្ចសន្យា និងវិញ្ញាបនបត្របង់ប្រាក់បានបញ្ចប់"
+      }
+    },
+    {
+      "key": "completed.analysis.label",
+      "sources": [],
+      "kind": "ui_static",
+      "values": {
+        "ko": "분석 결과"
+      },
+      "machineTranslations": {
+        "ko": "분석 결과",
+        "en": "analysis results",
+        "vi": "kết quả phân tích",
+        "th": "ผลการวิเคราะห์",
+        "id": "hasil analisis",
+        "mn": "шинжилгээний үр дүн",
+        "km": "លទ្ធផលនៃការវិភាគ"
+      }
+    },
+    {
+      "key": "completed.analysis.value",
+      "sources": [],
+      "kind": "ui_static",
+      "values": {
+        "ko": "AI 응답과 기준 대조 결과 확인"
+      },
+      "machineTranslations": {
+        "ko": "AI 응답과 기준 대조 결과 확인",
+        "en": "Check AI response and baseline comparison results",
+        "vi": "Kiểm tra phản hồi AI và kết quả so sánh cơ bản",
+        "th": "ตรวจสอบการตอบสนองของ AI และผลการเปรียบเทียบพื้นฐาน",
+        "id": "Periksa respons AI dan hasil perbandingan dasar",
+        "mn": "AI хариулт болон суурь харьцуулалтын үр дүнг шалгана уу",
+        "km": "ពិនិត្យការឆ្លើយតប AI និងលទ្ធផលប្រៀបធៀបមូលដ្ឋាន"
+      }
+    },
+    {
+      "key": "completed.draft.label",
+      "sources": [],
+      "kind": "ui_static",
+      "values": {
+        "ko": "진정서"
+      },
+      "machineTranslations": {
+        "ko": "진정서",
+        "en": "petition",
+        "vi": "lời thỉnh cầu",
+        "th": "คำร้อง",
+        "id": "petisi",
+        "mn": "өргөдөл",
+        "km": "ញត្តិ"
+      }
+    },
+    {
+      "key": "completed.draft.downloaded",
+      "sources": [],
+      "kind": "ui_static",
+      "values": {
+        "ko": "초안 내려받기 완료"
+      },
+      "machineTranslations": {
+        "ko": "초안 내려받기 완료",
+        "en": "Draft download completed",
+        "vi": "Đã hoàn tất tải xuống bản nháp",
+        "th": "ดาวน์โหลดฉบับร่างเรียบร้อยแล้ว",
+        "id": "Pengunduhan draf selesai",
+        "mn": "Ноорог татаж дууссан",
+        "km": "ការទាញយកសេចក្តីព្រាងបានបញ្ចប់"
+      }
+    },
+    {
+      "key": "completed.draft.ready",
+      "sources": [],
+      "kind": "ui_static",
+      "values": {
+        "ko": "초안 작성 완료"
+      },
+      "machineTranslations": {
+        "ko": "초안 작성 완료",
+        "en": "Draft completed",
+        "vi": "Bản nháp đã hoàn thành",
+        "th": "ร่างเสร็จแล้ว",
+        "id": "Draf selesai",
+        "mn": "Ноорог дууссан",
+        "km": "សេចក្តីព្រាងបានបញ្ចប់"
+      }
+    },
+    {
+      "key": "completed.evidence",
+      "sources": [],
+      "kind": "ui_static",
+      "values": {
+        "ko": "다음에 준비하면 좋은 자료"
+      },
+      "machineTranslations": {
+        "ko": "다음에 준비하면 좋은 자료",
+        "en": "Good material to prepare for next time",
+        "vi": "Tài liệu hay để chuẩn bị cho lần sau",
+        "th": "วัตถุดิบดีๆไว้เตรียมครั้งต่อไป",
+        "id": "Bahan yang bagus untuk dipersiapkan untuk waktu berikutnya",
+        "mn": "Дараагийн удаа бэлтгэхэд тохиромжтой материал",
+        "km": "សម្ភារៈល្អសម្រាប់រៀបចំសម្រាប់លើកក្រោយ"
+      }
+    },
+    {
+      "key": "completed.restart",
+      "sources": [],
+      "kind": "ui_static",
+      "values": {
+        "ko": "다른 문서 확인하기"
+      },
+      "machineTranslations": {
+        "ko": "다른 문서 확인하기",
+        "en": "Check out our other articles",
+        "vi": "Kiểm tra các bài viết khác của chúng tôi",
+        "th": "ตรวจสอบบทความอื่น ๆ ของเรา",
+        "id": "Lihat artikel kami yang lain",
+        "mn": "Манай бусад нийтлэлийг үзээрэй",
+        "km": "សូមពិនិត្យមើលអត្ថបទផ្សេងទៀតរបស់យើង។"
+      }
+    },
+    {
+      "key": "complaintPreview.group.complainant",
+      "sources": [],
+      "kind": "ui_static",
+      "values": {
+        "ko": "진정인"
+      },
+      "machineTranslations": {
+        "ko": "진정인",
+        "en": "Petitioner",
+        "vi": "Người nộp đơn",
+        "th": "ผู้ร้อง",
+        "id": "Pemohon",
+        "mn": "Өргөдөл гаргагч",
+        "km": "អ្នកដាក់ពាក្យ"
+      }
+    },
+    {
+      "key": "complaintPreview.group.respondent",
+      "sources": [],
+      "kind": "ui_static",
+      "values": {
+        "ko": "피진정인·사업장"
+      },
+      "machineTranslations": {
+        "ko": "피진정인·사업장",
+        "en": "Defendant and workplace",
+        "vi": "Bị cáo và nơi làm việc",
+        "th": "จำเลยและสถานที่ทำงาน",
+        "id": "Terdakwa dan tempat kerja",
+        "mn": "Хариуцагч болон ажлын байр",
+        "km": "ចុងចោទ និងកន្លែងធ្វើការ"
+      }
+    },
+    {
+      "key": "complaintPreview.group.complaint",
+      "sources": [],
+      "kind": "ui_static",
+      "values": {
+        "ko": "진정 내용"
+      },
+      "machineTranslations": {
+        "ko": "진정 내용",
+        "en": "Calm content",
+        "vi": "Nội dung bình tĩnh",
+        "th": "เนื้อหาสงบ",
+        "id": "Konten yang tenang",
+        "mn": "Тайван агуулга",
+        "km": "ខ្លឹមសារស្ងប់ស្ងាត់"
+      }
+    },
+    {
+      "key": "complaintPreview.group.submission",
+      "sources": [],
+      "kind": "ui_static",
+      "values": {
+        "ko": "제출처"
+      },
+      "machineTranslations": {
+        "ko": "제출처",
+        "en": "Submit to",
+        "vi": "Gửi tới",
+        "th": "ส่งไปที่",
+        "id": "Kirim ke",
+        "mn": "-д илгээнэ үү",
+        "km": "ដាក់ស្នើទៅ"
+      }
+    },
+    {
+      "key": "complaintPreview.fullName",
+      "sources": [],
+      "kind": "ui_static",
+      "values": {
+        "ko": "성명"
+      },
+      "machineTranslations": {
+        "ko": "성명",
+        "en": "statement",
+        "vi": "tuyên bố",
+        "th": "คำสั่ง",
+        "id": "pernyataan",
+        "mn": "мэдэгдэл",
+        "km": "សេចក្តីថ្លែងការណ៍"
+      }
+    },
+    {
+      "key": "complaintPreview.address",
+      "sources": [],
+      "kind": "ui_static",
+      "values": {
+        "ko": "주소"
+      },
+      "machineTranslations": {
+        "ko": "주소",
+        "en": "address",
+        "vi": "địa chỉ",
+        "th": "ที่อยู่",
+        "id": "alamat",
+        "mn": "хаяг",
+        "km": "អាសយដ្ឋាន"
+      }
+    },
+    {
+      "key": "complaintPreview.telephone",
+      "sources": [],
+      "kind": "ui_static",
+      "values": {
+        "ko": "일반 전화번호"
+      },
+      "machineTranslations": {
+        "ko": "일반 전화번호",
+        "en": "landline phone number",
+        "vi": "số điện thoại cố định",
+        "th": "หมายเลขโทรศัพท์พื้นฐาน",
+        "id": "nomor telepon rumah",
+        "mn": "суурин утасны дугаар",
+        "km": "លេខទូរស័ព្ទលើបណ្តាញ"
+      }
+    },
+    {
+      "key": "complaintPreview.mobilePhone",
+      "sources": [],
+      "kind": "ui_static",
+      "values": {
+        "ko": "휴대전화"
+      },
+      "machineTranslations": {
+        "ko": "휴대전화",
+        "en": "mobile phone",
+        "vi": "điện thoại di động",
+        "th": "โทรศัพท์มือถือ",
+        "id": "telepon genggam",
+        "mn": "гар утас",
+        "km": "ទូរស័ព្ទចល័ត"
+      }
+    },
+    {
+      "key": "complaintPreview.email",
+      "sources": [],
+      "kind": "ui_static",
+      "values": {
+        "ko": "이메일"
+      },
+      "machineTranslations": {
+        "ko": "이메일",
+        "en": "email",
+        "vi": "email",
+        "th": "อีเมล",
+        "id": "email",
+        "mn": "имэйл",
+        "km": "អ៊ីមែល"
+      }
+    },
+    {
+      "key": "complaintPreview.receiveStatusUpdates",
+      "sources": [],
+      "kind": "ui_static",
+      "values": {
+        "ko": "처리상황 알림"
+      },
+      "machineTranslations": {
+        "ko": "처리상황 알림",
+        "en": "Processing status notification",
+        "vi": "Đang xử lý thông báo trạng thái",
+        "th": "การแจ้งเตือนสถานะการประมวลผล",
+        "id": "Memproses pemberitahuan status",
+        "mn": "Төлөвийн мэдэгдлийг боловсруулж байна",
+        "km": "កំពុងដំណើរការការជូនដំណឹងអំពីស្ថានភាព"
+      }
+    },
+    {
+      "key": "complaintPreview.notifyViaLaborPortal",
+      "sources": [],
+      "kind": "ui_static",
+      "values": {
+        "ko": "전자문서 통지"
+      },
+      "machineTranslations": {
+        "ko": "전자문서 통지",
+        "en": "Electronic document notification",
+        "vi": "Thông báo tài liệu điện tử",
+        "th": "แจ้งเอกสารอิเล็กทรอนิกส์",
+        "id": "Pemberitahuan dokumen elektronik",
+        "mn": "Цахим баримт бичгийн мэдэгдэл",
+        "km": "ការជូនដំណឹងអំពីឯកសារអេឡិចត្រូនិក"
+      }
+    },
+    {
+      "key": "complaintPreview.respondentName",
+      "sources": [],
+      "kind": "ui_static",
+      "values": {
+        "ko": "피진정인 성명"
+      },
+      "machineTranslations": {
+        "ko": "피진정인 성명",
+        "en": "Name of respondent",
+        "vi": "Tên của người trả lời",
+        "th": "ชื่อของผู้ตอบ",
+        "id": "Nama responden",
+        "mn": "Хариуцагчийн нэр",
+        "km": "ឈ្មោះអ្នកឆ្លើយតប"
+      }
+    },
+    {
+      "key": "complaintPreview.respondentContact",
+      "sources": [],
+      "kind": "ui_static",
+      "values": {
+        "ko": "피진정인 연락처"
+      },
+      "machineTranslations": {
+        "ko": "피진정인 연락처",
+        "en": "Respondent's contact information",
+        "vi": "Thông tin liên hệ của người trả lời",
+        "th": "ข้อมูลการติดต่อของผู้ตอบแบบสอบถาม",
+        "id": "Informasi kontak responden",
+        "mn": "Хариуцагчийн холбоо барих мэдээлэл",
+        "km": "ព័ត៌មានទំនាក់ទំនងរបស់អ្នកឆ្លើយតប"
+      }
+    },
+    {
+      "key": "complaintPreview.respondentAddress",
+      "sources": [],
+      "kind": "ui_static",
+      "values": {
+        "ko": "피진정인 주소"
+      },
+      "machineTranslations": {
+        "ko": "피진정인 주소",
+        "en": "Respondent's address",
+        "vi": "Địa chỉ của người trả lời",
+        "th": "ที่อยู่ของผู้ตอบ",
+        "id": "Alamat responden",
+        "mn": "Хариуцагчийн хаяг",
+        "km": "អាសយដ្ឋានរបស់អ្នកឆ្លើយតប"
+      }
+    },
+    {
+      "key": "complaintPreview.workplaceType",
+      "sources": [],
+      "kind": "ui_static",
+      "values": {
+        "ko": "사업체 구분"
+      },
+      "machineTranslations": {
+        "ko": "사업체 구분",
+        "en": "Business classification",
+        "vi": "Phân loại doanh nghiệp",
+        "th": "การจำแนกประเภทธุรกิจ",
+        "id": "Klasifikasi bisnis",
+        "mn": "Бизнесийн ангилал",
+        "km": "ចំណាត់ថ្នាក់អាជីវកម្ម"
+      }
+    },
+    {
+      "key": "complaintPreview.workplaceName",
+      "sources": [],
+      "kind": "ui_static",
+      "values": {
+        "ko": "회사명"
+      },
+      "machineTranslations": {
+        "ko": "회사명",
+        "en": "Company name",
+        "vi": "Tên công ty",
+        "th": "ชื่อบริษัท",
+        "id": "Nama perusahaan",
+        "mn": "Компанийн нэр",
+        "km": "ឈ្មោះក្រុមហ៊ុន"
+      }
+    },
+    {
+      "key": "complaintPreview.actualWorkplaceAddress",
+      "sources": [],
+      "kind": "ui_static",
+      "values": {
+        "ko": "실제 근무장소"
+      },
+      "machineTranslations": {
+        "ko": "실제 근무장소",
+        "en": "actual work place",
+        "vi": "nơi làm việc thực tế",
+        "th": "สถานที่ทำงานจริง",
+        "id": "tempat kerja sebenarnya",
+        "mn": "бодит ажлын байр",
+        "km": "កន្លែងធ្វើការជាក់ស្តែង"
+      }
+    },
+    {
+      "key": "complaintPreview.workplaceTelephone",
+      "sources": [],
+      "kind": "ui_static",
+      "values": {
+        "ko": "회사 전화번호"
+      },
+      "machineTranslations": {
+        "ko": "회사 전화번호",
+        "en": "company phone number",
+        "vi": "số điện thoại công ty",
+        "th": "หมายเลขโทรศัพท์ของบริษัท",
+        "id": "nomor telepon perusahaan",
+        "mn": "компанийн утасны дугаар",
+        "km": "លេខទូរស័ព្ទក្រុមហ៊ុន"
+      }
+    },
+    {
+      "key": "complaintPreview.employeeCount",
+      "sources": [],
+      "kind": "ui_static",
+      "values": {
+        "ko": "근로자 수"
+      },
+      "machineTranslations": {
+        "ko": "근로자 수",
+        "en": "number of workers",
+        "vi": "số lượng công nhân",
+        "th": "จำนวนคนงาน",
+        "id": "jumlah pekerja",
+        "mn": "ажилчдын тоо",
+        "km": "ចំនួនកម្មករ"
+      }
+    },
+    {
+      "key": "complaintPreview.employmentStartDate",
+      "sources": [],
+      "kind": "ui_static",
+      "values": {
+        "ko": "근무 시작일"
+      },
+      "machineTranslations": {
+        "ko": "근무 시작일",
+        "en": "work start date",
+        "vi": "ngày bắt đầu làm việc",
+        "th": "วันที่เริ่มงาน",
+        "id": "tanggal mulai kerja",
+        "mn": "ажил эхлэх огноо",
+        "km": "កាលបរិច្ឆេទចាប់ផ្តើមការងារ"
+      }
+    },
+    {
+      "key": "complaintPreview.employmentEndDate",
+      "sources": [],
+      "kind": "ui_static",
+      "values": {
+        "ko": "근무 종료일"
+      },
+      "machineTranslations": {
+        "ko": "근무 종료일",
+        "en": "work end date",
+        "vi": "ngày kết thúc công việc",
+        "th": "วันที่สิ้นสุดการทำงาน",
+        "id": "tanggal akhir pekerjaan",
+        "mn": "ажил дуусах огноо",
+        "km": "កាលបរិច្ឆេទបញ្ចប់ការងារ"
+      }
+    },
+    {
+      "key": "complaintPreview.employmentStatus",
+      "sources": [],
+      "kind": "ui_static",
+      "values": {
+        "ko": "재직 상태"
+      },
+      "machineTranslations": {
+        "ko": "재직 상태",
+        "en": "employment status",
+        "vi": "tình trạng việc làm",
+        "th": "สถานะการจ้างงาน",
+        "id": "status pekerjaan",
+        "mn": "ажил эрхлэлтийн байдал",
+        "km": "ស្ថានភាពការងារ"
+      }
+    },
+    {
+      "key": "complaintPreview.unpaidWagesTotal",
+      "sources": [],
+      "kind": "ui_static",
+      "values": {
+        "ko": "미지급 임금"
+      },
+      "machineTranslations": {
+        "ko": "미지급 임금",
+        "en": "unpaid wages",
+        "vi": "lương chưa trả",
+        "th": "ค่าจ้างที่ยังไม่ได้ชำระ",
+        "id": "gaji yang belum dibayar",
+        "mn": "төлөгдөөгүй цалин",
+        "km": "ប្រាក់ឈ្នួលដែលមិនបានទទួល"
+      }
+    },
+    {
+      "key": "complaintPreview.unpaidSeverancePay",
+      "sources": [],
+      "kind": "ui_static",
+      "values": {
+        "ko": "미지급 퇴직금"
+      },
+      "machineTranslations": {
+        "ko": "미지급 퇴직금",
+        "en": "unpaid severance pay",
+        "vi": "tiền thôi việc chưa được trả",
+        "th": "เงินชดเชยที่ค้างชำระ",
+        "id": "pesangon yang belum dibayarkan",
+        "mn": "төлөгдөөгүй халагдсаны тэтгэмж",
+        "km": "ប្រាក់បំណាច់ដែលមិនបានបង់"
+      }
+    },
+    {
+      "key": "complaintPreview.otherUnpaidAmount",
+      "sources": [],
+      "kind": "ui_static",
+      "values": {
+        "ko": "기타 미지급액"
+      },
+      "machineTranslations": {
+        "ko": "기타 미지급액",
+        "en": "Other unpaid amounts",
+        "vi": "Các khoản chưa thanh toán khác",
+        "th": "จำนวนเงินที่ค้างชำระอื่น ๆ",
+        "id": "Jumlah lain yang belum dibayar",
+        "mn": "Бусад төлөгдөөгүй дүн",
+        "km": "ចំនួនទឹកប្រាក់ផ្សេងទៀតដែលមិនបានបង់"
+      }
+    },
+    {
+      "key": "complaintPreview.jobDescription",
+      "sources": [],
+      "kind": "ui_static",
+      "values": {
+        "ko": "업무 내용"
+      },
+      "machineTranslations": {
+        "ko": "업무 내용",
+        "en": "Job description",
+        "vi": "Mô tả công việc",
+        "th": "รายละเอียดงาน",
+        "id": "Deskripsi pekerjaan",
+        "mn": "Ажлын байрны тодорхойлолт",
+        "km": "ការពិពណ៌នាការងារ"
+      }
+    },
+    {
+      "key": "complaintPreview.payday",
+      "sources": [],
+      "kind": "ui_static",
+      "values": {
+        "ko": "임금 지급일"
+      },
+      "machineTranslations": {
+        "ko": "임금 지급일",
+        "en": "wage payment date",
+        "vi": "ngày trả lương",
+        "th": "วันที่จ่ายค่าจ้าง",
+        "id": "tanggal pembayaran upah",
+        "mn": "цалин олгох огноо",
+        "km": "កាលបរិច្ឆេទទូទាត់ប្រាក់ឈ្នួល"
+      }
+    },
+    {
+      "key": "complaintPreview.contractMethod",
+      "sources": [],
+      "kind": "ui_static",
+      "values": {
+        "ko": "계약 방식"
+      },
+      "machineTranslations": {
+        "ko": "계약 방식",
+        "en": "contract method",
+        "vi": "phương pháp hợp đồng",
+        "th": "วิธีการทำสัญญา",
+        "id": "metode kontrak",
+        "mn": "гэрээний арга",
+        "km": "វិធីសាស្រ្តកិច្ចសន្យា"
+      }
+    },
+    {
+      "key": "complaintPreview.details",
+      "sources": [],
+      "kind": "ui_static",
+      "values": {
+        "ko": "진정 내용"
+      },
+      "machineTranslations": {
+        "ko": "진정 내용",
+        "en": "Calm content",
+        "vi": "Nội dung bình tĩnh",
+        "th": "เนื้อหาสงบ",
+        "id": "Konten yang tenang",
+        "mn": "Тайван агуулга",
+        "km": "ខ្លឹមសារស្ងប់ស្ងាត់"
+      }
+    },
+    {
+      "key": "complaintPreview.attachments",
+      "sources": [],
+      "kind": "ui_static",
+      "values": {
+        "ko": "첨부자료"
+      },
+      "machineTranslations": {
+        "ko": "첨부자료",
+        "en": "Attached materials",
+        "vi": "Tài liệu đính kèm",
+        "th": "วัสดุที่แนบมา",
+        "id": "Bahan terlampir",
+        "mn": "Хавсаргасан материалууд",
+        "km": "សម្ភារៈភ្ជាប់"
+      }
+    },
+    {
+      "key": "complaintPreview.recipientLaborOfficeName",
+      "sources": [],
+      "kind": "ui_static",
+      "values": {
+        "ko": "관할 노동관서"
+      },
+      "machineTranslations": {
+        "ko": "관할 노동관서",
+        "en": "Competent labor office",
+        "vi": "Văn phòng lao động có thẩm quyền",
+        "th": "สำนักงานแรงงานที่มีความสามารถ",
+        "id": "Kantor tenaga kerja yang kompeten",
+        "mn": "Чадварлаг хөдөлмөрийн алба",
+        "km": "ការិយាល័យការងារមានសមត្ថកិច្ច"
+      }
+    },
+    {
+      "key": "complaintPreview.yes",
+      "sources": [],
+      "kind": "ui_static",
+      "values": {
+        "ko": "예"
+      },
+      "machineTranslations": {
+        "ko": "예",
+        "en": "yes",
+        "vi": "vâng",
+        "th": "ใช่",
+        "id": "ya",
+        "mn": "тиймээ",
+        "km": "បាទ"
+      }
+    },
+    {
+      "key": "complaintPreview.no",
+      "sources": [],
+      "kind": "ui_static",
+      "values": {
+        "ko": "아니요"
+      },
+      "machineTranslations": {
+        "ko": "아니요",
+        "en": "no",
+        "vi": "không",
+        "th": "ไม่",
+        "id": "tidak",
+        "mn": "үгүй",
+        "km": "ទេ"
+      }
+    },
+    {
+      "key": "complaintPreview.workplace",
+      "sources": [],
+      "kind": "ui_static",
+      "values": {
+        "ko": "사업장"
+      },
+      "machineTranslations": {
+        "ko": "사업장",
+        "en": "workplace",
+        "vi": "nơi làm việc",
+        "th": "ที่ทำงาน",
+        "id": "tempat kerja",
+        "mn": "ажлын байр",
+        "km": "កន្លែងធ្វើការ"
+      }
+    },
+    {
+      "key": "complaintPreview.constructionSite",
+      "sources": [],
+      "kind": "ui_static",
+      "values": {
+        "ko": "공사현장"
+      },
+      "machineTranslations": {
+        "ko": "공사현장",
+        "en": "construction site",
+        "vi": "công trường xây dựng",
+        "th": "สถานที่ก่อสร้าง",
+        "id": "lokasi konstruksi",
+        "mn": "барилгын талбай",
+        "km": "ការដ្ឋានសំណង់"
+      }
+    },
+    {
+      "key": "complaintPreview.employed",
+      "sources": [],
+      "kind": "ui_static",
+      "values": {
+        "ko": "재직 중"
+      },
+      "machineTranslations": {
+        "ko": "재직 중",
+        "en": "working",
+        "vi": "đang làm việc",
+        "th": "การทำงาน",
+        "id": "bekerja",
+        "mn": "ажиллаж байна",
+        "km": "ធ្វើការ"
+      }
+    },
+    {
+      "key": "complaintPreview.resigned",
+      "sources": [],
+      "kind": "ui_static",
+      "values": {
+        "ko": "퇴직"
+      },
+      "machineTranslations": {
+        "ko": "퇴직",
+        "en": "retirement",
+        "vi": "nghỉ hưu",
+        "th": "เกษียณอายุ",
+        "id": "pensiun",
+        "mn": "тэтгэвэр",
+        "km": "ការចូលនិវត្តន៍"
+      }
+    },
+    {
+      "key": "complaintPreview.written",
+      "sources": [],
+      "kind": "ui_static",
+      "values": {
+        "ko": "서면 계약"
+      },
+      "machineTranslations": {
+        "ko": "서면 계약",
+        "en": "written contract",
+        "vi": "hợp đồng bằng văn bản",
+        "th": "สัญญาเป็นลายลักษณ์อักษร",
+        "id": "kontrak tertulis",
+        "mn": "бичгээр гэрээ",
+        "km": "កិច្ចសន្យាជាលាយលក្ខណ៍អក្សរ"
+      }
+    },
+    {
+      "key": "complaintPreview.oral",
+      "sources": [],
+      "kind": "ui_static",
+      "values": {
+        "ko": "구두 계약"
+      },
+      "machineTranslations": {
+        "ko": "구두 계약",
+        "en": "oral contract",
+        "vi": "hợp đồng miệng",
+        "th": "สัญญาปากเปล่า",
+        "id": "kontrak lisan",
+        "mn": "аман гэрээ",
+        "km": "កិច្ចសន្យាផ្ទាល់មាត់"
+      }
+    },
+    {
+      "key": "complaintPreview.currency",
+      "sources": [],
+      "kind": "ui_static",
+      "values": {
+        "ko": "{value}원"
+      },
+      "machineTranslations": {
+        "ko": "{value}원",
+        "en": "{value}won",
+        "vi": "{value}thắng",
+        "th": "{value}วอน",
+        "id": "{value}menang",
+        "mn": "{value}вон",
+        "km": "{value}ឈ្នះ"
+      }
+    },
+    {
+      "key": "api.error.network",
+      "sources": [
+        "frontend/src/api/contracts.ts:255",
+        "frontend/src/api/ocr.ts:41"
+      ],
+      "kind": "error",
+      "values": {
+        "ko": "서버에 연결할 수 없습니다. 잠시 후 다시 시도해주세요."
+      },
+      "machineTranslations": {
+        "ko": "서버에 연결할 수 없습니다. 잠시 후 다시 시도해주세요.",
+        "en": "Unable to connect to server. Please try again later.",
+        "vi": "Không thể kết nối với máy chủ. Vui lòng thử lại sau.",
+        "th": "ไม่สามารถเชื่อมต่อกับเซิร์ฟเวอร์ได้ โปรดลองอีกครั้งในภายหลัง",
+        "id": "Tidak dapat terhubung ke server. Silakan coba lagi nanti.",
+        "mn": "Сервертэй холбогдох боломжгүй байна. Дараа дахин оролдоно уу.",
+        "km": "មិនអាចភ្ជាប់ទៅម៉ាស៊ីនមេបានទេ។ សូមព្យាយាមម្តងទៀតនៅពេលក្រោយ។"
+      }
+    },
+    {
+      "key": "api.error.invalidResponse",
+      "sources": [
+        "frontend/src/api/contracts.ts:279",
+        "frontend/src/api/ocr.ts:65"
+      ],
+      "kind": "error",
+      "values": {
+        "ko": "서버 응답을 확인할 수 없습니다. 잠시 후 다시 시도해주세요."
+      },
+      "machineTranslations": {
+        "ko": "서버 응답을 확인할 수 없습니다. 잠시 후 다시 시도해주세요.",
+        "en": "The server response could not be confirmed. Please try again later.",
+        "vi": "Không thể xác nhận phản hồi của máy chủ. Vui lòng thử lại sau.",
+        "th": "ไม่สามารถยืนยันการตอบสนองของเซิร์ฟเวอร์ได้ โปรดลองอีกครั้งในภายหลัง",
+        "id": "Respons server tidak dapat dikonfirmasi. Silakan coba lagi nanti.",
+        "mn": "Серверийн хариуг баталгаажуулж чадсангүй. Дараа дахин оролдоно уу.",
+        "km": "ការឆ្លើយតបរបស់ម៉ាស៊ីនមេមិនអាចបញ្ជាក់បានទេ។ សូមព្យាយាមម្តងទៀតនៅពេលក្រោយ។"
+      }
+    },
+    {
+      "key": "api.error.contractAnalysisFailed",
+      "sources": [
+        "frontend/src/api/contracts.ts:233",
+        "frontend/src/api/contracts.ts:265"
+      ],
+      "kind": "error",
+      "values": {
+        "ko": "계약서를 분석하지 못했습니다. 다시 시도해주세요."
+      },
+      "machineTranslations": {
+        "ko": "계약서를 분석하지 못했습니다. 다시 시도해주세요.",
+        "en": "The contract could not be analyzed. Please try again.",
+        "vi": "Hợp đồng không thể được phân tích. Vui lòng thử lại.",
+        "th": "ไม่สามารถวิเคราะห์สัญญาได้ โปรดลองอีกครั้ง",
+        "id": "Kontrak tidak dapat dianalisis. Silakan coba lagi.",
+        "mn": "Гэрээнд дүн шинжилгээ хийх боломжгүй байсан. Дахин оролдоно уу.",
+        "km": "កិច្ចសន្យាមិនអាចវិភាគបានទេ។ សូមព្យាយាមម្តងទៀត។"
+      }
+    },
+    {
+      "key": "api.error.missingAnalysisResult",
+      "sources": [
+        "frontend/src/api/contracts.ts:239"
+      ],
+      "kind": "error",
+      "values": {
+        "ko": "분석 결과를 확인할 수 없습니다."
+      },
+      "machineTranslations": {
+        "ko": "분석 결과를 확인할 수 없습니다.",
+        "en": "Analysis results cannot be confirmed.",
+        "vi": "Kết quả phân tích không thể được xác nhận.",
+        "th": "ผลการวิเคราะห์ไม่สามารถยืนยันได้",
+        "id": "Hasil analisis tidak dapat dikonfirmasi.",
+        "mn": "Шинжилгээний үр дүнг баталгаажуулах боломжгүй.",
+        "km": "លទ្ធផលវិភាគមិនអាចបញ្ជាក់បានទេ។"
+      }
+    },
+    {
+      "key": "api.error.ocrFailed",
+      "sources": [
+        "frontend/src/api/ocr.ts:51"
+      ],
+      "kind": "error",
+      "values": {
+        "ko": "문서를 인식하지 못했습니다. 다시 시도해주세요."
+      },
+      "machineTranslations": {
+        "ko": "문서를 인식하지 못했습니다. 다시 시도해주세요.",
+        "en": "The document was not recognized. Please try again.",
+        "vi": "Tài liệu này không được công nhận. Vui lòng thử lại.",
+        "th": "ไม่รู้จักเอกสารนี้ โปรดลองอีกครั้ง",
+        "id": "Dokumen itu tidak dikenali. Silakan coba lagi.",
+        "mn": "Баримт бичгийг хүлээн зөвшөөрөөгүй. Дахин оролдоно уу.",
+        "km": "ឯកសារនេះមិនត្រូវបានទទួលស្គាល់ទេ។ សូមព្យាយាមម្តងទៀត។"
+      }
+    },
+    {
+      "key": "redaction.error.image",
+      "sources": [],
+      "kind": "ui_static",
+      "values": {
+        "ko": "가공 이미지를 만들지 못했습니다."
+      },
+      "machineTranslations": {
+        "ko": "가공 이미지를 만들지 못했습니다.",
+        "en": "Failed to create processed image.",
+        "vi": "Không tạo được hình ảnh đã xử lý.",
+        "th": "ไม่สามารถสร้างอิมเมจที่ประมวลผลแล้ว",
+        "id": "Gagal membuat gambar yang diproses.",
+        "mn": "Боловсруулсан зургийг үүсгэж чадсангүй.",
+        "km": "បរាជ័យក្នុងការបង្កើតរូបភាពដែលបានដំណើរការ។"
+      }
+    },
+    {
+      "key": "redaction.error.display",
+      "sources": [],
+      "kind": "ui_static",
+      "values": {
+        "ko": "브라우저에서 문서를 표시할 수 없습니다."
+      },
+      "machineTranslations": {
+        "ko": "브라우저에서 문서를 표시할 수 없습니다.",
+        "en": "Your browser cannot display the document.",
+        "vi": "Trình duyệt của bạn không thể hiển thị tài liệu.",
+        "th": "เบราว์เซอร์ของคุณไม่สามารถแสดงเอกสารได้",
+        "id": "Browser Anda tidak dapat menampilkan dokumen tersebut.",
+        "mn": "Таны хөтөч баримт бичгийг харуулах боломжгүй.",
+        "km": "កម្មវិធីរុករករបស់អ្នកមិនអាចបង្ហាញឯកសារបានទេ។"
+      }
+    },
+    {
+      "key": "redaction.error.displayPdf",
+      "sources": [],
+      "kind": "ui_static",
+      "values": {
+        "ko": "브라우저에서 PDF를 표시할 수 없습니다."
+      },
+      "machineTranslations": {
+        "ko": "브라우저에서 PDF를 표시할 수 없습니다.",
+        "en": "Your browser cannot display the PDF.",
+        "vi": "Trình duyệt của bạn không thể hiển thị PDF.",
+        "th": "เบราว์เซอร์ของคุณไม่สามารถแสดง PDF ได้",
+        "id": "Browser Anda tidak dapat menampilkan PDF.",
+        "mn": "Таны хөтөч PDF-г харуулах боломжгүй.",
+        "km": "កម្មវិធីរុករករបស់អ្នកមិនអាចបង្ហាញ PDF បានទេ។"
+      }
+    },
+    {
+      "key": "redaction.error.noPages",
+      "sources": [],
+      "kind": "ui_static",
+      "values": {
+        "ko": "확인할 문서 페이지가 없습니다."
+      },
+      "machineTranslations": {
+        "ko": "확인할 문서 페이지가 없습니다.",
+        "en": "There are no document pages to check.",
+        "vi": "Không có trang tài liệu nào để kiểm tra.",
+        "th": "ไม่มีหน้าเอกสารให้ตรวจสอบ",
+        "id": "Tidak ada halaman dokumen yang perlu diperiksa.",
+        "mn": "Шалгах баримт бичгийн хуудас байхгүй байна.",
+        "km": "មិនមានទំព័រឯកសារដែលត្រូវពិនិត្យទេ។"
+      }
+    },
+    {
+      "key": "redaction.error.maskImage",
+      "sources": [],
+      "kind": "ui_static",
+      "values": {
+        "ko": "가림 이미지를 만들 수 없습니다."
+      },
+      "machineTranslations": {
+        "ko": "가림 이미지를 만들 수 없습니다.",
+        "en": "A masked image cannot be created.",
+        "vi": "Không thể tạo hình ảnh bị che.",
+        "th": "ไม่สามารถสร้างภาพที่มาสก์ได้",
+        "id": "Gambar bertopeng tidak dapat dibuat.",
+        "mn": "Масктай зураг үүсгэх боломжгүй.",
+        "km": "រូបភាពបិទមុខមិនអាចបង្កើតបានទេ។"
+      }
+    },
+    {
+      "key": "redaction.error.tooLarge",
+      "sources": [],
+      "kind": "ui_static",
+      "values": {
+        "ko": "가공된 문서가 10MB를 넘습니다. 문서를 나누어 다시 선택해주세요."
+      },
+      "machineTranslations": {
+        "ko": "가공된 문서가 10MB를 넘습니다. 문서를 나누어 다시 선택해주세요.",
+        "en": "The processed document exceeds 10MB. Please divide the document and select it again.",
+        "vi": "Tài liệu được xử lý vượt quá 10 MB. Vui lòng chia tài liệu và chọn lại.",
+        "th": "เอกสารที่ประมวลผลมีขนาดเกิน 10MB โปรดแบ่งเอกสารและเลือกอีกครั้ง",
+        "id": "Dokumen yang diproses melebihi 10MB. Silakan bagi dokumen tersebut dan pilih lagi.",
+        "mn": "Боловсруулсан баримт бичгийн хэмжээ 10 МБ-аас хэтэрсэн байна. Баримт бичгийг хувааж, дахин сонгоно уу.",
+        "km": "ឯកសារដែលបានដំណើរការលើសពី 10MB ។ សូមបែងចែកឯកសារ ហើយជ្រើសរើសវាម្តងទៀត។"
+      }
+    }
+  ]
+}

@@ -147,6 +147,11 @@ def test_document_reviewer_limits_law_search_and_model_calls(monkeypatch) -> Non
     reviewer_service.get_reviewer_agent.cache_clear()
 
 
+def test_document_reviewer_prompt_uses_preferred_language() -> None:
+    assert "입력의 preferredLanguage" in reviewer_service.SYSTEM_PROMPT
+    assert "사용자에게 보이는 모든 자연어" in reviewer_service.SYSTEM_PROMPT
+
+
 @pytest.mark.asyncio
 async def test_document_review_passes_trace_metadata(monkeypatch) -> None:
     review = DocumentReview(answer="답변", summary="요약")

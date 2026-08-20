@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import {
   analyzeContract,
   ContractApiError,
@@ -11,32 +12,14 @@ import {
 import ChatComposer from './components/chatbot/ChatComposer'
 import ChatHeader from './components/chatbot/ChatHeader'
 import ContractFlow from './components/chatbot/ContractFlow'
-import { complaintGroups, languages, reviewItems } from './mocks/chatbot'
-import type { FlowState, PreferredLanguage, UploadState } from './types/chatbot'
+import { normalizeLanguage } from './i18n'
+import { detectReviewIssue } from './review/presentation'
+import type { ComplaintChatMessage, FlowState, UploadState } from './types/chatbot'
 import './App.css'
 
-function detectDeviceLanguage(): PreferredLanguage {
-  if (typeof navigator === 'undefined') return 'en'
-  const supported = languages.map((item) => item.code)
-  const candidates = navigator.languages?.length ? navigator.languages : [navigator.language]
-  for (const candidate of candidates) {
-    const primary = candidate?.toLowerCase().split('-')[0]
-    if (primary && supported.includes(primary as PreferredLanguage)) return primary as PreferredLanguage
-  }
-  return 'en'
-}
-
-function initialDraftValues(): Record<string, string> {
-  return Object.fromEntries(complaintGroups.flatMap((group) => group.rows.map((row) => [row.key, row.value])))
-}
-
-function detectIssue() {
-  const attention = reviewItems.filter((item) => item.status !== 'ok')
-  return attention.some((item) => ['job', 'place'].includes(item.id)) ? 'condition' : 'wage'
-}
-
 function App() {
-  const [language, setLanguage] = useState<PreferredLanguage>(detectDeviceLanguage)
+  const { t, i18n } = useTranslation()
+  const language = normalizeLanguage(i18n.resolvedLanguage ?? i18n.language)
   const [flowState, setFlowState] = useState<FlowState>('UPLOAD')
   const [contractResult, setContractResult] = useState<ContractAnalysisResponse | null>(null)
   const [contractProgress, setContractProgress] = useState<ContractAnalysisJob | null>(null)
@@ -45,18 +28,17 @@ function App() {
   const [documentState, setDocumentState] = useState<UploadState>('idle')
   const [documentError, setDocumentError] = useState<string | null>(null)
   const [documentFiles, setDocumentFiles] = useState<File[]>([])
-  const [openItem, setOpenItem] = useState<string | null>('holiday')
-  const [answers, setAnswers] = useState<Record<string, string>>({})
+  const [openItem, setOpenItem] = useState<string | null>(null)
   const [checkedEvidence, setCheckedEvidence] = useState<string[]>([])
-  const [draftValues, setDraftValues] = useState<Record<string, string>>(initialDraftValues)
+  const [complaintMessages, setComplaintMessages] = useState<ComplaintChatMessage[]>([])
   const [draftDownloaded, setDraftDownloaded] = useState(false)
   const [freeText, setFreeText] = useState('')
   const analysisAbortRef = useRef<AbortController | null>(null)
-  const updateTimerRef = useRef<number | null>(null)
+  const complaintAbortRef = useRef<AbortController | null>(null)
 
   useEffect(() => () => {
     analysisAbortRef.current?.abort()
-    if (updateTimerRef.current) window.clearTimeout(updateTimerRef.current)
+    complaintAbortRef.current?.abort()
   }, [])
 
   const runContractAnalysis = async (files: File[]) => {
@@ -74,7 +56,7 @@ function App() {
     try {
       const result = await analyzeContract(
         files,
-        '근로계약서와 급여명세서를 비교해 주의할 점과 대응 방법을 설명해 주세요.',
+        t('app.analysis.requestPrompt'),
         language,
         setContractProgress,
         abortController.signal,
@@ -83,51 +65,73 @@ function App() {
       setFlowState('REVIEW')
     } catch (error) {
       if (error instanceof DOMException && error.name === 'AbortError') return
-      setUploadError(error instanceof ContractApiError ? error.message : '문서를 비교하지 못했습니다. 다시 시도해주세요.')
+      setUploadError(error instanceof ContractApiError ? error.message : t('app.analysis.compareFailed'))
       setFlowState('UPLOAD')
     } finally {
       if (analysisAbortRef.current === abortController) analysisAbortRef.current = null
     }
   }
 
-  const answerQuestion = (id: string, answer: string) => {
-    setAnswers((previous) => {
-      const next = { ...previous }
-      if (answer) next[id] = answer
-      else delete next[id]
-      return next
-    })
-    if (!answer) return
-    setFlowState('REVIEW_UPDATING')
-    if (updateTimerRef.current) window.clearTimeout(updateTimerRef.current)
-    updateTimerRef.current = window.setTimeout(() => {
-      updateTimerRef.current = null
-      setFlowState('REVIEW')
-    }, 600)
-  }
-
-  const downloadDraft = async () => {
-    if (!contractResult) return
+  const runComplaintTurn = async (content: string, includeUserMessage: boolean) => {
+    if (!contractResult || documentState === 'processing') return
+    complaintAbortRef.current?.abort()
+    const abortController = new AbortController()
+    complaintAbortRef.current = abortController
     setDocumentState('processing')
     setDocumentError(null)
+    if (includeUserMessage) {
+      setComplaintMessages((messages) => [...messages, {
+        id: crypto.randomUUID(),
+        role: 'user',
+        content,
+      }])
+    }
+
     try {
-      const preparation = documentPreparation ?? await prepareLaborComplaint(
+      const preparation = await prepareLaborComplaint(
         contractResult.sessionId,
-        '진정서 작성을 시작해줘',
+        content,
         language,
+        abortController.signal,
       )
       setDocumentPreparation(preparation)
-      downloadGeneratedDocument(preparation.document)
-      setDocumentState('done')
-      setDraftDownloaded(true)
+      setComplaintMessages((messages) => [...messages, {
+        id: crypto.randomUUID(),
+        role: 'assistant',
+        content: preparation.answer,
+      }])
+      const ready = preparation.documentDrafts[0]?.status === 'READY'
+      setDocumentState(ready ? 'done' : 'idle')
+      if (ready) setFlowState('DRAFT_READY')
     } catch (error) {
-      setDocumentError(error instanceof ContractApiError ? error.message : '진정서를 만들지 못했습니다. 다시 시도해주세요.')
+      if (error instanceof DOMException && error.name === 'AbortError') return
+      setDocumentError(error instanceof ContractApiError ? error.message : t('app.complaint.createFailed'))
       setDocumentState('error')
+    } finally {
+      if (complaintAbortRef.current === abortController) complaintAbortRef.current = null
     }
+  }
+
+  const startComplaintDraft = () => {
+    complaintAbortRef.current?.abort()
+    setFlowState('DRAFTING')
+    setDocumentPreparation(null)
+    setDocumentState('idle')
+    setDocumentError(null)
+    setComplaintMessages([])
+    setDraftDownloaded(false)
+    void runComplaintTurn(t('app.complaint.startPrompt'), false)
+  }
+
+  const downloadDraft = () => {
+    if (!documentPreparation) return
+    downloadGeneratedDocument(documentPreparation.document)
+    setDraftDownloaded(true)
   }
 
   const restart = () => {
     analysisAbortRef.current?.abort()
+    complaintAbortRef.current?.abort()
     setFlowState('UPLOAD')
     setContractResult(null)
     setContractProgress(null)
@@ -136,27 +140,27 @@ function App() {
     setDocumentState('idle')
     setDocumentError(null)
     setDocumentFiles([])
-    setOpenItem('holiday')
-    setAnswers({})
+    setOpenItem(null)
     setCheckedEvidence([])
-    setDraftValues(initialDraftValues())
+    setComplaintMessages([])
     setDraftDownloaded(false)
     setFreeText('')
   }
 
   const sendFreeText = () => {
     const value = freeText.trim()
-    if (!value) return
+    if (!value || flowState !== 'DRAFTING' || documentState === 'processing') return
     setFreeText('')
-    setDraftValues((previous) => ({
-      ...previous,
-      contractGap: [previous.contractGap, value].filter(Boolean).join('\n'),
-    }))
+    void runComplaintTurn(value, true)
   }
 
   return (
     <main className="app-shell">
-      <ChatHeader language={language} state={flowState} onLanguageChange={setLanguage} />
+      <ChatHeader
+        language={language}
+        state={flowState}
+        onLanguageChange={(code) => void i18n.changeLanguage(code)}
+      />
 
       <div className="workspace-stack">
         <ContractFlow
@@ -166,25 +170,31 @@ function App() {
           uploadError={uploadError}
           documentFiles={documentFiles}
           openItem={openItem}
-          answers={answers}
           checkedEvidence={checkedEvidence}
-          draftValues={draftValues}
+          documentPreparation={documentPreparation}
+          complaintMessages={complaintMessages}
           draftDownloaded={draftDownloaded}
           documentState={documentState}
           documentError={documentError}
-          issue={detectIssue()}
+          issue={detectReviewIssue(contractResult)}
           onDocumentFilesChange={setDocumentFiles}
           onStartAnalysis={runContractAnalysis}
           onToggleItem={setOpenItem}
-          onAnswer={answerQuestion}
           onToggleEvidence={(id) => setCheckedEvidence((items) => items.includes(id) ? items.filter((item) => item !== id) : [...items, id])}
-          onDraftChange={(key, value) => setDraftValues((previous) => ({ ...previous, [key]: value }))}
+          onStartDraft={startComplaintDraft}
+          onSubmitComplaint={(content) => void runComplaintTurn(content, true)}
           onGoTo={setFlowState}
           onDownloadDraft={downloadDraft}
           onRestart={restart}
         />
 
-        <ChatComposer state={flowState} value={freeText} onChange={setFreeText} onSubmit={sendFreeText} />
+        <ChatComposer
+          state={flowState}
+          value={freeText}
+          busy={flowState === 'DRAFTING' && documentState === 'processing'}
+          onChange={setFreeText}
+          onSubmit={sendFreeText}
+        />
       </div>
     </main>
   )

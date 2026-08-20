@@ -1,5 +1,6 @@
 import { motion } from 'framer-motion'
-import { evidenceToKeep } from '../../mocks/chatbot'
+import { useTranslation } from 'react-i18next'
+import { evidenceToKeep } from '../../config/chatbot'
 import StageMascot from './StageMascot'
 
 /**
@@ -7,8 +8,6 @@ import StageMascot from './StageMascot'
  * 진행한 내용을 요약하고, 다음에 무엇을 준비하면 되는지만 남긴다.
  */
 type CompletedPanelProps = {
-  answered: number
-  totalQuestions: number
   draftDownloaded: boolean
   onRestart: () => void
 }
@@ -19,32 +18,30 @@ const panelMotion = {
   transition: { duration: 0.28, ease: 'easeOut' as const },
 }
 
-function CompletedPanel({ answered, totalQuestions, draftDownloaded, onRestart }: CompletedPanelProps) {
+function CompletedPanel({ draftDownloaded, onRestart }: CompletedPanelProps) {
+  const { t } = useTranslation()
   return (
     <motion.section className="panel completed-panel" {...panelMotion}>
       <StageMascot variant="completed" large />
-      <h2>여기까지 잘 하셨습니다</h2>
-      <p className="panel-lead">
-        확인한 내용과 진정서 초안을 정리했습니다. 다음 단계는 기관에 직접 접수하는 것입니다.
-        <small>Everything is summarised. Submitting is the next step, and you do that yourself.</small>
-      </p>
+      <h2>{t('completed.heading')}</h2>
+      <p className="panel-lead">{t('completed.description')}</p>
 
       <ul className="done-summary">
-        <li><b>문서 확인</b>계약서 · 급여명세서 비교 완료</li>
-        <li><b>추가 확인</b>{answered}/{totalQuestions}개 답변 반영</li>
-        <li><b>진정서</b>{draftDownloaded ? '초안 내려받기 완료' : '초안 작성 완료'}</li>
+        <li><b>{t('completed.document.label')}</b>{t('completed.document.value')}</li>
+        <li><b>{t('completed.analysis.label')}</b>{t('completed.analysis.value')}</li>
+        <li><b>{t('completed.draft.label')}</b>{draftDownloaded ? t('completed.draft.downloaded') : t('completed.draft.ready')}</li>
       </ul>
 
       <div className="done-next">
-        <h3>다음에 준비하면 좋은 자료</h3>
+        <h3>{t('completed.evidence')}</h3>
         <ul>
-          {evidenceToKeep.map((item) => <li key={item.id}>{item.ko}</li>)}
+          {evidenceToKeep.map((item) => <li key={item}>{t(`review.evidence.${item}`)}</li>)}
         </ul>
       </div>
 
       <div className="panel-actions">
         <button className="ghost-button" type="button" onClick={onRestart}>
-          다른 문서 확인하기 / Check another document
+          {t('completed.restart')}
         </button>
       </div>
     </motion.section>

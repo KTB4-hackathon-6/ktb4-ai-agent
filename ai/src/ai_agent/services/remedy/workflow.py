@@ -1,21 +1,113 @@
 """Agent가 구제계획과 서식 작성을 자율적으로 진행하는 workflow."""
 
 import json
+import logging
+import re
+from datetime import date
 from enum import StrEnum
 from functools import lru_cache
-from typing import Annotated, Self, TypedDict
+from typing import Annotated, Literal, TypedDict
 
-from langchain.agents import create_agent
-from langchain.agents.structured_output import ToolStrategy
-from langchain_core.messages import AIMessage, AnyMessage, HumanMessage
+from langchain_core.messages import AIMessage, AnyMessage, HumanMessage, SystemMessage
 from langgraph.graph import END, START, StateGraph
 from langgraph.graph.message import add_messages
-from pydantic import BaseModel, Field, model_validator
+from pydantic import BaseModel, Field
 
 from ai_agent.schemas.document_authoring import LaborComplaintFormData
 from ai_agent.services.remedy.guides import (
     DOCUMENT_AUTHORING_SYSTEM_PROMPT,
     DOCUMENT_FORM_EXTRACTION_PROMPT,
+    DOCUMENT_QUESTION_ANSWER_PROMPT,
+)
+
+logger = logging.getLogger(__name__)
+
+FormFieldId = Literal[
+    "complainant.fullName",
+    "complainant.residentRegistrationNumber",
+    "complainant.address",
+    "complainant.telephone",
+    "complainant.mobilePhone",
+    "complainant.email",
+    "complainant.receiveStatusUpdates",
+    "complainant.notifyViaLaborPortal",
+    "respondent.fullName",
+    "respondent.contact",
+    "respondent.address",
+    "respondent.workplaceType",
+    "respondent.workplaceName",
+    "respondent.actualWorkplaceAddress",
+    "respondent.workplaceTelephone",
+    "respondent.employeeCount",
+    "complaint.employmentStartDate",
+    "complaint.employmentEndDate",
+    "complaint.unpaidWagesTotal",
+    "complaint.employmentStatus",
+    "complaint.unpaidSeverancePay",
+    "complaint.otherUnpaidAmount",
+    "complaint.jobDescription",
+    "complaint.payday",
+    "complaint.contractMethod",
+    "complaint.details",
+    "complaint.attachmentFileNames",
+    "submission.recipientLaborOfficeName",
+]
+
+START_REQUESTS = {
+    "진정서 작성을 시작해줘",
+    "start writing a complaint",
+    "bắt đầu viết đơn khiếu nại",
+    "เริ่มเขียนเรื่องร้องเรียน",
+    "mulailah menulis keluhan",
+    "гомдол бичиж эхлээрэй",
+    "ចាប់ផ្តើមសរសេរពាក្យបណ្តឹង",
+}
+
+DIRECT_FIELDS = {
+    "complainant.fullName",
+    "complainant.address",
+    "complainant.mobilePhone",
+    "respondent.fullName",
+    "respondent.workplaceType",
+    "respondent.workplaceName",
+    "respondent.actualWorkplaceAddress",
+    "complaint.employmentStartDate",
+    "complaint.employmentStatus",
+    "complaint.contractMethod",
+}
+
+QUESTION_HINTS = (
+    "?",
+    "왜",
+    "무엇",
+    "뭐",
+    "어떻게",
+    "필요",
+    "작성",
+    "시작",
+    "계속",
+    "why ",
+    "what ",
+    "how ",
+    "tại sao",
+    "vì sao",
+    "gì",
+    "có cần",
+    "như thế nào",
+    "mengapa",
+    "kenapa",
+    "apa ",
+    "bagaimana",
+    "яагаад",
+    "юу",
+    "хэрхэн",
+    "ทำไม",
+    "อะไร",
+    "ไหม",
+    "อย่างไร",
+    "ហេតុអ្វី",
+    "អ្វី",
+    "ដូចម្តេច",
 )
 
 
@@ -25,23 +117,19 @@ class AuthoringIntent(StrEnum):
     MIXED = "MIXED"
 
 
+class FormFieldUpdate(BaseModel):
+    """모델이 새로 확인한 값 하나. 전체 폼을 되돌려 보내지 않는다."""
+
+    field_id: FormFieldId
+    value: str | int | bool | list[str]
+
+
 class RemedyTurn(BaseModel):
-    """Agent의 한 턴 결과. 값은 SQLite state에 그대로 누적한다."""
+    """Agent의 한 턴 결과. 확인된 변경분만 반환한다."""
 
     intent: AuthoringIntent
     remedy_plan: list[str] = Field(default_factory=list)
-    form_data: LaborComplaintFormData = Field(default_factory=LaborComplaintFormData)
-    question_answer: str | None = None
-    field_questions: dict[str, str] = Field(default_factory=dict)
-
-    @model_validator(mode="after")
-    def validate_question_answer(self) -> Self:
-        if (
-            self.intent in {AuthoringIntent.QUESTION, AuthoringIntent.MIXED}
-            and not (self.question_answer or "").strip()
-        ):
-            raise ValueError("QUESTION and MIXED require question_answer")
-        return self
+    form_updates: list[FormFieldUpdate] = Field(default_factory=list)
 
 
 class RemedyState(TypedDict, total=False):
@@ -57,38 +145,46 @@ class RemedyState(TypedDict, total=False):
     authoring_intent: str
     question_answer: str | None
     field_questions: dict[str, str]
+    input_error: str | None
     form_initialized: bool
 
 
 @lru_cache
-def get_remedy_agent():
+def get_remedy_model():
     from ai_agent.services.agent import get_model
 
-    return create_agent(
-        get_model(),
-        tools=[],
-        system_prompt=DOCUMENT_AUTHORING_SYSTEM_PROMPT,
-        response_format=ToolStrategy(RemedyTurn),
-    )
+    return get_model().with_structured_output(RemedyTurn)
 
 
 @lru_cache
-def get_document_extraction_agent():
+def get_document_extraction_model():
     from ai_agent.services.agent import get_model
 
-    return create_agent(
-        get_model(),
-        tools=[],
-        system_prompt=DOCUMENT_FORM_EXTRACTION_PROMPT,
-        response_format=ToolStrategy(LaborComplaintFormData),
-    )
+    return get_model().with_structured_output(LaborComplaintFormData)
+
+
+async def invoke_structured(model, messages: list[AnyMessage]):
+    """동일한 메시지로 구조화 출력을 최대 세 번 다시 요청한다."""
+    for attempt in range(4):
+        try:
+            return await model.ainvoke(messages)
+        except ValueError:
+            if attempt == 3:
+                raise
+            logger.warning(
+                "구조화 모델 응답이 잘못되어 깨끗한 요청으로 재시도합니다. (%d/3)",
+                attempt + 1,
+            )
 
 
 async def extract_document_form(documents: list[dict]) -> LaborComplaintFormData:
-    result = await get_document_extraction_agent().ainvoke(
-        {"messages": [HumanMessage(json.dumps({"documents": documents}, ensure_ascii=False))]}
+    return await invoke_structured(
+        get_document_extraction_model(),
+        [
+            SystemMessage(DOCUMENT_FORM_EXTRACTION_PROMPT),
+            HumanMessage(json.dumps({"documents": documents}, ensure_ascii=False)),
+        ],
     )
-    return result["structured_response"]
 
 
 def merge_form_data(base: dict, overlay: dict) -> dict:
@@ -100,6 +196,63 @@ def merge_form_data(base: dict, overlay: dict) -> dict:
         elif value not in (None, "", []):
             merged[key] = value
     return merged
+
+
+def validate_korean_narratives(form: LaborComplaintFormData) -> None:
+    for value in filter(None, (form.complaint.jobDescription, form.complaint.details)):
+        letters = [char for char in value if char.isalpha()]
+        hangul_count = sum("가" <= char <= "힣" for char in letters)
+        # ponytail: 문자 비율 검사로 충분하다. 혼합 언어를 허용할 때 언어 감지기로 교체한다.
+        if not hangul_count or hangul_count * 3 < len(letters):
+            raise ValueError("form data narratives must be written in Korean")
+
+
+def apply_form_updates(base: dict, updates: list[FormFieldUpdate]) -> LaborComplaintFormData:
+    data = LaborComplaintFormData(**base).model_dump(mode="json")
+    for update in updates:
+        section, field = update.field_id.split(".", 1)
+        data[section][field] = update.value
+    form = LaborComplaintFormData(**data)
+    validate_korean_narratives(form)
+    return form
+
+
+def is_question(text: str) -> bool:
+    lowered = text.casefold()
+    return any(hint in lowered for hint in QUESTION_HINTS)
+
+
+def parse_pending_value(field_id: str, text: str) -> tuple[str, str | None]:
+    """명확한 단일 필드 답변만 모델 없이 처리한다."""
+    value = text.strip()
+    if field_id not in DIRECT_FIELDS or is_question(value):
+        return "unhandled", None
+    if field_id in {"complainant.fullName", "respondent.fullName"}:
+        letters = sum(char.isalpha() for char in value)
+        valid = 2 <= letters and all(char.isalpha() or char in " .'-·" for char in value)
+    elif field_id == "complainant.mobilePhone":
+        valid = bool(re.fullmatch(r"\+?[0-9][0-9 -]{7,28}[0-9]", value))
+    elif field_id == "respondent.workplaceType":
+        valid = value in {"WORKPLACE", "CONSTRUCTION_SITE"}
+    elif field_id == "complaint.employmentStatus":
+        valid = value in {"RESIGNED", "EMPLOYED"}
+    elif field_id == "complaint.contractMethod":
+        valid = value in {"WRITTEN", "ORAL"}
+    elif field_id == "complaint.employmentStartDate":
+        try:
+            date.fromisoformat(value)
+            valid = True
+        except ValueError:
+            valid = False
+    elif field_id in {"complainant.address", "respondent.actualWorkplaceAddress"}:
+        if not any(char.isdigit() for char in value) or re.search(
+            r"\d{2,4}[- ]\d{3,4}[- ]\d{4}", value
+        ):
+            return "unhandled", None
+        valid = 2 <= len(value) <= 300
+    else:
+        valid = 2 <= len(value) <= 300
+    return ("accepted", value) if valid else ("invalid", None)
 
 
 def last_user_text(state: RemedyState) -> str:
@@ -135,36 +288,127 @@ async def run_remedy_agent(state: RemedyState) -> RemedyTurn:
         "pendingFieldId": pending_field_id,
         "pendingQuestion": (state.get("field_questions") or {}).get(pending_field_id),
         "userMessage": last_user_text(state),
-        "preferredLanguage": state.get("preferred_language") or "ko",
+        "conversationLanguage": state.get("preferred_language") or "ko",
+        "documentLanguage": "ko",
     }
-    result = await get_remedy_agent().ainvoke(
-        {"messages": [HumanMessage(json.dumps(context, ensure_ascii=False))]}
+    return await invoke_structured(
+        get_remedy_model(),
+        [
+            SystemMessage(DOCUMENT_AUTHORING_SYSTEM_PROMPT),
+            HumanMessage(json.dumps(context, ensure_ascii=False)),
+        ],
     )
-    return result["structured_response"]
+
+
+async def answer_authoring_question(state: RemedyState) -> str:
+    from ai_agent.services.agent import get_model
+
+    missing_ids = LaborComplaintFormData(
+        **((state.get("form_drafts") or {}).get("LABOR_COMPLAINT_001", {}))
+    ).required_missing_field_ids()
+    context = {
+        "reviewResult": state.get("review_result") or {},
+        "pendingFieldId": missing_ids[0] if missing_ids else None,
+        "userMessage": last_user_text(state),
+        "conversationLanguage": state.get("preferred_language") or "ko",
+    }
+    result = await get_model().ainvoke(
+        [
+            SystemMessage(DOCUMENT_QUESTION_ANSWER_PROMPT),
+            HumanMessage(json.dumps(context, ensure_ascii=False)),
+        ]
+    )
+    return result.text.strip()
 
 
 async def remedy(state: RemedyState) -> dict:
     existing_form = (state.get("form_drafts") or {}).get("LABOR_COMPLAINT_001", {})
+    initialized_now = False
     if not state.get("form_initialized"):
         documents = state.get("documents") or []
-        seed = (await extract_document_form(documents)).model_dump(mode="json") if documents else {}
+        try:
+            seed = (
+                (await extract_document_form(documents)).model_dump(mode="json")
+                if documents
+                else {}
+            )
+        except ValueError:
+            logger.exception("문서 필드 추출 구조화 응답이 두 번 실패해 빈 폼으로 계속합니다.")
+            seed = {}
         existing_form = merge_form_data(seed, existing_form)
         state = {
             **state,
             "form_drafts": {"LABOR_COMPLAINT_001": existing_form},
         }
+        initialized_now = True
 
-    turn = await run_remedy_agent(state)
-    form_data = merge_form_data(
-        existing_form,
-        turn.form_data.model_dump(mode="json"),
-    )
+    if initialized_now and last_user_text(state).strip().casefold() in START_REQUESTS:
+        return {
+            "form_drafts": {"LABOR_COMPLAINT_001": existing_form},
+            "authoring_intent": AuthoringIntent.FORM_INPUT.value,
+            "question_answer": None,
+            "field_questions": {},
+            "input_error": None,
+            "form_initialized": True,
+        }
+
+    missing_ids = LaborComplaintFormData(**existing_form).required_missing_field_ids()
+    if missing_ids and not initialized_now:
+        status, value = parse_pending_value(missing_ids[0], last_user_text(state))
+        if status == "accepted" and value is not None:
+            form = apply_form_updates(
+                existing_form,
+                [FormFieldUpdate(field_id=missing_ids[0], value=value)],
+            )
+            return {
+                "form_drafts": {"LABOR_COMPLAINT_001": form.model_dump(mode="json")},
+                "authoring_intent": AuthoringIntent.FORM_INPUT.value,
+                "question_answer": None,
+                "field_questions": {},
+                "input_error": None,
+                "form_initialized": True,
+            }
+        if status == "invalid":
+            return {
+                "form_drafts": {"LABOR_COMPLAINT_001": existing_form},
+                "authoring_intent": AuthoringIntent.FORM_INPUT.value,
+                "question_answer": None,
+                "field_questions": {},
+                "input_error": "INVALID_FIELD_VALUE",
+                "form_initialized": True,
+            }
+
+    try:
+        turn = await run_remedy_agent(state)
+        form = apply_form_updates(existing_form, turn.form_updates)
+    except ValueError:
+        logger.exception("문서작성 구조화 응답을 적용하지 못해 기존 폼을 유지합니다.")
+        return {
+            "form_drafts": {"LABOR_COMPLAINT_001": existing_form},
+            "authoring_intent": AuthoringIntent.FORM_INPUT.value,
+            "question_answer": None,
+            "field_questions": {},
+            "input_error": "MODEL_RESPONSE_INVALID",
+            "form_initialized": True,
+        }
+
+    question_answer = None
+    if turn.intent in {AuthoringIntent.QUESTION, AuthoringIntent.MIXED}:
+        try:
+            question_answer = await answer_authoring_question(
+                {**state, "form_drafts": {"LABOR_COMPLAINT_001": form.model_dump(mode="json")}}
+            )
+        except Exception:
+            logger.exception("문서작성 질문 답변 생성에 실패했습니다.")
     return {
         "remedy_plan": turn.remedy_plan or state.get("remedy_plan") or [],
-        "form_drafts": {"LABOR_COMPLAINT_001": form_data},
+        "form_drafts": {"LABOR_COMPLAINT_001": form.model_dump(mode="json")},
         "authoring_intent": turn.intent.value,
-        "question_answer": turn.question_answer,
-        "field_questions": turn.field_questions,
+        "question_answer": question_answer,
+        "field_questions": {},
+        "input_error": "MODEL_RESPONSE_INVALID"
+        if turn.intent in {AuthoringIntent.QUESTION, AuthoringIntent.MIXED} and not question_answer
+        else None,
         "form_initialized": True,
     }
 

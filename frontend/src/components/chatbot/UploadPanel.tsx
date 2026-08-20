@@ -1,4 +1,5 @@
 import { motion } from 'framer-motion'
+import { useTranslation } from 'react-i18next'
 import StageMascot from './StageMascot'
 
 /** ILLO_SERVICE_SPEC 4.1 문서 업로드 — 근로계약서와 급여명세서를 함께 받는다 */
@@ -16,6 +17,7 @@ const panelMotion = {
 }
 
 function UploadPanel({ files, error, onFilesChange, onStart }: UploadPanelProps) {
+  const { t } = useTranslation()
   const ready = files.length > 0
 
   const addFiles = (incomingFiles: File[]) => {
@@ -35,31 +37,28 @@ function UploadPanel({ files, error, onFilesChange, onStart }: UploadPanelProps)
       <div className="upload-intro">
         <StageMascot variant="upload" compact />
         <div>
-          <h2>근로계약서와 급여명세서를 올려주세요</h2>
-          <p>
-            사진이나 PDF 모두 괜찮습니다. 두 문서를 비교해서 확인이 필요한 부분을 찾아드려요.
-            <small>Upload your contract and payslip — photos or PDF are both fine.</small>
-          </p>
+          <h2>{t('upload.heading')}</h2>
+          <p>{t('upload.description')}</p>
         </div>
       </div>
 
-      <div className="upload-features" aria-label="문서 분석 기능">
-        <span><b aria-hidden="true">✦</b> OCR 자동 인식</span>
-        <span><b aria-hidden="true">↔</b> 두 문서 비교</span>
-        <span><b aria-hidden="true">✓</b> 쉬운 결과 안내</span>
+      <div className="upload-features" aria-label={t('upload.features.aria')}>
+        <span><b aria-hidden="true">▰</b> {t('upload.features.redaction')}</span>
+        <span><b aria-hidden="true">↔</b> {t('upload.features.compare')}</span>
+        <span><b aria-hidden="true">✓</b> {t('upload.features.guidance')}</span>
       </div>
 
       <div className={ready ? 'drop-zone filled' : 'drop-zone'}>
         <span className="drop-mark" aria-hidden="true">{ready ? '✓' : '＋'}</span>
-        <strong>{ready ? `${files.length}개 파일이 준비되었습니다` : '파일을 선택하세요'}</strong>
-        <small>JPG · PNG · PDF / 한 장씩 추가하거나 여러 장을 한 번에 올릴 수 있습니다</small>
+        <strong>{ready ? t('upload.filesReady', { count: files.length }) : t('upload.choosePrompt')}</strong>
+        <small>{t('upload.formats')}</small>
         {ready && (
-          <ul className="selected-files" aria-label="선택한 문서 파일">
+          <ul className="selected-files" aria-label={t('upload.selectedFiles')}>
             {files.map((file) => <li key={`${file.name}-${file.lastModified}`}>{file.name}</li>)}
           </ul>
         )}
         <label className="ghost-button" htmlFor="employment-documents">
-          {ready ? '파일 추가 / Add files' : '파일 선택 / Choose files'}
+          {ready ? t('upload.addFiles') : t('upload.chooseFiles')}
         </label>
         <input
           className="sr-only"
@@ -87,9 +86,9 @@ function UploadPanel({ files, error, onFilesChange, onStart }: UploadPanelProps)
           whileHover={ready ? { y: -2 } : undefined}
           whileTap={ready ? { scale: 0.97 } : undefined}
         >
-          문서 확인 시작 / Start
+          {t('upload.redact')}
         </motion.button>
-        <span className="panel-note">업로드한 문서는 확인이 끝나면 삭제됩니다.</span>
+        <span className="panel-note">{t('upload.privacyNote')}</span>
       </div>
     </motion.section>
   )

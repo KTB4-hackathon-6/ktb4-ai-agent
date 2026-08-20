@@ -20,7 +20,7 @@ from ai_agent.schemas.document_authoring import (
 from ai_agent.services import agent as agent_service
 from ai_agent.services.remedy import workflow
 from ai_agent.services.remedy.models import DetectedIssue
-from ai_agent.services.remedy.workflow import AuthoringIntent, RemedyTurn
+from ai_agent.services.remedy.workflow import AuthoringIntent, FormFieldUpdate, RemedyTurn
 from ai_agent.services.reviewer import DocumentReview
 
 
@@ -110,6 +110,33 @@ def test_docs_localizes_fallback_field_question(monkeypatch) -> None:
     )
 
 
+def test_docs_explains_invalid_input_before_repeating_field(monkeypatch) -> None:
+    monkeypatch.setattr(
+        document_authoring,
+        "run_document_authoring",
+        AsyncMock(
+            return_value={
+                "form_drafts": {"LABOR_COMPLAINT_001": {}},
+                "authoring_intent": "FORM_INPUT",
+                "input_error": "INVALID_FIELD_VALUE",
+                "field_questions": {},
+            }
+        ),
+    )
+    request = docs_request("1234")
+    request["preferredLanguage"] = "ko"
+
+    response = TestClient(app).post("/docs", json=request)
+
+    assert response.status_code == 200
+    assert response.json()["result"]["answer"] == (
+        "입력한 성명 형식을 확인하지 못했습니다. 다시 입력해 주세요."
+    )
+    assert response.json()["result"]["documentDrafts"][0]["missingFields"][0][
+        "question"
+    ] == "다음 정보를 알려주세요: 성명."
+
+
 def test_docs_requires_review_context(monkeypatch) -> None:
     monkeypatch.setattr(
         document_authoring,
@@ -194,10 +221,9 @@ def test_review_and_docs_share_state_by_session_id(monkeypatch, tmp_path) -> Non
         ]
         return RemedyTurn(
             intent=AuthoringIntent.FORM_INPUT,
-            form_data=LaborComplaintFormData(
-                complainant=ComplainantData(fullName="NGUYEN VAN TEST")
-            ),
-            field_questions={"complainant.address": "주소를 알려주세요."},
+            form_updates=[
+                FormFieldUpdate(field_id="complainant.fullName", value="NGUYEN VAN TEST")
+            ],
         )
 
     monkeypatch.setattr(workflow, "run_remedy_agent", write_form)
