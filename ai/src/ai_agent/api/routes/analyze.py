@@ -12,10 +12,10 @@ from ai_agent.schemas.analyze import (
     AnalyzeStatus,
     Finding,
 )
-from ai_agent.services.agent import answer_question
+from ai_agent.services.agent import answer_question, save_review_context
 from ai_agent.services.reviewer import review_documents
 
-router = APIRouter(tags=["analyze"])
+router = APIRouter(tags=["review"])
 
 logger = logging.getLogger(__name__)
 
@@ -34,34 +34,47 @@ def error_response(
 
 
 @router.post(
-    "/analyze",
+    "/review",
     response_model=AnalyzeResponse,
     responses={400: {"model": AnalyzeResponse}, 502: {"model": AnalyzeResponse}},
 )
 async def analyze(request: AnalyzeRequest) -> AnalyzeResponse | JSONResponse:
-    if not request.input.text or not request.input.text.strip():
+    question = request.input.text
+    if not question:
         return error_response(
             request,
             status_code=400,
             code="TEXT_INPUT_REQUIRED",
-            message="현재는 input.text가 필요합니다.",
+            message="input.text를 입력해야 합니다.",
         )
 
     try:
         review = None
         if request.documents or request.legalChecks:
             review = await review_documents(
-                request.input.text,
+                question,
                 request.documents,
                 request.legalChecks,
                 request_id=request.requestId,
                 session_id=request.sessionId,
+                preferred_language=request.preferredLanguage.value,
             )
         answer = (
             review.answer
             if review
-            else await answer_question(request.input.text, request.sessionId)
+            else await answer_question(
+                question, request.sessionId, request.preferredLanguage.value
+            )
         )
+        if review:
+            await save_review_context(
+                request.sessionId,
+                documents=[document.model_dump(mode="json") for document in request.documents],
+                legal_checks=[check.model_dump(mode="json") for check in request.legalChecks],
+                review_result=review.model_dump(mode="json"),
+                issues=[issue.model_dump(mode="json") for issue in review.issues],
+                preferred_language=request.preferredLanguage.value,
+            )
     except Exception:
         # 로그가 없으면 502만 남고 원인(모델 오류·타임아웃·검색 실패)이 사라진다.
         logger.exception(
@@ -84,10 +97,9 @@ async def analyze(request: AnalyzeRequest) -> AnalyzeResponse | JSONResponse:
                     summary=review.summary,
                     findings=[
                         Finding(
-                            title=issue.issue_type.value,
+                            title=issue.title,
                             description=issue.summary,
                             severity=issue.severity,
-                            relatedCheckIds=issue.related_check_ids,
                             relatedDocumentIds=issue.related_document_ids,
                         )
                         for issue in review.issues

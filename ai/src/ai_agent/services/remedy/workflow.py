@@ -1,39 +1,58 @@
 """Agent가 구제계획과 서식 작성을 자율적으로 진행하는 workflow."""
 
 import json
+from enum import StrEnum
 from functools import lru_cache
-from typing import Annotated, TypedDict
+from typing import Annotated, Self, TypedDict
 
 from langchain.agents import create_agent
 from langchain.agents.structured_output import ToolStrategy
-from langchain_core.messages import AIMessage, AnyMessage, HumanMessage
+from langchain_core.messages import AnyMessage, HumanMessage
 from langgraph.graph import END, START, StateGraph
 from langgraph.graph.message import add_messages
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, model_validator
 
-from ai_agent.services.rag.retriever import search_labor_law
-from ai_agent.services.remedy.guides import REMEDY_SYSTEM_PROMPT
+from ai_agent.schemas.document_authoring import LaborComplaintFormData
+from ai_agent.services.remedy.guides import DOCUMENT_AUTHORING_SYSTEM_PROMPT
+
+
+class AuthoringIntent(StrEnum):
+    FORM_INPUT = "FORM_INPUT"
+    QUESTION = "QUESTION"
+    MIXED = "MIXED"
 
 
 class RemedyTurn(BaseModel):
     """Agent의 한 턴 결과. 값은 SQLite state에 그대로 누적한다."""
 
-    answer: str
+    intent: AuthoringIntent
     remedy_plan: list[str] = Field(default_factory=list)
-    selected_forms: list[str] = Field(
-        default_factory=list, description="실제로 작성할 민원서식 이름 또는 공식 식별자"
-    )
-    field_updates: dict[str, dict[str, str]] = Field(
-        default_factory=dict, description="selected_forms의 서식별 작성 필드"
-    )
+    form_data: LaborComplaintFormData = Field(default_factory=LaborComplaintFormData)
+    question_answer: str | None = None
+    field_questions: dict[str, str] = Field(default_factory=dict)
+
+    @model_validator(mode="after")
+    def validate_question_answer(self) -> Self:
+        if self.intent in {AuthoringIntent.QUESTION, AuthoringIntent.MIXED} and not (
+            self.question_answer or ""
+        ).strip():
+            raise ValueError("QUESTION and MIXED require question_answer")
+        return self
 
 
 class RemedyState(TypedDict, total=False):
     messages: Annotated[list[AnyMessage], add_messages]
     issues: list[dict]
     remedy_plan: list[str]
-    selected_forms: list[str]
-    form_drafts: dict[str, dict[str, str]]
+    form_drafts: dict[str, dict]
+    documents: list[dict]
+    legal_checks: list[dict]
+    review_result: dict
+    authoring_started: bool
+    preferred_language: str
+    authoring_intent: str
+    question_answer: str | None
+    field_questions: dict[str, str]
 
 
 @lru_cache
@@ -42,8 +61,8 @@ def get_remedy_agent():
 
     return create_agent(
         get_model(),
-        tools=[search_labor_law],
-        system_prompt=REMEDY_SYSTEM_PROMPT,
+        tools=[],
+        system_prompt=DOCUMENT_AUTHORING_SYSTEM_PROMPT,
         response_format=ToolStrategy(RemedyTurn),
     )
 
@@ -59,9 +78,12 @@ async def run_remedy_agent(state: RemedyState) -> RemedyTurn:
     context = {
         "detectedIssues": state.get("issues") or [],
         "currentPlan": state.get("remedy_plan") or [],
-        "selectedForms": state.get("selected_forms") or [],
-        "formDrafts": state.get("form_drafts") or {},
+        "formData": (state.get("form_drafts") or {}).get("LABOR_COMPLAINT_001", {}),
+        "documents": state.get("documents") or [],
+        "legalChecks": state.get("legal_checks") or [],
+        "reviewResult": state.get("review_result") or {},
         "userMessage": last_user_text(state),
+        "preferredLanguage": state.get("preferred_language") or "ko",
     }
     result = await get_remedy_agent().ainvoke(
         {"messages": [HumanMessage(json.dumps(context, ensure_ascii=False))]}
@@ -71,17 +93,14 @@ async def run_remedy_agent(state: RemedyState) -> RemedyTurn:
 
 async def remedy(state: RemedyState) -> dict:
     turn = await run_remedy_agent(state)
-    forms = list(dict.fromkeys([*(state.get("selected_forms") or []), *turn.selected_forms]))
-    drafts = {form_id: dict(values) for form_id, values in (state.get("form_drafts") or {}).items()}
-    for form_id, updates in turn.field_updates.items():
-        if form_id not in forms:
-            continue
-        drafts.setdefault(form_id, {}).update(updates)
     return {
-        "messages": [AIMessage(turn.answer)],
         "remedy_plan": turn.remedy_plan or state.get("remedy_plan") or [],
-        "selected_forms": forms,
-        "form_drafts": drafts,
+        "form_drafts": {
+            "LABOR_COMPLAINT_001": turn.form_data.model_dump(mode="json")
+        },
+        "authoring_intent": turn.intent.value,
+        "question_answer": turn.question_answer,
+        "field_questions": turn.field_questions,
     }
 
 
@@ -94,7 +113,12 @@ async def review(state: RemedyState) -> dict:
 
 
 def route(state: RemedyState) -> str:
-    if state.get("issues") or state.get("remedy_plan") or state.get("form_drafts"):
+    if (
+        state.get("authoring_started")
+        or state.get("issues")
+        or state.get("remedy_plan")
+        or state.get("form_drafts")
+    ):
         return "remedy"
     return "review"
 

@@ -1,3 +1,5 @@
+import { Fragment, useState } from 'react'
+import { AnimatePresence, motion } from 'framer-motion'
 import type {
   ContractAnalysisJob,
   ContractAnalysisStage,
@@ -20,14 +22,19 @@ type ContractFlowProps = {
   resultsShown: boolean
   activeResultTab: ResultTab
   checkedEvidence: string[]
-  onStartAnalysis: (files?: File[]) => void
+  onStartAnalysis: (files: File[]) => void
   onResetUpload: () => void
   onToggleClause: (clauseId: string | null) => void
   onPickOption: (ko: string, en: string) => void
   onShowResults: () => void
   onResultTabChange: (tab: ResultTab) => void
   onToggleEvidence: (id: string) => void
-  onConnect: () => void
+}
+
+const panelMotion = {
+  initial: { opacity: 0, y: 8 },
+  animate: { opacity: 1, y: 0 },
+  transition: { duration: 0.25, ease: 'easeOut' as const },
 }
 
 function ContractFlow({
@@ -48,29 +55,45 @@ function ContractFlow({
   onShowResults,
   onResultTabChange,
   onToggleEvidence,
-  onConnect,
 }: ContractFlowProps) {
+  const [documentFiles, setDocumentFiles] = useState<File[]>([])
+  const uploadReady = documentFiles.length > 0
+
+  const resetUpload = () => {
+    setDocumentFiles([])
+    onResetUpload()
+  }
+
+  const startAnalysis = () => {
+    if (!uploadReady) return
+    onStartAnalysis(documentFiles)
+  }
+
   return (
     <>
-      <ChatMessage who="bot" ko="좋아요, 근로계약서를 업로드해주세요." en="Great, please upload your labor contract." />
+      <ChatMessage
+        who="bot"
+        ko="근로계약서와 급여명세서를 업로드해주세요. 한 개의 PDF로 합치거나 여러 파일로 올려도 됩니다."
+        en="Please upload your labor contract and pay slip. You can combine them into one PDF or upload multiple files."
+      />
       {uploadState === 'idle' && (
-        <section className="upload-panel">
-          <label className="upload-target">
-            <span className="upload-icon" aria-hidden="true">＋</span>
-            <strong>근로계약서 PDF 또는 사진 여러 장 업로드</strong>
-            <small>Upload multiple contract PDFs or images</small>
-            <input
-              type="file"
-              accept="image/jpeg,image/png,application/pdf"
-              multiple
-              onChange={(event) => {
-                const files = Array.from(event.target.files ?? [])
-                if (files.length > 0) onStartAnalysis(files)
-              }}
-            />
-          </label>
-          <button className="primary-button" onClick={() => onStartAnalysis()}>데모 계약서로 진단 시작 / Start Demo Diagnosis</button>
-        </section>
+        <motion.section className="upload-panel" {...panelMotion}>
+          <DocumentUpload files={documentFiles} onChange={setDocumentFiles} />
+          <p className="upload-requirement" aria-live="polite">
+            {uploadReady
+              ? `${documentFiles.length}개 파일이 준비되었습니다. / ${documentFiles.length} file(s) ready.`
+              : '통합 PDF 한 개 또는 문서 사진 여러 장을 올려주세요. / Upload one combined PDF or multiple document images.'}
+          </p>
+          <motion.button
+            className="primary-button"
+            disabled={!uploadReady}
+            onClick={startAnalysis}
+            whileHover={uploadReady ? { y: -2 } : undefined}
+            whileTap={uploadReady ? { scale: 0.97 } : undefined}
+          >
+            두 문서 비교 시작 / Compare Documents
+          </motion.button>
+        </motion.section>
       )}
       {uploadState === 'processing' && (
         <AnalysisProgress job={contractProgress} />
@@ -78,11 +101,11 @@ function ContractFlow({
       {uploadState === 'error' && (
         <>
           {contractProgress && <AnalysisProgress job={contractProgress} />}
-          <section className="error-panel" role="alert">
-            <strong>계약서 분석에 실패했습니다. / Analysis failed</strong>
+          <motion.section className="error-panel" role="alert" {...panelMotion}>
+            <strong>문서 비교에 실패했습니다. / Comparison failed</strong>
             <p>{uploadError}</p>
-            <button className="secondary-button" onClick={onResetUpload}>다른 파일 선택 / Choose another file</button>
-          </section>
+            <button className="secondary-button" onClick={resetUpload}>다른 파일 선택 / Choose other files</button>
+          </motion.section>
         </>
       )}
       {uploadState === 'done' && (
@@ -109,11 +132,41 @@ function ContractFlow({
             checkedEvidence={checkedEvidence}
             onTabChange={onResultTabChange}
             onToggleEvidence={onToggleEvidence}
-            onConnect={onConnect}
           />
         </>
       )}
     </>
+  )
+}
+
+type DocumentUploadProps = {
+  files: File[]
+  onChange: (files: File[]) => void
+}
+
+function DocumentUpload({ files, onChange }: DocumentUploadProps) {
+  return (
+    <div className={files.length > 0 ? 'document-upload complete' : 'document-upload'}>
+      <span className="document-number" aria-hidden="true">{files.length > 0 ? '✓' : '＋'}</span>
+      <strong>근로계약서·급여명세서 업로드</strong>
+      <small>한 개의 통합 PDF 또는 여러 JPG, PNG, PDF</small>
+      {files.length > 0 && (
+        <ul className="selected-files" aria-label="선택한 문서 파일">
+          {files.map((file) => <li key={`${file.name}-${file.lastModified}`}>{file.name}</li>)}
+        </ul>
+      )}
+      <label className="secondary-button document-picker" htmlFor="employment-documents">
+        {files.length > 0 ? '파일 다시 선택 / Replace' : '파일 선택 / Choose files'}
+      </label>
+      <input
+        className="sr-only"
+        id="employment-documents"
+        type="file"
+        accept="image/jpeg,image/png,application/pdf"
+        multiple
+        onChange={(event) => onChange(Array.from(event.target.files ?? []))}
+      />
+    </div>
   )
 }
 
@@ -123,7 +176,7 @@ const progressSteps: Array<{
   en: string
 }> = [
   { stage: 'OCR', ko: '문서 글자 읽기', en: 'Reading document' },
-  { stage: 'STRUCTURING', ko: '계약 정보 정리', en: 'Organizing contract details' },
+  { stage: 'STRUCTURING', ko: '문서 정보 정리', en: 'Organizing document details' },
   { stage: 'GENERATING_RESPONSE', ko: '문제점과 대응 방법 만들기', en: 'Preparing guidance' },
 ]
 
@@ -134,8 +187,8 @@ function AnalysisProgress({ job }: { job: ContractAnalysisJob | null }) {
     : progressSteps.length
 
   return (
-    <section className="processing-panel analysis-progress" aria-live="polite">
-      <strong>계약서를 분석하고 있습니다 / Analyzing your contract</strong>
+    <motion.section className="processing-panel analysis-progress" aria-live="polite" {...panelMotion}>
+      <strong>계약서와 급여명세서를 비교하고 있습니다 / Comparing your documents</strong>
       <ol className="analysis-steps">
         {progressSteps.map((step, index) => {
           const completed = job?.status === 'COMPLETED' || index < currentIndex
@@ -145,7 +198,17 @@ function AnalysisProgress({ job }: { job: ContractAnalysisJob | null }) {
           return (
             <li className={`analysis-step ${state}`} key={step.stage} aria-current={active ? 'step' : undefined}>
               <span className="analysis-step-icon" aria-hidden="true">
-                {completed ? '✓' : failed ? '!' : active ? <span className="step-spinner" /> : index + 1}
+                <AnimatePresence mode="wait" initial={false}>
+                  <motion.span
+                    key={state}
+                    initial={{ scale: 0.5, opacity: 0 }}
+                    animate={{ scale: 1, opacity: 1 }}
+                    exit={{ scale: 0.5, opacity: 0 }}
+                    transition={{ duration: 0.15 }}
+                  >
+                    {completed ? '✓' : failed ? '!' : active ? <span className="step-spinner" /> : index + 1}
+                  </motion.span>
+                </AnimatePresence>
               </span>
               <span>
                 <b>{step.ko}</b>
@@ -158,13 +221,57 @@ function AnalysisProgress({ job }: { job: ContractAnalysisJob | null }) {
           )
         })}
       </ol>
-    </section>
+    </motion.section>
   )
 }
 
 type DiagnosisProps = {
   openClause: string | null
   onToggleClause: (clauseId: string | null) => void
+}
+
+type ClauseItemProps = {
+  id: string
+  status: string
+  statusLabel: string
+  title: string
+  subtitle: string
+  open: boolean
+  onToggle: () => void
+  details: Array<{ label: string; value: string }>
+}
+
+function ClauseItem({ status, statusLabel, title, subtitle, open, onToggle, details }: ClauseItemProps) {
+  return (
+    <motion.button className={`clause ${status}`} onClick={onToggle} aria-expanded={open} layout>
+      <div className="clause-heading">
+        <div>
+          <span className={`status ${status}`}>{statusLabel}</span>
+          <h3>{title}</h3>
+          <p>{subtitle}</p>
+        </div>
+        <motion.span className="chevron" animate={{ rotate: open ? 180 : 0 }} transition={{ duration: 0.2 }}>⌄</motion.span>
+      </div>
+      <AnimatePresence initial={false}>
+        {open && (
+          <motion.div
+            className="clause-details"
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: 'auto', opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            transition={{ duration: 0.2 }}
+          >
+            {details.map((detail) => (
+              <Fragment key={detail.label}>
+                <strong>{detail.label}</strong>
+                <p>{detail.value}</p>
+              </Fragment>
+            ))}
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </motion.button>
+  )
 }
 
 function ContractAnalysisResult({
@@ -184,7 +291,7 @@ function ContractAnalysisResult({
 
   return (
     <>
-      <section className="result-panel agent-result">
+      <motion.section className="result-panel agent-result" {...panelMotion}>
         <span className="result-eyebrow">AI AGENT RESPONSE</span>
         <h2>{result.analysis.summary || '계약서 분석 결과'}</h2>
         <p className="agent-answer">{result.answer}</p>
@@ -207,9 +314,9 @@ function ContractAnalysisResult({
             </ol>
           </div>
         )}
-      </section>
+      </motion.section>
 
-      <section className="result-panel diagnosis">
+      <motion.section className="result-panel diagnosis" {...panelMotion}>
         <h2>계약서 진단 리포트 / Diagnosis Report</h2>
         <div className="fact-grid">
           {factItems.map(([label, value]) => (
@@ -227,29 +334,20 @@ function ContractAnalysisResult({
           const open = openClause === id
           const status = violation.severity === 'warning' ? 'danger' : 'warn'
           return (
-            <button
-              className={`clause ${status}`}
+            <ClauseItem
               key={id}
-              onClick={() => onToggleClause(open ? null : id)}
-              aria-expanded={open}
-            >
-              <div className="clause-heading">
-                <div>
-                  <span className={`status ${status}`}>
-                    {status === 'danger' ? '주의 필요 / Warning' : '확인 필요 / Review'}
-                  </span>
-                  <h3>{violation.message}</h3>
-                  <p>{violation.law_name} {violation.article}</p>
-                </div>
-                <span className={open ? 'chevron open' : 'chevron'}>⌄</span>
-              </div>
-              {open && (
-                <div className="clause-details">
-                  <strong>진단 코드 / Check ID</strong><p>{violation.rule_id}</p>
-                  <strong>관련 법적 근거 / Legal basis</strong><p>{violation.law_name} {violation.article}</p>
-                </div>
-              )}
-            </button>
+              id={id}
+              status={status}
+              statusLabel={status === 'danger' ? '주의 필요 / Warning' : '확인 필요 / Review'}
+              title={violation.message}
+              subtitle={`${violation.law_name} ${violation.article}`}
+              open={open}
+              onToggle={() => onToggleClause(open ? null : id)}
+              details={[
+                { label: '진단 코드 / Check ID', value: violation.rule_id },
+                { label: '관련 법적 근거 / Legal basis', value: `${violation.law_name} ${violation.article}` },
+              ]}
+            />
           )
         })}
         {unverifiedFields.length > 0 && (
@@ -257,14 +355,14 @@ function ContractAnalysisResult({
             OCR 원문에서 확인하지 못한 항목: {unverifiedFields.join(', ')}
           </p>
         )}
-      </section>
+      </motion.section>
     </>
   )
 }
 
 function DemoDiagnosis({ openClause, onToggleClause }: DiagnosisProps) {
   return (
-    <section className="result-panel diagnosis">
+    <motion.section className="result-panel diagnosis" {...panelMotion}>
       <h2>데모 진단 리포트 / Demo Diagnosis Report</h2>
       <div className="legend">
         <span className="ok">● 문제없음 / OK</span>
@@ -274,31 +372,24 @@ function DemoDiagnosis({ openClause, onToggleClause }: DiagnosisProps) {
       {contractClauses.map((clause) => {
         const open = openClause === clause.id
         return (
-          <button
-            className={`clause ${clause.status}`}
+          <ClauseItem
             key={clause.id}
-            onClick={() => onToggleClause(open ? null : clause.id)}
-            aria-expanded={open}
-          >
-            <div className="clause-heading">
-              <div>
-                <span className={`status ${clause.status}`}>{clause.label}</span>
-                <h3>{clause.title}</h3>
-                <p>{clause.en}</p>
-              </div>
-              <span className={open ? 'chevron open' : 'chevron'}>⌄</span>
-            </div>
-            {open && (
-              <div className="clause-details">
-                <strong>원문 / Original</strong><p>{clause.original}</p>
-                <strong>설명 / Explanation (EN)</strong><p>{clause.explanation}</p>
-                <strong>관련 법적 근거 / Legal basis</strong><p>{clause.legal}</p>
-              </div>
-            )}
-          </button>
+            id={clause.id}
+            status={clause.status}
+            statusLabel={clause.label}
+            title={clause.title}
+            subtitle={clause.en}
+            open={open}
+            onToggle={() => onToggleClause(open ? null : clause.id)}
+            details={[
+              { label: '원문 / Original', value: clause.original },
+              { label: '설명 / Explanation (EN)', value: clause.explanation },
+              { label: '관련 법적 근거 / Legal basis', value: clause.legal },
+            ]}
+          />
         )
       })}
-    </section>
+    </motion.section>
   )
 }
 

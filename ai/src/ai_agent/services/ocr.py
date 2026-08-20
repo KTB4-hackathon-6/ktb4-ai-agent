@@ -52,8 +52,7 @@ def extract_text(file_bytes: bytes, content_type: str) -> str:
     except httpx.HTTPError as exc:
         raise OcrError(f"Naver Clova OCR request failed: {exc}") from exc
 
-    fields = response.json()["images"][0]["fields"]
-    return _join_fields(fields)
+    return "\n\n".join(_join_fields(image["fields"]) for image in response.json()["images"])
 
 
 def _join_fields(fields: list[dict]) -> str:

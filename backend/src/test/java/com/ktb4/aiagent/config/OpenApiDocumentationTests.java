@@ -39,8 +39,12 @@ class OpenApiDocumentationTests {
 			.andExpect(jsonPath("$.paths['/api/contracts/analyze'].post").exists())
 			.andExpect(jsonPath("$.paths['/api/contracts/analyze'].post.summary")
 				.value("근로계약서 OCR·진단 및 AI 검토"))
+			.andExpect(jsonPath("$.paths['/api/contracts/analyze'].post.parameters[?(@.name == 'preferredLanguage')].schema.enum[?(@ == 'ko')]")
+				.exists())
 			.andExpect(jsonPath("$.paths['/api/sessions/{sessionId}/contract-analyses'].post.summary")
 				.value("비동기 근로계약서 분석 시작"))
+			.andExpect(jsonPath("$.paths['/api/sessions/{sessionId}/contract-analyses'].post.parameters[?(@.name == 'preferredLanguage')].schema.enum[?(@ == 'ko')]")
+				.exists())
 			.andExpect(jsonPath("$.paths['/api/sessions/{sessionId}/contract-analyses/{analysisId}'].get.summary")
 				.value("근로계약서 분석 진행 상태 조회"))
 			.andExpect(jsonPath("$.paths['/api/sessions'].post").exists())
@@ -49,7 +53,12 @@ class OpenApiDocumentationTests {
 			.andExpect(jsonPath("$.paths['/api/sessions/{sessionId}/messages'].post").doesNotExist())
 			.andExpect(jsonPath("$.paths['/api/sessions/{sessionId}/chat'].post").exists())
 			.andExpect(jsonPath("$.paths['/api/sessions/{sessionId}/chat'].post.summary")
-				.value("상담 메시지 분석 및 AI 답변 생성"));
+				.value("상담 메시지 분석 및 AI 답변 생성"))
+			.andExpect(jsonPath("$.components.schemas.Analysis.properties.documentDrafts").doesNotExist())
+			.andExpect(jsonPath("$.components.schemas.ChatExchange.properties.analysis['$ref']")
+				.value("#/components/schemas/Analysis"))
+			.andExpect(jsonPath("$.components.schemas.ContractAnalysisResponse.properties.analysis['$ref']")
+				.value("#/components/schemas/Analysis"));
 	}
 
 	@Test

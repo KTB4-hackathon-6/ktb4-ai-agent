@@ -1,0 +1,289 @@
+{
+  "templateId": "LABOR_COMPLAINT_001",
+  "templateVersion": "1.0",
+  "originalFormName": "진정서",
+  "officialIdentifier": null,
+  "originalSourceFileName": "진정서+양식.hwp",
+  "fields": [
+    {
+      "fieldId": "complainant.fullName",
+      "displayName": "진정인 성명",
+      "dataType": "TEXT",
+      "required": true,
+      "maxLength": 100,
+      "target": {"entry": "Contents/section0.xml", "kind": "TABLE_CELL", "tableIndex": 0, "row": 0, "column": 1, "matchText": null, "valuePattern": null},
+      "emptyValue": "",
+      "repeated": false
+    },
+    {
+      "fieldId": "complainant.residentRegistrationNumber",
+      "displayName": "진정인 주민등록번호",
+      "dataType": "SENSITIVE_TEXT",
+      "required": false,
+      "maxLength": 30,
+      "target": {"entry": "Contents/section0.xml", "kind": "TABLE_CELL", "tableIndex": 0, "row": 0, "column": 3, "matchText": null, "valuePattern": null},
+      "emptyValue": "",
+      "repeated": false
+    },
+    {
+      "fieldId": "complainant.address",
+      "displayName": "진정인 주소",
+      "dataType": "TEXT",
+      "required": true,
+      "maxLength": 300,
+      "target": {"entry": "Contents/section0.xml", "kind": "TABLE_CELL", "tableIndex": 0, "row": 1, "column": 1, "matchText": null, "valuePattern": null},
+      "emptyValue": "",
+      "repeated": false
+    },
+    {
+      "fieldId": "complainant.telephone",
+      "displayName": "진정인 전화번호",
+      "dataType": "PHONE",
+      "required": false,
+      "maxLength": 30,
+      "target": {"entry": "Contents/section0.xml", "kind": "TABLE_CELL", "tableIndex": 0, "row": 2, "column": 1, "matchText": null, "valuePattern": null},
+      "emptyValue": "",
+      "repeated": false
+    },
+    {
+      "fieldId": "complainant.mobilePhone",
+      "displayName": "진정인 휴대전화번호",
+      "dataType": "PHONE",
+      "required": true,
+      "maxLength": 30,
+      "target": {"entry": "Contents/section0.xml", "kind": "TABLE_CELL", "tableIndex": 0, "row": 2, "column": 3, "matchText": null, "valuePattern": null},
+      "emptyValue": "",
+      "repeated": false
+    },
+    {
+      "fieldId": "complainant.email",
+      "displayName": "진정인 전자우편주소",
+      "dataType": "EMAIL",
+      "required": false,
+      "maxLength": 254,
+      "target": {"entry": "Contents/section0.xml", "kind": "TABLE_CELL", "tableIndex": 0, "row": 3, "column": 1, "matchText": null, "valuePattern": null},
+      "emptyValue": "",
+      "repeated": false
+    },
+    {
+      "fieldId": "complainant.receiveStatusUpdates",
+      "displayName": "처리 상황 수신여부",
+      "dataType": "BOOLEAN",
+      "required": false,
+      "maxLength": 20,
+      "target": {"entry": "Contents/section0.xml", "kind": "TABLE_CELL", "tableIndex": 0, "row": 4, "column": 1, "matchText": null, "valuePattern": null},
+      "emptyValue": "□ 예     □ 아니오",
+      "repeated": false
+    },
+    {
+      "fieldId": "complainant.notifyViaLaborPortal",
+      "displayName": "노동포털 통지여부",
+      "dataType": "BOOLEAN",
+      "required": false,
+      "maxLength": 20,
+      "target": {"entry": "Contents/section0.xml", "kind": "TABLE_CELL", "tableIndex": 0, "row": 4, "column": 3, "matchText": null, "valuePattern": null},
+      "emptyValue": "□ 예     □ 아니오",
+      "repeated": false
+    },
+    {
+      "fieldId": "respondent.fullName",
+      "displayName": "피진정인 성명",
+      "dataType": "TEXT",
+      "required": true,
+      "maxLength": 100,
+      "target": {"entry": "Contents/section0.xml", "kind": "TABLE_CELL", "tableIndex": 1, "row": 0, "column": 1, "matchText": null, "valuePattern": null},
+      "emptyValue": "",
+      "repeated": false
+    },
+    {
+      "fieldId": "respondent.contact",
+      "displayName": "피진정인 연락처",
+      "dataType": "PHONE",
+      "required": false,
+      "maxLength": 30,
+      "target": {"entry": "Contents/section0.xml", "kind": "TABLE_CELL", "tableIndex": 1, "row": 0, "column": 3, "matchText": null, "valuePattern": null},
+      "emptyValue": "",
+      "repeated": false
+    },
+    {
+      "fieldId": "respondent.address",
+      "displayName": "피진정인 주소",
+      "dataType": "TEXT",
+      "required": false,
+      "maxLength": 300,
+      "target": {"entry": "Contents/section0.xml", "kind": "TABLE_CELL", "tableIndex": 1, "row": 1, "column": 1, "matchText": null, "valuePattern": null},
+      "emptyValue": "",
+      "repeated": false
+    },
+    {
+      "fieldId": "respondent.workplaceType",
+      "displayName": "사업체 구분",
+      "dataType": "ENUM",
+      "required": true,
+      "maxLength": 30,
+      "target": {"entry": "Contents/section0.xml", "kind": "TABLE_CELL", "tableIndex": 1, "row": 2, "column": 1, "matchText": null, "valuePattern": null},
+      "emptyValue": "□ 사업장     □ 공사현장",
+      "repeated": false
+    },
+    {
+      "fieldId": "respondent.workplaceName",
+      "displayName": "사업장명",
+      "dataType": "TEXT",
+      "required": true,
+      "maxLength": 200,
+      "target": {"entry": "Contents/section0.xml", "kind": "TABLE_CELL", "tableIndex": 1, "row": 3, "column": 1, "matchText": null, "valuePattern": null},
+      "emptyValue": "",
+      "repeated": false
+    },
+    {
+      "fieldId": "respondent.actualWorkplaceAddress",
+      "displayName": "사업장 주소(실근무장소)",
+      "dataType": "TEXT",
+      "required": true,
+      "maxLength": 300,
+      "target": {"entry": "Contents/section0.xml", "kind": "TABLE_CELL", "tableIndex": 1, "row": 4, "column": 1, "matchText": null, "valuePattern": null},
+      "emptyValue": "",
+      "repeated": false
+    },
+    {
+      "fieldId": "respondent.workplaceTelephone",
+      "displayName": "사업장 전화번호",
+      "dataType": "PHONE",
+      "required": false,
+      "maxLength": 30,
+      "target": {"entry": "Contents/section0.xml", "kind": "TABLE_CELL", "tableIndex": 1, "row": 5, "column": 1, "matchText": null, "valuePattern": null},
+      "emptyValue": "",
+      "repeated": false
+    },
+    {
+      "fieldId": "respondent.employeeCount",
+      "displayName": "근로자 수",
+      "dataType": "INTEGER",
+      "required": false,
+      "maxLength": 20,
+      "target": {"entry": "Contents/section0.xml", "kind": "TABLE_CELL", "tableIndex": 1, "row": 5, "column": 3, "matchText": null, "valuePattern": null},
+      "emptyValue": "",
+      "repeated": false
+    },
+    {
+      "fieldId": "complaint.employmentStartDate",
+      "displayName": "입사일",
+      "dataType": "DATE",
+      "required": true,
+      "maxLength": 10,
+      "target": {"entry": "Contents/section0.xml", "kind": "TABLE_CELL", "tableIndex": 2, "row": 0, "column": 1, "matchText": null, "valuePattern": null},
+      "emptyValue": "",
+      "repeated": false
+    },
+    {
+      "fieldId": "complaint.employmentEndDate",
+      "displayName": "퇴사일",
+      "dataType": "DATE",
+      "required": false,
+      "maxLength": 10,
+      "target": {"entry": "Contents/section0.xml", "kind": "TABLE_CELL", "tableIndex": 2, "row": 0, "column": 3, "matchText": null, "valuePattern": null},
+      "emptyValue": "",
+      "repeated": false
+    },
+    {
+      "fieldId": "complaint.unpaidWagesTotal",
+      "displayName": "체불임금총액",
+      "dataType": "MONEY_KRW",
+      "required": false,
+      "maxLength": 30,
+      "target": {"entry": "Contents/section0.xml", "kind": "TABLE_CELL", "tableIndex": 2, "row": 1, "column": 1, "matchText": null, "valuePattern": null},
+      "emptyValue": "",
+      "repeated": false
+    },
+    {
+      "fieldId": "complaint.employmentStatus",
+      "displayName": "퇴직 여부",
+      "dataType": "ENUM",
+      "required": true,
+      "maxLength": 20,
+      "target": {"entry": "Contents/section0.xml", "kind": "TABLE_CELL", "tableIndex": 2, "row": 1, "column": 3, "matchText": null, "valuePattern": null},
+      "emptyValue": "□ 퇴직     □ 재직",
+      "repeated": false
+    },
+    {
+      "fieldId": "complaint.unpaidSeverancePay",
+      "displayName": "체불퇴직금액",
+      "dataType": "MONEY_KRW",
+      "required": false,
+      "maxLength": 30,
+      "target": {"entry": "Contents/section0.xml", "kind": "TABLE_CELL", "tableIndex": 2, "row": 2, "column": 1, "matchText": null, "valuePattern": null},
+      "emptyValue": "",
+      "repeated": false
+    },
+    {
+      "fieldId": "complaint.otherUnpaidAmount",
+      "displayName": "기타체불금액",
+      "dataType": "MONEY_KRW",
+      "required": false,
+      "maxLength": 30,
+      "target": {"entry": "Contents/section0.xml", "kind": "TABLE_CELL", "tableIndex": 2, "row": 2, "column": 3, "matchText": null, "valuePattern": null},
+      "emptyValue": "",
+      "repeated": false
+    },
+    {
+      "fieldId": "complaint.jobDescription",
+      "displayName": "업무 내용",
+      "dataType": "TEXT",
+      "required": true,
+      "maxLength": 300,
+      "target": {"entry": "Contents/section0.xml", "kind": "TABLE_CELL", "tableIndex": 2, "row": 3, "column": 1, "matchText": null, "valuePattern": null},
+      "emptyValue": "",
+      "repeated": false
+    },
+    {
+      "fieldId": "complaint.payday",
+      "displayName": "임금 지급일",
+      "dataType": "TEXT",
+      "required": false,
+      "maxLength": 100,
+      "target": {"entry": "Contents/section0.xml", "kind": "TABLE_CELL", "tableIndex": 2, "row": 4, "column": 1, "matchText": null, "valuePattern": null},
+      "emptyValue": "",
+      "repeated": false
+    },
+    {
+      "fieldId": "complaint.contractMethod",
+      "displayName": "근로계약방법",
+      "dataType": "ENUM",
+      "required": true,
+      "maxLength": 20,
+      "target": {"entry": "Contents/section0.xml", "kind": "TABLE_CELL", "tableIndex": 2, "row": 4, "column": 3, "matchText": null, "valuePattern": null},
+      "emptyValue": "□ 서면     □ 구두",
+      "repeated": false
+    },
+    {
+      "fieldId": "complaint.details",
+      "displayName": "진정 내용",
+      "dataType": "TEXTAREA",
+      "required": true,
+      "maxLength": 4000,
+      "target": {"entry": "Contents/section0.xml", "kind": "TABLE_CELL", "tableIndex": 2, "row": 5, "column": 1, "matchText": null, "valuePattern": null},
+      "emptyValue": "",
+      "repeated": false
+    },
+    {
+      "fieldId": "complaint.attachmentFileNames",
+      "displayName": "첨부 파일",
+      "dataType": "STRING_LIST",
+      "required": false,
+      "maxLength": 1000,
+      "target": {"entry": "Contents/section0.xml", "kind": "TABLE_CELL", "tableIndex": 2, "row": 6, "column": 1, "matchText": null, "valuePattern": null},
+      "emptyValue": "",
+      "repeated": true
+    },
+    {
+      "fieldId": "submission.recipientLaborOfficeName",
+      "displayName": "제출 고용노동관서",
+      "dataType": "TEXT",
+      "required": true,
+      "maxLength": 100,
+      "target": {"entry": "Contents/section0.xml", "kind": "TEXT_MATCH", "tableIndex": null, "row": null, "column": null, "matchText": "(                 )고용노동(지)청장 귀하", "valuePattern": "(%s)고용노동(지)청장 귀하"},
+      "emptyValue": "(                 )고용노동(지)청장 귀하",
+      "repeated": false
+    }
+  ]
+}

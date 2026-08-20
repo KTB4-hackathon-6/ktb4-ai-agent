@@ -4,7 +4,7 @@ from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
 
-from ai_agent.api.routes import analyze, health, ocr, rag
+from ai_agent.api.routes import analyze, document_authoring, guidance, health, ocr, rag
 from ai_agent.config import get_settings
 from ai_agent.services.rag.law_sync import sync_configured_laws
 
@@ -50,6 +50,8 @@ app.include_router(health.router)
 app.include_router(analyze.router)
 app.include_router(ocr.router)
 app.include_router(rag.router)
+app.include_router(document_authoring.router)
+app.include_router(guidance.router)
 
 
 def main() -> None:
