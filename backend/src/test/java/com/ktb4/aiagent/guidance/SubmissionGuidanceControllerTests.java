@@ -48,6 +48,9 @@ class SubmissionGuidanceControllerTests {
 					GuidanceOutcome.AgencyCode.MOEL,
 					"고용노동부",
 					"고용노동부 안산지청",
+					"https://www.moel.go.kr/ansan/",
+					"1350",
+					"1577-0071",
 					List.of(new GuidanceOutcome.SubmissionOption(
 						GuidanceOutcome.SubmissionChannel.ONLINE,
 						"노동포털 온라인 제출",
@@ -88,6 +91,9 @@ class SubmissionGuidanceControllerTests {
 			.andExpect(jsonPath("$.code").value("SUCCESS"))
 			.andExpect(jsonPath("$.data.agencyCode").value("MOEL"))
 			.andExpect(jsonPath("$.data.jurisdictionOfficeName").value("고용노동부 안산지청"))
+			.andExpect(jsonPath("$.data.jurisdictionOfficeUrl").value("https://www.moel.go.kr/ansan/"))
+			.andExpect(jsonPath("$.data.helplinePhone").value("1350"))
+			.andExpect(jsonPath("$.data.foreignWorkerHelplinePhone").value("1577-0071"))
 			.andExpect(jsonPath("$.data.submissionOptions[0].channel").value("ONLINE"))
 			.andExpect(jsonPath("$.data.submissionOptions[0].url").value(
 				"https://labor.moel.go.kr/minwonApply/minwonFormat.do?searchVal=SN001"

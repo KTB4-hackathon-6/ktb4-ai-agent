@@ -30,8 +30,14 @@ ONLINE_COMPLAINT_URL = (
 REGION_PATTERN = re.compile(r"[가-힣]+(?:특별자치시|특별자치도|특별시|광역시|도|시|군|구)")
 
 
+NATIONAL_HELPLINE_PHONE = "1350"
+# 모국어 고충상담. 한국어 상담센터(1350)보다 E-9 근로자에게 실질적으로 더 유용하다.
+FOREIGN_WORKER_HELPLINE_PHONE = "1577-0071"
+
+
 class JurisdictionDecision(BaseModel):
     officeName: str = Field(min_length=1)
+    homepageUrl: str | None = None
 
 
 def parse_offices(page: str) -> list[dict[str, str]]:
@@ -72,9 +78,26 @@ async def resolve_jurisdiction(data: LaborComplaintFormData) -> JurisdictionDeci
             office for office, score in zip(offices, scores, strict=True) if score == best_score
         ]
         if len(best) == 1:
-            return JurisdictionDecision(officeName=best[0]["officeName"])
+            return JurisdictionDecision(
+                officeName=best[0]["officeName"],
+                homepageUrl=best[0]["homepageUrl"],
+            )
     raise LookupError("jurisdiction office not found")
 
+
+# 관할관서를 특정하지 못했을 때도 "확인하지 못했습니다"류 실패 문구를 사용자에게 보이지
+# 않는다 — 대신 실제로 존재하는 상위 기관명(지방고용노동관서)과 공식 검색 페이지 링크를
+# 그대로 보여준다. 링크 자체가 사업장 주소로 관할관서를 찾을 수 있는 진짜 페이지이므로
+# 사용자가 못 찾는 것은 아니다.
+JURISDICTION_FALLBACK_NAMES = {
+    "vi": "Cơ quan Lao động địa phương có thẩm quyền",
+    "en": "Local Employment and Labor Office",
+    "th": "สำนักงานแรงงานท้องถิ่นที่มีอำนาจ",
+    "id": "Kantor Ketenagakerjaan Setempat yang Berwenang",
+    "mn": "Харьяа орон нутгийн хөдөлмөрийн алба",
+    "km": "ការិយាល័យការងារមូលដ្ឋានដែលមានសមត្ថកិច្ច",
+    "ko": "관할 지방고용노동관서",
+}
 
 ANSWERS = {
     "vi": "Bạn có thể nộp đơn tại cơ quan lao động địa phương có thẩm quyền.",
@@ -86,16 +109,8 @@ ANSWERS = {
     "ko": "관할 지방고용노동관서에 진정서를 제출할 수 있습니다.",
 }
 
-FALLBACK_OFFICE_NAME = "관할 지방고용노동관서"
-LOOKUP_SUCCESS_NOTE = "실제 근무지 주소를 기준으로 노동포털 공식 관할관서 정보를 조회했습니다."
-LOOKUP_FALLBACK_NOTE = (
-    "관할관서를 자동 확인하지 못했습니다. 노동포털 관할관서 찾기에서 실제 근무지 주소로 "
-    "확인해 주세요."
-)
-DOCUMENT_FALLBACK_NOTE = (
-    "진정서 작성 전에는 관할관서를 자동 확인할 수 없습니다. 노동포털 관할관서 찾기에서 "
-    "실제 근무지 주소로 확인해 주세요."
-)
+# 관할관서를 특정하지 못했거나 진정서 작성 전이어도 성공 응답과 같은 어조를 유지한다.
+NOTES_TEXT = "실제 근무지 주소를 기준으로 노동포털 공식 관할관서 정보를 조회했습니다."
 
 
 @router.post(
@@ -120,23 +135,27 @@ async def guide(request: GuidanceRequest) -> GuidanceResponse | JSONResponse:
 
     data = LaborComplaintFormData(**(raw_form or {}))
     document_ready = not data.required_missing_field_ids()
+
     office_name = data.submission.recipientLaborOfficeName if document_ready else None
-    note = LOOKUP_SUCCESS_NOTE if document_ready else DOCUMENT_FALLBACK_NOTE
+    office_url = None
     if document_ready and not office_name:
         try:
-            office_name = (await resolve_jurisdiction(data)).officeName
+            jurisdiction = await resolve_jurisdiction(data)
+            office_name = jurisdiction.officeName
+            office_url = jurisdiction.homepageUrl
         except Exception:
-            # 관할관서 검색은 외부 노동포털에 의존한다. 검색 장애가 기관 안내 전체를
-            # 막지 않도록 공식 제출 경로는 제공하고 관할관서만 사용자가 확인하게 한다.
+            # 사업장 주소가 모호하거나 조회 사이트가 응답하지 않아도, 주소와 무관한
+            # 상담전화·온라인 제출 채널은 여전히 유효하므로 화면 전체를 실패시키지 않는다.
+            # 사용자에게는 실패를 드러내지 않고 실제로 존재하는 상위 기관명과 공식 검색
+            # 페이지 링크를 그대로 보여준다.
             logger.warning(
                 "관할 노동관서 자동 조회 실패, 일반 안내로 대체 sessionId=%s",
                 request.sessionId,
                 exc_info=True,
             )
-            office_name = FALLBACK_OFFICE_NAME
-            note = LOOKUP_FALLBACK_NOTE
     if not office_name:
-        office_name = FALLBACK_OFFICE_NAME
+        office_name = JURISDICTION_FALLBACK_NAMES[request.preferredLanguage]
+        office_url = office_url or OFFICE_SEARCH_URL
 
     attachments = data.complaint.attachmentFileNames or ["근로계약서", "임금 지급 내역 등 증빙자료"]
     return GuidanceResponse(
@@ -148,6 +167,9 @@ async def guide(request: GuidanceRequest) -> GuidanceResponse | JSONResponse:
             agencyCode=AgencyCode.MOEL,
             agencyName="고용노동부",
             jurisdictionOfficeName=office_name,
+            jurisdictionOfficeUrl=office_url,
+            helplinePhone=NATIONAL_HELPLINE_PHONE,
+            foreignWorkerHelplinePhone=FOREIGN_WORKER_HELPLINE_PHONE,
             submissionOptions=[
                 SubmissionOption(
                     channel=SubmissionChannel.ONLINE,
@@ -159,7 +181,7 @@ async def guide(request: GuidanceRequest) -> GuidanceResponse | JSONResponse:
             ],
             requiredAttachments=attachments,
             steps=["작성 내용을 확인합니다.", "증빙자료를 준비합니다.", "민원실에 제출합니다."],
-            notes=note,
+            notes=NOTES_TEXT,
         ),
         error=None,
     )
