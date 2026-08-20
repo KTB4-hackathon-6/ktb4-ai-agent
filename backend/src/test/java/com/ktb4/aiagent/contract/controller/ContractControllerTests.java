@@ -7,7 +7,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import com.ktb4.aiagent.analysis.DocumentAnalysisResult;
+import com.ktb4.aiagent.analysis.AnalysisOutcome;
 import com.ktb4.aiagent.contract.dto.ContractAnalysisResponse;
 import com.ktb4.aiagent.contract.dto.ContractDiagnosis;
 import com.ktb4.aiagent.contract.dto.ContractFacts;
@@ -127,7 +127,7 @@ class ContractControllerTests {
 			"request-001",
 			diagnosis(),
 			"계약기간을 확인하세요.",
-			new DocumentAnalysisResult.Analysis(
+			new AnalysisOutcome.Analysis(
 				"계약기간 검토 필요",
 				List.of(),
 				List.of("연장허가 여부를 확인합니다.")

@@ -8,6 +8,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.ktb4.aiagent.analysis.AnalysisClient;
+import com.ktb4.aiagent.analysis.AnalysisOutcome;
 import com.ktb4.aiagent.common.exception.ApplicationException;
 import com.ktb4.aiagent.common.exception.ErrorCode;
 import com.ktb4.aiagent.common.web.GlobalExceptionHandler;
@@ -40,7 +41,7 @@ class SessionChatControllerTests {
 		);
 		AnalysisClient analysisClient = (requestId, sessionId, content) -> {
 			clock.advance(Duration.ofSeconds(1));
-			return "확인이 필요합니다.";
+			return new AnalysisOutcome("확인이 필요합니다.", null);
 		};
 		mockMvc = createMockMvc(analysisClient);
 		sessionStore.create("session-001", Duration.ofMinutes(30));
@@ -75,6 +76,7 @@ class SessionChatControllerTests {
 			.andExpect(jsonPath("$.*", hasSize(2)))
 			.andExpect(jsonPath("$.code").value("SUCCESS"))
 			.andExpect(jsonPath("$.data.requestId").value("request-001"))
+			.andExpect(jsonPath("$.data.analysis").doesNotExist())
 			.andExpect(jsonPath("$.data.userMessage.messageId").value("message-001"))
 			.andExpect(jsonPath("$.data.userMessage.role").value("USER"))
 			.andExpect(jsonPath("$.data.userMessage.content").value("계약서를 확인해줘"))

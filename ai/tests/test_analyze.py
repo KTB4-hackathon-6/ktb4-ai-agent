@@ -98,7 +98,6 @@ def test_analyze_returns_document_review_without_starting_remedy(monkeypatch) ->
                     "title": "HOUSING_DEDUCTION",
                     "description": "계약과 다른 숙식비가 공제됐습니다.",
                     "severity": "HIGH",
-                    "relatedCheckIds": ["check-1"],
                     "relatedDocumentIds": ["doc-1"],
                 }
             ],

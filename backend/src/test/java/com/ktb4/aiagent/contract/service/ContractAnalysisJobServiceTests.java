@@ -7,7 +7,7 @@ import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-import com.ktb4.aiagent.analysis.DocumentAnalysisResult;
+import com.ktb4.aiagent.analysis.AnalysisOutcome;
 import com.ktb4.aiagent.common.exception.ApplicationException;
 import com.ktb4.aiagent.common.exception.ErrorCode;
 import com.ktb4.aiagent.contract.dto.ContractAnalysisJobResponse;
@@ -141,7 +141,7 @@ class ContractAnalysisJobServiceTests {
 			"request-001",
 			new ContractDiagnosis(facts, List.of(), List.of()),
 			"문제가 없습니다.",
-			new DocumentAnalysisResult.Analysis("정상", List.of(), List.of()),
+			new AnalysisOutcome.Analysis("정상", List.of(), List.of()),
 			new SessionMessage("user-1", MessageRole.USER, "질문", Instant.EPOCH),
 			new SessionMessage("ai-1", MessageRole.AI, "문제가 없습니다.", Instant.EPOCH)
 		);

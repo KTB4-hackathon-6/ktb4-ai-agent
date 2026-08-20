@@ -4,6 +4,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import com.ktb4.aiagent.analysis.AnalysisClient;
+import com.ktb4.aiagent.analysis.AnalysisOutcome;
 import com.ktb4.aiagent.common.exception.ApplicationException;
 import com.ktb4.aiagent.common.exception.ErrorCode;
 import java.time.Duration;
@@ -39,7 +40,7 @@ class SessionChatServiceTests {
 			assertEquals("session-001", sessionId);
 			assertEquals("계약서를 확인해줘", content);
 			clock.advance(Duration.ofSeconds(1));
-			return "확인이 필요합니다.";
+			return new AnalysisOutcome("확인이 필요합니다.", null);
 		};
 		SessionChatService service = new SessionChatService(
 			messageService,
@@ -53,6 +54,7 @@ class SessionChatServiceTests {
 		);
 
 		assertEquals("request-001", exchange.requestId());
+		assertEquals(null, exchange.analysis());
 		assertEquals(MessageRole.USER, exchange.userMessage().role());
 		assertEquals("계약서를 확인해줘", exchange.userMessage().content());
 		assertEquals(MessageRole.AI, exchange.aiMessage().role());

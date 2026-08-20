@@ -44,6 +44,24 @@ class ContractRuleEngineTests {
 		assertThat(ruleIds(remaining)).containsExactly("rest_time_insufficient");
 	}
 
+	@Test
+	void givesEachMissingDisclosureAStableRuleIdentifier() {
+		ContractFacts facts = new ContractFacts(
+			IndustryCategory.MANUFACTURING,
+			40, 8, 60, 1, 2_300_000, 11_005,
+			false, false, false, 12, false, false, 0
+		);
+
+		assertThat(ruleIds(ruleEngine.check(facts)))
+			.contains(
+				"wage_disclosure_missing",
+				"working_hours_disclosure_missing",
+				"holiday_disclosure_missing",
+				"payment_date_disclosure_missing"
+			)
+			.doesNotContain("required_disclosure_missing");
+	}
+
 	private ContractFacts facts(int hourlyWage, int restMinutes, int holidays, int periodMonths) {
 		return new ContractFacts(
 			IndustryCategory.MANUFACTURING,

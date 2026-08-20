@@ -1,6 +1,7 @@
 package com.ktb4.aiagent.session;
 
 import com.ktb4.aiagent.analysis.AnalysisClient;
+import com.ktb4.aiagent.analysis.AnalysisOutcome;
 import io.swagger.v3.oas.annotations.media.Schema;
 import java.util.Objects;
 import java.util.UUID;
@@ -45,14 +46,16 @@ public class SessionChatService {
 	public ChatExchange chat(String sessionId, String content) {
 		SessionMessage userMessage = messageService.addUserMessage(sessionId, content);
 		String requestId = requestIdSupplier.get();
-		String answer = analysisClient.analyze(requestId, sessionId, content);
-		SessionMessage aiMessage = messageService.addAiMessage(sessionId, answer);
-		return new ChatExchange(requestId, userMessage, aiMessage);
+		AnalysisOutcome outcome = analysisClient.review(requestId, sessionId, content);
+		SessionMessage aiMessage = messageService.addAiMessage(sessionId, outcome.answer());
+		return new ChatExchange(requestId, outcome.analysis(), userMessage, aiMessage);
 	}
 
 	@Schema(description = "상담 채팅 처리 결과")
 	public record ChatExchange(
 		@Schema(description = "AI 분석 요청 식별자") String requestId,
+		@Schema(description = "구조화된 분석 및 문서 초안", nullable = true)
+		AnalysisOutcome.Analysis analysis,
 		@Schema(description = "저장된 사용자 메시지") SessionMessage userMessage,
 		@Schema(description = "저장된 AI 답변 메시지") SessionMessage aiMessage
 	) {

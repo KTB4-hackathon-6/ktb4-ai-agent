@@ -10,8 +10,10 @@ import static org.springframework.test.web.client.response.MockRestResponseCreat
 
 import com.ktb4.aiagent.common.exception.ApplicationException;
 import com.ktb4.aiagent.common.exception.ErrorCode;
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
-import java.util.Map;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.HttpMethod;
@@ -36,7 +38,7 @@ class FastApiAnalysisClientTests {
 
 	@Test
 	void sendsCurrentMessageWithSessionAndRequestIdentifiers() {
-		server.expect(requestTo(BASE_URL + "/analyze"))
+		server.expect(requestTo(BASE_URL + "/review"))
 			.andExpect(method(HttpMethod.POST))
 			.andExpect(content().contentType(MediaType.APPLICATION_JSON))
 			.andExpect(content().json("""
@@ -64,15 +66,36 @@ class FastApiAnalysisClientTests {
 				}
 				""", MediaType.APPLICATION_JSON));
 
-		String answer = client.analyze("request-001", "session-001", "계약서를 확인해줘");
+		AnalysisOutcome outcome = client.review("request-001", "session-001", "계약서를 확인해줘");
 
-		assertEquals("확인이 필요합니다.", answer);
+		assertEquals("확인이 필요합니다.", outcome.answer());
+		assertEquals(null, outcome.analysis());
 		server.verify();
 	}
 
 	@Test
+	void rejectsReviewWithoutInputText() {
+		assertThrows(
+			IllegalArgumentException.class,
+			() -> client.review("request-001", "session-001", " ")
+		);
+	}
+
+	@Test
+	void rejectsDocsWithoutInputText() {
+		assertThrows(
+			IllegalArgumentException.class,
+			() -> new DocumentPreparationRequest(
+				"docs-001",
+				"session-001",
+				new DocumentPreparationRequest.Input(" ")
+			)
+		);
+	}
+
+	@Test
 	void sendsOcrDocumentsAndLegalChecksForContractReview() {
-		server.expect(requestTo(BASE_URL + "/analyze"))
+		server.expect(requestTo(BASE_URL + "/review"))
 			.andExpect(method(HttpMethod.POST))
 			.andExpect(content().json("""
 				{
@@ -88,17 +111,8 @@ class FastApiAnalysisClientTests {
 				    "pages": [{"pageNumber": 1, "text": "월급 1,750,000원"}]
 				  }],
 				  "legalChecks": [{
-				    "checkId": "below_minimum_wage",
-				    "legalReference": {
-				      "lawName": "최저임금법",
-				      "article": "제6조",
-				      "paragraph": null,
-				      "item": null
-				    },
-				    "result": "VIOLATION",
-				    "reason": "최저임금에 미달합니다.",
-				    "relatedDocumentIds": ["document-1"],
-				    "values": {"hourly_wage": 8373}
+				    "checkId": "BELOW_MINIMUM_WAGE",
+				    "result": "DETECTED"
 				  }]
 				}
 				"""))
@@ -112,13 +126,12 @@ class FastApiAnalysisClientTests {
 				    "analysis": {
 				      "summary": "최저임금 위반",
 				      "findings": [{
-				        "title": "MINIMUM_WAGE",
-				        "description": "시급이 최저임금보다 낮습니다.",
-				        "severity": "HIGH",
-				        "relatedCheckIds": ["below_minimum_wage"],
-				        "relatedDocumentIds": ["document-1"]
-				      }],
-				      "nextActions": ["임금 조정을 요청합니다."]
+					        "title": "MINIMUM_WAGE",
+					        "description": "시급이 최저임금보다 낮습니다.",
+					        "severity": "HIGH",
+					        "relatedDocumentIds": ["document-1"]
+					      }],
+					      "nextActions": ["임금 조정을 요청합니다."]
 				    }
 				  },
 				  "error": null
@@ -135,16 +148,12 @@ class FastApiAnalysisClientTests {
 				List.of(new DocumentAnalysisRequest.Page(1, "월급 1,750,000원"))
 			)),
 			List.of(new DocumentAnalysisRequest.LegalCheck(
-				"below_minimum_wage",
-				new DocumentAnalysisRequest.LegalReference("최저임금법", "제6조", null, null),
-				DocumentAnalysisRequest.CheckResult.VIOLATION,
-				"최저임금에 미달합니다.",
-				List.of("document-1"),
-				Map.of("hourly_wage", 8373)
+				DocumentAnalysisRequest.CheckId.BELOW_MINIMUM_WAGE,
+				DocumentAnalysisRequest.CheckResult.DETECTED
 			))
 		);
 
-		DocumentAnalysisResult result = client.analyzeDocuments(request);
+		AnalysisOutcome result = client.reviewDocuments(request);
 
 		assertEquals("최저임금 미달 문제를 확인했습니다.", result.answer());
 		assertEquals("최저임금 위반", result.analysis().summary());
@@ -153,8 +162,81 @@ class FastApiAnalysisClientTests {
 	}
 
 	@Test
+	void sendsTextForDocumentPreparation() throws Exception {
+		server.expect(requestTo(BASE_URL + "/docs"))
+			.andExpect(method(HttpMethod.POST))
+			.andExpect(content().json("""
+				{
+				  "requestId": "docs-001",
+				  "sessionId": "session-001",
+				  "input": {"text": "진정서 작성을 시작해줘"}
+				}
+				"""))
+			.andRespond(withSuccess(sharedFixture(), MediaType.APPLICATION_JSON));
+
+		DocumentPreparationOutcome outcome = client.prepareDocuments(new DocumentPreparationRequest(
+			"docs-001",
+			"session-001",
+			new DocumentPreparationRequest.Input("진정서 작성을 시작해줘")
+		));
+
+		AnalysisOutcome.DocumentDraft draft = outcome.documentDrafts().getFirst();
+		assertEquals(AnalysisOutcome.DocumentDraftStatus.READY, draft.status());
+		assertEquals("NGUYEN VAN TEST", draft.data().complainant().fullName());
+		assertEquals(406_923L, draft.data().complaint().unpaidWagesTotal());
+		server.verify();
+	}
+
+	@Test
+	void sendsTextAndReturnsResolutionGuidance() {
+		server.expect(requestTo(BASE_URL + "/guide"))
+			.andExpect(method(HttpMethod.POST))
+			.andExpect(content().json("""
+				{
+				  "requestId": "guide-001",
+				  "sessionId": "session-001",
+				  "input": {"text": "완성한 진정서를 어디에 제출해야 해?"}
+				}
+				"""))
+			.andRespond(withSuccess("""
+				{
+				  "requestId": "guide-001",
+				  "sessionId": "session-001",
+				  "status": "COMPLETED",
+				  "result": {
+				    "answer": "관할 지방고용노동관서에 제출할 수 있습니다.",
+				    "agencyCode": "MOEL",
+				    "agencyName": "고용노동부",
+				    "jurisdictionOfficeName": "관할 지방고용노동관서",
+				    "submissionOptions": [{
+				      "channel": "ONLINE",
+				      "label": "온라인 제출",
+				      "url": "https://official-service.example/labor-complaint",
+				      "address": null,
+				      "instructions": "공식 민원 서비스에서 제출합니다."
+				    }],
+				    "requiredAttachments": ["근로계약서"],
+				    "steps": ["작성 내용을 확인합니다.", "공식 민원 서비스에서 제출합니다."],
+				    "notes": "제출 전 관할 기관을 확인합니다."
+				  },
+				  "error": null
+				}
+				""", MediaType.APPLICATION_JSON));
+
+		GuidanceOutcome outcome = client.guide(new GuidanceRequest(
+			"guide-001",
+			"session-001",
+			new GuidanceRequest.Input("완성한 진정서를 어디에 제출해야 해?")
+		));
+
+		assertEquals(GuidanceOutcome.AgencyCode.MOEL, outcome.agencyCode());
+		assertEquals(GuidanceOutcome.SubmissionChannel.ONLINE, outcome.submissionOptions().getFirst().channel());
+		server.verify();
+	}
+
+	@Test
 	void rejectsResponseWithDifferentSessionIdentifier() {
-		server.expect(requestTo(BASE_URL + "/analyze"))
+		server.expect(requestTo(BASE_URL + "/review"))
 			.andRespond(withSuccess("""
 				{
 				  "requestId": "request-001",
@@ -170,7 +252,7 @@ class FastApiAnalysisClientTests {
 
 		ApplicationException exception = assertThrows(
 			ApplicationException.class,
-			() -> client.analyze("request-001", "session-001", "질문")
+			() -> client.review("request-001", "session-001", "질문")
 		);
 
 		assertEquals(ErrorCode.AI_REQUEST_FAILED, exception.errorCode());
@@ -178,7 +260,7 @@ class FastApiAnalysisClientTests {
 
 	@Test
 	void mapsFastApiFailureToBadGatewayError() {
-		server.expect(requestTo(BASE_URL + "/analyze"))
+		server.expect(requestTo(BASE_URL + "/review"))
 			.andRespond(withStatus(HttpStatus.BAD_GATEWAY)
 				.contentType(MediaType.APPLICATION_JSON)
 				.body("""
@@ -196,9 +278,20 @@ class FastApiAnalysisClientTests {
 
 		ApplicationException exception = assertThrows(
 			ApplicationException.class,
-			() -> client.analyze("request-001", "session-001", "질문")
+			() -> client.review("request-001", "session-001", "질문")
 		);
 
 		assertEquals(ErrorCode.AI_REQUEST_FAILED, exception.errorCode());
+	}
+
+	private String sharedFixture() throws IOException {
+		try (InputStream input = getClass().getResourceAsStream(
+			"/analysis/labor-complaint-ready.json"
+		)) {
+			if (input == null) {
+				throw new IllegalStateException("Shared analysis fixture is missing");
+			}
+			return new String(input.readAllBytes(), StandardCharsets.UTF_8);
+		}
 	}
 }

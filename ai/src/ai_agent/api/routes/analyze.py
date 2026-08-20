@@ -87,7 +87,6 @@ async def analyze(request: AnalyzeRequest) -> AnalyzeResponse | JSONResponse:
                             title=issue.issue_type.value,
                             description=issue.summary,
                             severity=issue.severity,
-                            relatedCheckIds=issue.related_check_ids,
                             relatedDocumentIds=issue.related_document_ids,
                         )
                         for issue in review.issues

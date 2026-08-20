@@ -49,17 +49,31 @@ public class ContractRuleEngine {
 
 	private List<RuleViolation> checkRequiredDisclosures(ContractFacts facts) {
 		List<RuleViolation> violations = new ArrayList<>();
-		addMissingDisclosure(violations, "임금", facts.wageSpecified());
-		addMissingDisclosure(violations, "근로시간", facts.workingHoursSpecified());
-		addMissingDisclosure(violations, "휴일", facts.holidaySpecified());
-		addMissingDisclosure(violations, "임금 지급일", facts.paymentDateSpecified());
+		addMissingDisclosure(violations, "wage_disclosure_missing", "임금", facts.wageSpecified());
+		addMissingDisclosure(
+			violations,
+			"working_hours_disclosure_missing",
+			"근로시간",
+			facts.workingHoursSpecified()
+		);
+		addMissingDisclosure(violations, "holiday_disclosure_missing", "휴일", facts.holidaySpecified());
+		addMissingDisclosure(
+			violations,
+			"payment_date_disclosure_missing",
+			"임금 지급일",
+			facts.paymentDateSpecified()
+		);
 		return violations;
 	}
 
-	private void addMissingDisclosure(List<RuleViolation> violations, String label, boolean specified) {
+	private void addMissingDisclosure(
+			List<RuleViolation> violations,
+			String ruleId,
+			String label,
+			boolean specified) {
 		if (!specified) {
 			violations.add(new RuleViolation(
-				"required_disclosure_missing",
+				ruleId,
 				"근로기준법",
 				"제17조",
 				label + " 항목이 계약서에 명시되어 있지 않습니다.",
