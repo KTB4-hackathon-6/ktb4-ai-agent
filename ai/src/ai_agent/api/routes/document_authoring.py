@@ -22,13 +22,22 @@ router = APIRouter(prefix="/docs", tags=["docs"])
 logger = logging.getLogger(__name__)
 
 READY_MESSAGES = {
-    "vi": "Đơn khiếu nại đã sẵn sàng. Vui lòng kiểm tra nội dung trước khi nộp.",
-    "en": "The complaint form is ready. Please review it before submission.",
-    "th": "แบบคำร้องพร้อมแล้ว โปรดตรวจสอบเนื้อหาก่อนยื่น",
-    "id": "Formulir pengaduan sudah siap. Periksa isinya sebelum diajukan.",
-    "mn": "Өргөдлийн маягт бэлэн боллоо. Илгээхийн өмнө агуулгыг шалгана уу.",
-    "km": "ពាក្យបណ្ដឹងបានរួចរាល់។ សូមពិនិត្យមាតិកាមុនពេលដាក់ស្នើ។",
-    "ko": "진정서가 준비되었습니다. 제출 전에 내용을 확인해 주세요.",
+    "vi": (
+        "Đơn khiếu nại đã sẵn sàng. Bạn có thắc mắc gì hoặc muốn sửa nội dung nào "
+        "trước khi nộp không?"
+    ),
+    "en": (
+        "The complaint form is ready. Do you have any questions, or anything you would "
+        "like to change before submitting?"
+    ),
+    "th": "แบบคำร้องพร้อมแล้ว คุณมีข้อสงสัยหรือต้องการแก้ไขส่วนใดก่อนยื่นหรือไม่",
+    "id": (
+        "Formulir pengaduan sudah siap. Ada yang ingin Anda tanyakan atau ubah "
+        "sebelum diajukan?"
+    ),
+    "mn": "Өргөдлийн маягт бэлэн боллоо. Илгээхийн өмнө асуух эсвэл засах зүйл байна уу?",
+    "km": "ពាក្យបណ្ដឹងបានរួចរាល់។ តើអ្នកមានសំណួរ ឬចង់កែប្រែអ្វីមុនពេលដាក់ស្នើដែរឬទេ?",
+    "ko": "진정서가 준비되었습니다. 궁금하거나, 제출 전에 수정하고 싶은 내용이 있으신가요?",
 }
 
 FIELD_REQUEST_MESSAGES = {
