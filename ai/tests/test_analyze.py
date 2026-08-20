@@ -7,6 +7,7 @@ from langchain_core.messages import ToolMessage
 
 from ai_agent.api.routes import analyze
 from ai_agent.main import app
+from ai_agent.schemas.analyze import AnalyzeRequest
 from ai_agent.services import agent as agent_service
 from ai_agent.services import reviewer as reviewer_service
 from ai_agent.services.rag.retriever import search_labor_law
@@ -29,9 +30,31 @@ REQUEST = {
         {
             "checkId": "ACCOMMODATION_DEDUCTION_HIGH",
             "result": "REVIEW_REQUIRED",
+            "lawName": "외국인근로자의 고용 등에 관한 법률",
+            "article": "숙식비 공제지침",
+            "message": "숙박비 공제가 월급 대비 과다하지 않은지 확인이 필요합니다.",
         }
     ],
 }
+
+
+def test_analyze_contract_accepts_rest_time_review_check() -> None:
+    request = AnalyzeRequest.model_validate(
+        {
+            **REQUEST,
+            "legalChecks": [
+                {
+                    "checkId": "REST_TIME_NEEDS_REVIEW",
+                    "result": "REVIEW_REQUIRED",
+                    "lawName": "근로기준법",
+                    "article": "제54조",
+                    "message": "휴게시간이 계약서에 명시되어 있는지 확인되지 않았습니다.",
+                }
+            ],
+        }
+    )
+
+    assert request.legalChecks[0].checkId.value == "REST_TIME_NEEDS_REVIEW"
 
 
 def test_analyze_uses_only_input_text(monkeypatch) -> None:

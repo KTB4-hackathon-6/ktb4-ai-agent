@@ -105,7 +105,6 @@ function ComplaintDraftPanel({
           </div>
 
           {error && <p className="inline-error" role="alert">{error}</p>}
-          {missingField?.sensitive && !preparing && <p className="complaint-sensitive-note">{t('complaint.sensitive')}</p>}
           <ChatComposer
             value={inputValue}
             busy={preparing}

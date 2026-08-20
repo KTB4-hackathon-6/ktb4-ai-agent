@@ -144,9 +144,8 @@ export type GeneratedDocument = {
 }
 
 export type GuidanceRequest = {
-  input: {
-    text: string
-  }
+  content: string
+  preferredLanguage: PreferredLanguage
 }
 
 export type GuidanceResponse = {
@@ -164,6 +163,20 @@ export type GuidanceResponse = {
   requiredAttachments: string[]
   steps: string[]
   notes: string | null
+}
+
+export type CrossCheckFinding = {
+  rule_id: string
+  law_name: string
+  message: string
+  severity: 'WARNING' | 'REVIEW'
+}
+
+export type CrossCheckResult = {
+  contract_employee_name: string
+  payslip_employee_name: string
+  pay_period: string
+  findings: CrossCheckFinding[]
 }
 
 export type ContractAnalysisStage = 'OCR' | 'STRUCTURING' | 'GENERATING_RESPONSE' | 'COMPLETED'
@@ -262,6 +275,21 @@ export async function analyzeContract(
   return { ...job.result, sessionId: session.sessionId }
 }
 
+export async function crossCheckDocuments(
+  contractFiles: File[],
+  payslipFiles: File[],
+  signal?: AbortSignal,
+): Promise<CrossCheckResult> {
+  const formData = new FormData()
+  contractFiles.forEach((file) => formData.append('contractFiles', file))
+  payslipFiles.forEach((file) => formData.append('payslipFiles', file))
+  return request<CrossCheckResult>('/api/employment-documents/cross-check', {
+    method: 'POST',
+    body: formData,
+    signal,
+  })
+}
+
 export async function prepareLaborComplaint(
   sessionId: string,
   content: string,
@@ -274,6 +302,24 @@ export async function prepareLaborComplaint(
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ content, preferredLanguage }),
+      signal,
+    },
+  )
+}
+
+export async function requestSubmissionGuidance(
+  sessionId: string,
+  content: string,
+  preferredLanguage: PreferredLanguage,
+  signal?: AbortSignal,
+): Promise<GuidanceResponse> {
+  const body: GuidanceRequest = { content, preferredLanguage }
+  return request<GuidanceResponse>(
+    `/api/sessions/${sessionId}/guidance`,
+    {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body),
       signal,
     },
   )

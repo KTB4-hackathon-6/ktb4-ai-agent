@@ -36,7 +36,10 @@ public record DocumentAnalysisRequest(
 
 	public record LegalCheck(
 		CheckId checkId,
-		CheckResult result
+		CheckResult result,
+		String lawName,
+		String article,
+		String message
 	) {
 	}
 
@@ -46,6 +49,7 @@ public record DocumentAnalysisRequest(
 		HOLIDAY_DISCLOSURE_MISSING,
 		PAYMENT_DATE_DISCLOSURE_MISSING,
 		BELOW_MINIMUM_WAGE,
+		REST_TIME_NEEDS_REVIEW,
 		REST_TIME_INSUFFICIENT,
 		WEEKLY_HOLIDAY_MISSING,
 		CONTRACT_PERIOD_REVIEW,
@@ -60,6 +64,7 @@ public record DocumentAnalysisRequest(
 				case "holiday_disclosure_missing" -> HOLIDAY_DISCLOSURE_MISSING;
 				case "payment_date_disclosure_missing" -> PAYMENT_DATE_DISCLOSURE_MISSING;
 				case "below_minimum_wage" -> BELOW_MINIMUM_WAGE;
+				case "rest_time_needs_review" -> REST_TIME_NEEDS_REVIEW;
 				case "rest_time_insufficient" -> REST_TIME_INSUFFICIENT;
 				case "weekly_holiday_missing" -> WEEKLY_HOLIDAY_MISSING;
 				case "contract_period_review" -> CONTRACT_PERIOD_REVIEW;

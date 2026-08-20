@@ -41,6 +41,40 @@ FIELD_REQUEST_MESSAGES = {
     "ko": "다음 정보를 알려주세요: {field}.",
 }
 
+# complaint.details는 사용자가 완성된 문장을 직접 써서 낼 항목이 아니라 모델이 작성해야 하는
+# 항목이다. FIELD_REQUEST_MESSAGES의 "~을(를) 알려주세요" 문구를 그대로 쓰면 사용자에게 진정
+# 내용을 대신 써 달라는 요청으로 읽혀, 사실(날짜·금액·경위)만 묻는 전용 문구를 따로 둔다.
+DETAILS_FACT_REQUEST_MESSAGES = {
+    "vi": (
+        "Tôi sẽ soạn nội dung đơn khiếu nại giúp bạn. Vấn đề là gì, từ khi nào đến khi nào, "
+        "và số tiền là bao nhiêu?"
+    ),
+    "en": (
+        "I'll write the complaint content for you. What happened, over what period, "
+        "and for how much?"
+    ),
+    "th": (
+        "ฉันจะเขียนเนื้อหาคำร้องให้คุณเอง มีปัญหาอะไร "
+        "ตั้งแต่เมื่อไหร่ถึงเมื่อไหร่ และจำนวนเงินเท่าไหร่"
+    ),
+    "id": (
+        "Saya akan menuliskan isi pengaduan untuk Anda. Apa masalahnya, periode kejadiannya, "
+        "dan berapa jumlahnya?"
+    ),
+    "mn": (
+        "Би өргөдлийн агуулгыг таны өмнөөс бичиж өгье. Ямар асуудал байсан, "
+        "хэзээнээс хэзээ хүртэл, хэдэн төгрөг вэ?"
+    ),
+    "km": (
+        "ខ្ញុំនឹងសរសេរខ្លឹមសារពាក្យបណ្ដឹងជូនអ្នក។ "
+        "តើមានបញ្ហាអ្វី តាំងពីពេលណាដល់ពេលណា និងចំនួនប៉ុន្មាន?"
+    ),
+    "ko": (
+        "제가 진정 내용을 작성해드릴게요. 어떤 문제가, 언제부터 언제까지, "
+        "얼마 규모로 있었는지 알려주시겠어요?"
+    ),
+}
+
 INVALID_FIELD_MESSAGES = {
     "vi": "Không thể xác nhận định dạng của {field}. Vui lòng nhập lại.",
     "en": "The {field} format was not recognized. Please enter it again.",
@@ -193,10 +227,12 @@ async def document_authoring(
     if missing_ids:
         field_id = missing_ids[0]
         display_name = FIELD_SPECS[field_id][0]
-        progress_answer = (state.get("field_questions") or {}).get(
-            field_id,
-            FIELD_REQUEST_MESSAGES[request.preferredLanguage].format(field=display_name),
+        default_question = (
+            DETAILS_FACT_REQUEST_MESSAGES[request.preferredLanguage]
+            if field_id == "complaint.details"
+            else FIELD_REQUEST_MESSAGES[request.preferredLanguage].format(field=display_name)
         )
+        progress_answer = (state.get("field_questions") or {}).get(field_id, default_question)
         missing_fields = [build_missing_field(field_id, progress_answer)]
     else:
         progress_answer = READY_MESSAGES[request.preferredLanguage]
