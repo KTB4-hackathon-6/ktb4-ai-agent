@@ -54,8 +54,16 @@ public class ContractAnalysisService {
 			String sessionId,
 			String text,
 			List<MultipartFile> files) {
+		return analyze(sessionId, text, files, ContractAnalysisProgressListener.none());
+	}
+
+	public ContractAnalysisResponse analyze(
+			String sessionId,
+			String text,
+			List<MultipartFile> files,
+			ContractAnalysisProgressListener progressListener) {
 		SessionMessage userMessage = messageService.addUserMessage(sessionId, text);
-		ContractDiagnosisContext context = diagnosisService.diagnoseWithContext(files);
+		ContractDiagnosisContext context = diagnosisService.diagnoseWithContext(files, progressListener);
 		String requestId = requestIdSupplier.get();
 		List<DocumentAnalysisRequest.Document> documents = toDocuments(requestId, context.documents());
 		DocumentAnalysisRequest request = new DocumentAnalysisRequest(
@@ -65,6 +73,7 @@ public class ContractAnalysisService {
 			documents,
 			toLegalChecks(context.diagnosis(), documents)
 		);
+		progressListener.onGeneratingResponse();
 		DocumentAnalysisResult analysisResult = analysisClient.analyzeDocuments(request);
 		SessionMessage aiMessage = messageService.addAiMessage(sessionId, analysisResult.answer());
 		return new ContractAnalysisResponse(

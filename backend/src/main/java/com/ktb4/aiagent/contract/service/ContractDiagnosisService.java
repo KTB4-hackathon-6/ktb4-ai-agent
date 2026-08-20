@@ -31,6 +31,12 @@ public class ContractDiagnosisService {
 	}
 
 	public ContractDiagnosisContext diagnoseWithContext(List<MultipartFile> files) {
+		return diagnoseWithContext(files, ContractAnalysisProgressListener.none());
+	}
+
+	public ContractDiagnosisContext diagnoseWithContext(
+			List<MultipartFile> files,
+			ContractAnalysisProgressListener progressListener) {
 		if (files == null || files.isEmpty()) {
 			throw new ApplicationException(ErrorCode.INVALID_REQUEST);
 		}
@@ -38,12 +44,14 @@ public class ContractDiagnosisService {
 		for (MultipartFile file : files) {
 			String fullText = ocrService.analyze(file).fullText();
 			documents.add(new ContractDiagnosisContext.SourceDocument(file.getOriginalFilename(), fullText));
+			progressListener.onOcrProgress(documents.size(), files.size());
 		}
 		String rawText = documents.stream()
 			.map(ContractDiagnosisContext.SourceDocument::text)
 			.reduce((front, back) -> front + "\n\n" + back)
 			.orElseThrow(() -> new ApplicationException(ErrorCode.INVALID_REQUEST));
 
+		progressListener.onStructuring();
 		ContractExtraction extraction = factExtractor.extract(rawText);
 		List<RuleViolation> violations = ruleEngine.check(extraction.facts());
 		List<RuleViolation> verifiedViolations = ruleEngine.suppressUnverified(

@@ -1,5 +1,10 @@
 import { useEffect, useRef, useState } from 'react'
-import { analyzeContract, ContractApiError, type ContractAnalysisResponse } from './api/contracts'
+import {
+  analyzeContract,
+  ContractApiError,
+  type ContractAnalysisJob,
+  type ContractAnalysisResponse,
+} from './api/contracts'
 import AdminFlow from './components/chatbot/AdminFlow'
 import AgencyFlow from './components/chatbot/AgencyFlow'
 import ChatComposer from './components/chatbot/ChatComposer'
@@ -25,6 +30,7 @@ function App() {
   const [view, setView] = useState<View>(null)
   const [uploadState, setUploadState] = useState<UploadState>('idle')
   const [contractResult, setContractResult] = useState<ContractAnalysisResponse | null>(null)
+  const [contractProgress, setContractProgress] = useState<ContractAnalysisJob | null>(null)
   const [uploadError, setUploadError] = useState<string | null>(null)
   const [adminState, setAdminState] = useState<UploadState>('idle')
   const [openClause, setOpenClause] = useState<string | null>(null)
@@ -38,24 +44,31 @@ function App() {
   const [consent, setConsent] = useState(false)
   const [freeText, setFreeText] = useState('')
   const chatEndRef = useRef<HTMLDivElement>(null)
+  const analysisAbortRef = useRef<AbortController | null>(null)
 
   useEffect(() => {
     chatEndRef.current?.scrollIntoView({ behavior: 'smooth', block: 'end' })
   }, [view, uploadState, adminState, chatMessages, resultsShown])
 
+  useEffect(() => () => analysisAbortRef.current?.abort(), [])
+
   const selectView = (nextView: ServiceView) => {
+    if (nextView !== 'contract') analysisAbortRef.current?.abort()
     setView(nextView)
     if (nextView === 'contract') {
       setUploadState('idle')
       setContractResult(null)
+      setContractProgress(null)
       setUploadError(null)
     }
     if (nextView === 'admin') setAdminState('idle')
   }
 
   const runContractAnalysis = async (files?: File[]) => {
+    analysisAbortRef.current?.abort()
     setUploadState('processing')
     setContractResult(null)
+    setContractProgress(null)
     setUploadError(null)
 
     if (!files) {
@@ -63,13 +76,23 @@ function App() {
       return
     }
 
+    const abortController = new AbortController()
+    analysisAbortRef.current = abortController
     try {
-      const result = await analyzeContract(files, '이 근로계약서에서 주의할 점과 대응 방법을 설명해 주세요.')
+      const result = await analyzeContract(
+        files,
+        '이 근로계약서에서 주의할 점과 대응 방법을 설명해 주세요.',
+        setContractProgress,
+        abortController.signal,
+      )
       setContractResult(result)
       setUploadState('done')
     } catch (error) {
+      if (error instanceof DOMException && error.name === 'AbortError') return
       setUploadError(error instanceof ContractApiError ? error.message : '계약서를 분석하지 못했습니다. 다시 시도해주세요.')
       setUploadState('error')
+    } finally {
+      if (analysisAbortRef.current === abortController) analysisAbortRef.current = null
     }
   }
 
@@ -137,6 +160,7 @@ function App() {
           <ContractFlow
             uploadState={uploadState}
             contractResult={contractResult}
+            contractProgress={contractProgress}
             uploadError={uploadError}
             openClause={openClause}
             messages={chatMessages}
@@ -146,7 +170,9 @@ function App() {
             checkedEvidence={checkedEvidence}
             onStartAnalysis={runContractAnalysis}
             onResetUpload={() => {
+              analysisAbortRef.current?.abort()
               setUploadState('idle')
+              setContractProgress(null)
               setUploadError(null)
             }}
             onToggleClause={setOpenClause}

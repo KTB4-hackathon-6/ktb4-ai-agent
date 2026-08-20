@@ -1,0 +1,315 @@
+[
+  {
+    "name": "임금 체불",
+    "request": {
+      "requestId": "eval-unpaid-wage",
+      "sessionId": "eval-unpaid-wage",
+      "input": {
+        "text": "이번 달 월급이 일부만 들어왔어요. 확인해 주세요.",
+        "documentIds": ["payslip-unpaid"]
+      },
+      "documents": [
+        {
+          "documentId": "payslip-unpaid",
+          "fileName": "2026-07-paystub.pdf",
+          "pages": [
+            {
+              "pageNumber": 1,
+              "text": "2026년 7월 임금명세서. 지급총액 2,500,000원, 실제 지급액 1,500,000원, 미지급액 1,000,000원."
+            }
+          ]
+        }
+      ],
+      "legalChecks": [
+        {
+          "checkId": "check-unpaid",
+          "legalReference": {
+            "lawName": "근로기준법",
+            "article": "제43조",
+            "paragraph": "제1항",
+            "item": null
+          },
+          "result": "VIOLATION",
+          "reason": "지급하기로 한 임금 중 1,000,000원이 지급되지 않았다.",
+          "relatedDocumentIds": ["payslip-unpaid"],
+          "values": {
+            "unpaidAmount": 1000000
+          }
+        }
+      ]
+    },
+    "expected": {
+      "issueTypes": ["UNPAID_WAGE"],
+      "links": {
+        "UNPAID_WAGE": {
+          "checkIds": ["check-unpaid"],
+          "documentIds": ["payslip-unpaid"]
+        }
+      }
+    }
+  },
+  {
+    "name": "숙식비 과다 공제 가능성",
+    "request": {
+      "requestId": "eval-housing-deduction",
+      "sessionId": "eval-housing-deduction",
+      "input": {
+        "text": "계약보다 기숙사비가 많이 빠진 것 같아요.",
+        "documentIds": ["contract-housing", "payslip-housing"]
+      },
+      "documents": [
+        {
+          "documentId": "contract-housing",
+          "fileName": "contract.pdf",
+          "pages": [
+            {
+              "pageNumber": 1,
+              "text": "표준근로계약서. 숙소 제공, 근로자 부담금 월 80,000원."
+            }
+          ]
+        },
+        {
+          "documentId": "payslip-housing",
+          "fileName": "paystub.pdf",
+          "pages": [
+            {
+              "pageNumber": 1,
+              "text": "임금명세서. 숙식비 공제 200,000원. 별도 공제 동의서 확인되지 않음."
+            }
+          ]
+        }
+      ],
+      "legalChecks": [
+        {
+          "checkId": "check-housing",
+          "legalReference": {
+            "lawName": "근로기준법",
+            "article": "제43조",
+            "paragraph": "제1항",
+            "item": null
+          },
+          "result": "POSSIBLE_VIOLATION",
+          "reason": "계약서 금액보다 많은 숙식비가 공제되었고 별도 서면 동의가 확인되지 않는다.",
+          "relatedDocumentIds": ["contract-housing", "payslip-housing"],
+          "values": {
+            "contractAmount": 80000,
+            "deductedAmount": 200000
+          }
+        }
+      ]
+    },
+    "expected": {
+      "issueTypes": ["HOUSING_DEDUCTION"],
+      "links": {
+        "HOUSING_DEDUCTION": {
+          "checkIds": ["check-housing"],
+          "documentIds": ["contract-housing", "payslip-housing"]
+        }
+      }
+    }
+  },
+  {
+    "name": "연장근로수당 누락",
+    "request": {
+      "requestId": "eval-overtime",
+      "sessionId": "eval-overtime",
+      "input": {
+        "text": "야근한 수당이 급여에 들어갔는지 봐 주세요.",
+        "documentIds": ["attendance-overtime", "payslip-overtime"]
+      },
+      "documents": [
+        {
+          "documentId": "attendance-overtime",
+          "fileName": "attendance.pdf",
+          "pages": [
+            {
+              "pageNumber": 1,
+              "text": "2026년 7월 근태기록. 확정된 연장근로 20시간."
+            }
+          ]
+        },
+        {
+          "documentId": "payslip-overtime",
+          "fileName": "paystub.pdf",
+          "pages": [
+            {
+              "pageNumber": 1,
+              "text": "2026년 7월 임금명세서. 연장근로수당 0원."
+            }
+          ]
+        }
+      ],
+      "legalChecks": [
+        {
+          "checkId": "check-overtime",
+          "legalReference": {
+            "lawName": "근로기준법",
+            "article": "제56조",
+            "paragraph": "제1항",
+            "item": null
+          },
+          "result": "VIOLATION",
+          "reason": "확인된 연장근로 20시간에 대한 가산수당이 지급되지 않았다.",
+          "relatedDocumentIds": ["attendance-overtime", "payslip-overtime"],
+          "values": {
+            "overtimeHours": 20,
+            "paidOvertimePremium": 0
+          }
+        }
+      ]
+    },
+    "expected": {
+      "issueTypes": ["OVERTIME_PREMIUM"],
+      "links": {
+        "OVERTIME_PREMIUM": {
+          "checkIds": ["check-overtime"],
+          "documentIds": ["attendance-overtime", "payslip-overtime"]
+        }
+      }
+    }
+  },
+  {
+    "name": "문제 없는 계약과 임금명세서",
+    "request": {
+      "requestId": "eval-pass",
+      "sessionId": "eval-pass",
+      "input": {
+        "text": "계약서와 급여명세서에 이상한 부분이 있는지 확인해 주세요.",
+        "documentIds": ["contract-pass", "payslip-pass"]
+      },
+      "documents": [
+        {
+          "documentId": "contract-pass",
+          "fileName": "contract.pdf",
+          "pages": [
+            {
+              "pageNumber": 1,
+              "text": "근로계약서. 월 임금 2,500,000원, 1일 8시간, 주 5일 근무, 숙소 미제공. 임금과 근로시간, 휴일, 연차유급휴가 명시."
+            }
+          ]
+        },
+        {
+          "documentId": "payslip-pass",
+          "fileName": "paystub.pdf",
+          "pages": [
+            {
+              "pageNumber": 1,
+              "text": "임금명세서. 기본급 2,500,000원, 법정 사회보험료만 공제, 지급액 정상 지급."
+            }
+          ]
+        }
+      ],
+      "legalChecks": [
+        {
+          "checkId": "check-contract-pass",
+          "legalReference": {
+            "lawName": "근로기준법",
+            "article": "제17조",
+            "paragraph": null,
+            "item": null
+          },
+          "result": "PASS",
+          "reason": "필수 근로조건이 모두 명시되었다.",
+          "relatedDocumentIds": ["contract-pass"],
+          "values": {}
+        },
+        {
+          "checkId": "check-wage-pass",
+          "legalReference": {
+            "lawName": "근로기준법",
+            "article": "제48조",
+            "paragraph": "제2항",
+            "item": null
+          },
+          "result": "PASS",
+          "reason": "임금 구성항목과 공제 내역이 명시되었다.",
+          "relatedDocumentIds": ["payslip-pass"],
+          "values": {}
+        }
+      ]
+    },
+    "expected": {
+      "issueTypes": [],
+      "links": {}
+    }
+  },
+  {
+    "name": "임금 체불과 숙식비 과다 공제 동시 발생",
+    "request": {
+      "requestId": "eval-multiple",
+      "sessionId": "eval-multiple",
+      "input": {
+        "text": "월급도 덜 들어오고 기숙사비도 너무 많이 빠졌어요.",
+        "documentIds": ["contract-multiple", "payslip-multiple"]
+      },
+      "documents": [
+        {
+          "documentId": "contract-multiple",
+          "fileName": "contract.pdf",
+          "pages": [
+            {
+              "pageNumber": 1,
+              "text": "근로계약서. 월 임금 2,500,000원, 숙소 근로자 부담금 월 80,000원."
+            }
+          ]
+        },
+        {
+          "documentId": "payslip-multiple",
+          "fileName": "paystub.pdf",
+          "pages": [
+            {
+              "pageNumber": 1,
+              "text": "임금명세서. 임금 미지급액 500,000원, 숙식비 공제액 200,000원."
+            }
+          ]
+        }
+      ],
+      "legalChecks": [
+        {
+          "checkId": "check-multiple-unpaid",
+          "legalReference": {
+            "lawName": "근로기준법",
+            "article": "제43조",
+            "paragraph": "제1항",
+            "item": null
+          },
+          "result": "VIOLATION",
+          "reason": "임금 500,000원이 지급되지 않았다.",
+          "relatedDocumentIds": ["payslip-multiple"],
+          "values": {
+            "unpaidAmount": 500000
+          }
+        },
+        {
+          "checkId": "check-multiple-housing",
+          "legalReference": {
+            "lawName": "근로기준법",
+            "article": "제43조",
+            "paragraph": "제1항",
+            "item": null
+          },
+          "result": "POSSIBLE_VIOLATION",
+          "reason": "계약보다 120,000원 많은 숙식비가 공제되었다.",
+          "relatedDocumentIds": ["contract-multiple", "payslip-multiple"],
+          "values": {
+            "contractAmount": 80000,
+            "deductedAmount": 200000
+          }
+        }
+      ]
+    },
+    "expected": {
+      "issueTypes": ["HOUSING_DEDUCTION", "UNPAID_WAGE"],
+      "links": {
+        "UNPAID_WAGE": {
+          "checkIds": ["check-multiple-unpaid"],
+          "documentIds": ["payslip-multiple"]
+        },
+        "HOUSING_DEDUCTION": {
+          "checkIds": ["check-multiple-housing"],
+          "documentIds": ["contract-multiple", "payslip-multiple"]
+        }
+      }
+    }
+  }
+]

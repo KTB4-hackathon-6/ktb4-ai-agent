@@ -126,7 +126,7 @@ def test_document_review_deduplicates_same_legal_check() -> None:
     assert deduplicate_issues([first, duplicate]) == [first]
 
 
-def test_document_reviewer_limits_law_search_to_three_calls(monkeypatch) -> None:
+def test_document_reviewer_limits_law_search_and_model_calls(monkeypatch) -> None:
     model = object()
     agent = object()
     agent_factory = Mock(return_value=agent)
@@ -135,12 +135,34 @@ def test_document_reviewer_limits_law_search_to_three_calls(monkeypatch) -> None
     reviewer_service.get_reviewer_agent.cache_clear()
 
     assert reviewer_service.get_reviewer_agent() is agent
-    limiter = agent_factory.call_args.kwargs["middleware"][0]
-    assert limiter.tool_name == "search_labor_law"
-    assert limiter.run_limit == 3
-    assert limiter.exit_behavior == "continue"
+    tool_limiter, stop_search, model_limiter = agent_factory.call_args.kwargs["middleware"]
+    assert tool_limiter.tool_name == "search_labor_law"
+    assert tool_limiter.run_limit == 5
+    assert tool_limiter.exit_behavior == "continue"
+    assert stop_search is reviewer_service.stop_search_after_limit
+    assert model_limiter.run_limit == 7
+    assert model_limiter.exit_behavior == "error"
 
     reviewer_service.get_reviewer_agent.cache_clear()
+
+
+@pytest.mark.asyncio
+async def test_document_reviewer_hides_search_tool_after_five_calls() -> None:
+    search_tool = SimpleNamespace(name="search_labor_law")
+    remaining_tool = SimpleNamespace(name="DocumentReview")
+    updated_request = object()
+    request = SimpleNamespace(
+        state={"run_tool_call_count": {"search_labor_law": 5}},
+        tools=[search_tool, remaining_tool],
+        override=Mock(return_value=updated_request),
+    )
+    handler = AsyncMock(return_value="response")
+
+    result = await reviewer_service.stop_search_after_limit.awrap_model_call(request, handler)
+
+    assert result == "response"
+    request.override.assert_called_once_with(tools=[remaining_tool])
+    handler.assert_awaited_once_with(updated_request)
 
 
 @pytest.mark.asyncio

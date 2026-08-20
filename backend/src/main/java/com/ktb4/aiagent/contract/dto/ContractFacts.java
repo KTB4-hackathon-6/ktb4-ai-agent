@@ -31,6 +31,16 @@ public record ContractFacts(
 	@JsonProperty("contract_end_date") String contractEndDate
 ) {
 	public ContractFacts(IndustryCategory industry, double weeklyWorkingHours, double dailyWorkingHours,
+			int restMinutesPerWorkday, int weeklyPaidHolidays, int monthlyWage, int hourlyWage,
+			boolean wageSpecified, boolean workingHoursSpecified, boolean holidaySpecified,
+			int contractPeriodMonths, boolean paymentDateSpecified, boolean paymentMethodInPerson,
+			int accommodationDeductionKrw) {
+		this(industry, weeklyWorkingHours, dailyWorkingHours, restMinutesPerWorkday, true, weeklyPaidHolidays,
+			monthlyWage, hourlyWage, wageSpecified, workingHoursSpecified, holidaySpecified, contractPeriodMonths,
+			paymentDateSpecified, paymentMethodInPerson, accommodationDeductionKrw, "", "", "");
+	}
+
+	public ContractFacts(IndustryCategory industry, double weeklyWorkingHours, double dailyWorkingHours,
 			int restMinutesPerWorkday, boolean restTimeSpecified, int weeklyPaidHolidays, int monthlyWage,
 			int hourlyWage, boolean wageSpecified, boolean workingHoursSpecified, boolean holidaySpecified,
 			int contractPeriodMonths, boolean paymentDateSpecified, boolean paymentMethodInPerson,

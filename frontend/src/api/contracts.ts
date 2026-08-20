@@ -49,6 +49,21 @@ export type ContractAnalysisResponse = {
   }
 }
 
+export type ContractAnalysisStage = 'OCR' | 'STRUCTURING' | 'GENERATING_RESPONSE' | 'COMPLETED'
+
+export type ContractAnalysisJob = {
+  analysisId: string
+  status: 'PROCESSING' | 'COMPLETED' | 'FAILED'
+  stage: ContractAnalysisStage
+  processedFiles: number
+  totalFiles: number
+  result: ContractAnalysisResponse | null
+  error: {
+    code: string
+    message: string
+  } | null
+}
+
 type ApiEnvelope<T> = {
   code: string
   data: T
@@ -72,17 +87,59 @@ export class ContractApiError extends Error {
   }
 }
 
-export async function analyzeContract(files: File[], text: string): Promise<ContractAnalysisResponse> {
-  const session = await request<CreateSessionResponse>('/api/sessions', { method: 'POST' })
+export async function analyzeContract(
+  files: File[],
+  text: string,
+  onProgress: (job: ContractAnalysisJob) => void,
+  signal?: AbortSignal,
+): Promise<ContractAnalysisResponse> {
+  const session = await request<CreateSessionResponse>('/api/sessions', { method: 'POST', signal })
   const formData = new FormData()
   files.forEach((file) => formData.append('files', file))
-  formData.append('sessionId', session.sessionId)
   formData.append('text', text)
 
-  return request<ContractAnalysisResponse>('/api/contracts/analyze', {
+  let job = await request<ContractAnalysisJob>(
+    `/api/sessions/${session.sessionId}/contract-analyses`, {
     method: 'POST',
     body: formData,
+    signal,
   })
+  onProgress(job)
+
+  let consecutiveNetworkFailures = 0
+  while (job.status === 'PROCESSING') {
+    await wait(1000, signal)
+    try {
+      job = await request<ContractAnalysisJob>(
+        `/api/sessions/${session.sessionId}/contract-analyses/${job.analysisId}`,
+        { method: 'GET', signal },
+      )
+      consecutiveNetworkFailures = 0
+      onProgress(job)
+    } catch (error) {
+      if (
+        error instanceof ContractApiError
+        && error.code === 'NETWORK_ERROR'
+        && consecutiveNetworkFailures < 2
+      ) {
+        consecutiveNetworkFailures += 1
+        continue
+      }
+      throw error
+    }
+  }
+
+  if (job.status === 'FAILED') {
+    throw new ContractApiError(
+      job.error?.message ?? '계약서를 분석하지 못했습니다. 다시 시도해주세요.',
+      job.error?.code ?? 'ANALYSIS_FAILED',
+      200,
+    )
+  }
+  if (!job.result) {
+    throw new ContractApiError('분석 결과를 확인할 수 없습니다.', 'INVALID_RESPONSE', 200)
+  }
+  return job.result
 }
 
 type CreateSessionResponse = {
@@ -93,7 +150,8 @@ async function request<T>(path: string, init: RequestInit): Promise<T> {
   let response: Response
   try {
     response = await fetch(`${apiBaseUrl}${path}`, init)
-  } catch {
+  } catch (error) {
+    if (error instanceof DOMException && error.name === 'AbortError') throw error
     throw new ContractApiError(
       '서버에 연결할 수 없습니다. 잠시 후 다시 시도해주세요.',
       'NETWORK_ERROR',
@@ -124,4 +182,22 @@ async function readEnvelope<T>(response: Response): Promise<ApiEnvelope<T>> {
       response.status,
     )
   }
+}
+
+function wait(milliseconds: number, signal?: AbortSignal): Promise<void> {
+  return new Promise((resolve, reject) => {
+    if (signal?.aborted) {
+      reject(new DOMException('The operation was aborted.', 'AbortError'))
+      return
+    }
+    const handleAbort = () => {
+      window.clearTimeout(timeoutId)
+      reject(new DOMException('The operation was aborted.', 'AbortError'))
+    }
+    const timeoutId = window.setTimeout(() => {
+      signal?.removeEventListener('abort', handleAbort)
+      resolve()
+    }, milliseconds)
+    signal?.addEventListener('abort', handleAbort, { once: true })
+  })
 }

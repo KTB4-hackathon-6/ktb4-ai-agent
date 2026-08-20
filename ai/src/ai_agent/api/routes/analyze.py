@@ -1,3 +1,5 @@
+import logging
+
 from fastapi import APIRouter
 from fastapi.responses import JSONResponse
 
@@ -14,6 +16,8 @@ from ai_agent.services.agent import answer_question
 from ai_agent.services.reviewer import review_documents
 
 router = APIRouter(tags=["analyze"])
+
+logger = logging.getLogger(__name__)
 
 
 def error_response(
@@ -59,6 +63,10 @@ async def analyze(request: AnalyzeRequest) -> AnalyzeResponse | JSONResponse:
             else await answer_question(request.input.text, request.sessionId)
         )
     except Exception:
+        # 로그가 없으면 502만 남고 원인(모델 오류·타임아웃·검색 실패)이 사라진다.
+        logger.exception(
+            "분석 실패 requestId=%s sessionId=%s", request.requestId, request.sessionId
+        )
         return error_response(
             request,
             status_code=502,

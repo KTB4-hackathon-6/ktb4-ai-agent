@@ -1,4 +1,8 @@
-import type { ContractAnalysisResponse } from '../../api/contracts'
+import type {
+  ContractAnalysisJob,
+  ContractAnalysisStage,
+  ContractAnalysisResponse,
+} from '../../api/contracts'
 import { contractClauses } from '../../mocks/chatbot'
 import type { UploadState } from '../../types/chatbot'
 import ChatMessage, { type ChatMessageItem } from './ChatMessage'
@@ -8,6 +12,7 @@ import ResultsPanel, { type ResultTab } from './ResultsPanel'
 type ContractFlowProps = {
   uploadState: UploadState
   contractResult: ContractAnalysisResponse | null
+  contractProgress: ContractAnalysisJob | null
   uploadError: string | null
   openClause: string | null
   messages: ChatMessageItem[]
@@ -28,6 +33,7 @@ type ContractFlowProps = {
 function ContractFlow({
   uploadState,
   contractResult,
+  contractProgress,
   uploadError,
   openClause,
   messages,
@@ -67,17 +73,17 @@ function ContractFlow({
         </section>
       )}
       {uploadState === 'processing' && (
-        <section className="processing-panel">
-          <span className="pulse" />
-          <strong>분석 중입니다... / Analyzing your contract...</strong>
-        </section>
+        <AnalysisProgress job={contractProgress} />
       )}
       {uploadState === 'error' && (
-        <section className="error-panel" role="alert">
-          <strong>계약서 분석에 실패했습니다. / Analysis failed</strong>
-          <p>{uploadError}</p>
-          <button className="secondary-button" onClick={onResetUpload}>다른 파일 선택 / Choose another file</button>
-        </section>
+        <>
+          {contractProgress && <AnalysisProgress job={contractProgress} />}
+          <section className="error-panel" role="alert">
+            <strong>계약서 분석에 실패했습니다. / Analysis failed</strong>
+            <p>{uploadError}</p>
+            <button className="secondary-button" onClick={onResetUpload}>다른 파일 선택 / Choose another file</button>
+          </section>
+        </>
       )}
       {uploadState === 'done' && (
         <>
@@ -108,6 +114,51 @@ function ContractFlow({
         </>
       )}
     </>
+  )
+}
+
+const progressSteps: Array<{
+  stage: Exclude<ContractAnalysisStage, 'COMPLETED'>
+  ko: string
+  en: string
+}> = [
+  { stage: 'OCR', ko: '문서 글자 읽기', en: 'Reading document' },
+  { stage: 'STRUCTURING', ko: '계약 정보 정리', en: 'Organizing contract details' },
+  { stage: 'GENERATING_RESPONSE', ko: '문제점과 대응 방법 만들기', en: 'Preparing guidance' },
+]
+
+function AnalysisProgress({ job }: { job: ContractAnalysisJob | null }) {
+  const currentStage = job?.stage === 'COMPLETED' ? null : (job?.stage ?? 'OCR')
+  const currentIndex = currentStage
+    ? progressSteps.findIndex((step) => step.stage === currentStage)
+    : progressSteps.length
+
+  return (
+    <section className="processing-panel analysis-progress" aria-live="polite">
+      <strong>계약서를 분석하고 있습니다 / Analyzing your contract</strong>
+      <ol className="analysis-steps">
+        {progressSteps.map((step, index) => {
+          const completed = job?.status === 'COMPLETED' || index < currentIndex
+          const failed = job?.status === 'FAILED' && index === currentIndex
+          const active = !failed && !completed && index === currentIndex
+          const state = completed ? 'completed' : failed ? 'failed' : active ? 'active' : 'pending'
+          return (
+            <li className={`analysis-step ${state}`} key={step.stage} aria-current={active ? 'step' : undefined}>
+              <span className="analysis-step-icon" aria-hidden="true">
+                {completed ? '✓' : failed ? '!' : active ? <span className="step-spinner" /> : index + 1}
+              </span>
+              <span>
+                <b>{step.ko}</b>
+                <small>{step.en}</small>
+                {step.stage === 'OCR' && active && job && (
+                  <em>{job.processedFiles}/{job.totalFiles}개 문서 처리 완료</em>
+                )}
+              </span>
+            </li>
+          )
+        })}
+      </ol>
+    </section>
   )
 }
 

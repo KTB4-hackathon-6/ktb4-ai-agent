@@ -12,6 +12,7 @@ import com.ktb4.aiagent.ocr.dto.OcrAnalysisResponse;
 import com.ktb4.aiagent.ocr.service.OcrService;
 import java.time.Instant;
 import java.util.List;
+import java.util.ArrayList;
 import org.junit.jupiter.api.Test;
 import org.springframework.mock.web.MockMultipartFile;
 
@@ -35,7 +36,19 @@ class ContractDiagnosisServiceTests {
 			new ContractRuleEngine()
 		);
 
-		ContractDiagnosisContext context = service.diagnoseWithContext(List.of(front, back));
+		List<String> progressEvents = new ArrayList<>();
+		ContractAnalysisProgressListener listener = new ContractAnalysisProgressListener() {
+			@Override
+			public void onOcrProgress(int processedFiles, int totalFiles) {
+				progressEvents.add("OCR:" + processedFiles + "/" + totalFiles);
+			}
+
+			@Override
+			public void onStructuring() {
+				progressEvents.add("STRUCTURING");
+			}
+		};
+		ContractDiagnosisContext context = service.diagnoseWithContext(List.of(front, back), listener);
 		ContractDiagnosis result = context.diagnosis();
 
 		verify(extractor).extract("앞면 OCR\n\n뒷면 OCR");
@@ -45,6 +58,7 @@ class ContractDiagnosisServiceTests {
 		assertThat(context.documents())
 			.extracting(ContractDiagnosisContext.SourceDocument::text)
 			.containsExactly("앞면 OCR", "뒷면 OCR");
+		assertThat(progressEvents).containsExactly("OCR:1/2", "OCR:2/2", "STRUCTURING");
 		assertThat(result.facts().weeklyWorkingHours()).isEqualTo(60);
 		assertThat(result.unverifiedFields()).containsExactly("monthly_wage");
 		assertThat(result.violations())
