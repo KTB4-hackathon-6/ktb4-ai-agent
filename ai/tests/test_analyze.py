@@ -333,3 +333,11 @@ async def test_answer_question_uses_session_as_thread_id(monkeypatch, tmp_path) 
         },
         {"configurable": {"thread_id": "session-1"}},
     )
+
+
+def test_every_language_has_localized_messages():
+    """언어 추가 시 응답 문구 dict 누락을 막는다."""
+    from ai_agent.api.routes.guidance import ANSWERS
+    from ai_agent.schemas.analyze import PreferredLanguage
+
+    assert {language.value for language in PreferredLanguage} <= ANSWERS.keys()
