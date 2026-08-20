@@ -1,5 +1,6 @@
 package com.ktb4.aiagent.contract.controller;
 
+import com.ktb4.aiagent.analysis.PreferredLanguage;
 import com.ktb4.aiagent.common.web.ApiResponse;
 import com.ktb4.aiagent.contract.dto.ContractAnalysisJobResponse;
 import com.ktb4.aiagent.contract.service.ContractAnalysisJobService;
@@ -36,9 +37,16 @@ public class ContractAnalysisJobController {
 			@PathVariable String sessionId,
 			@Parameter(description = "계약서에 관해 사용자에게 답할 질문", required = true)
 			@RequestParam("text") String text,
+			@Parameter(description = "사용자 선호 언어 코드", example = "vi", required = true)
+			@RequestParam("preferredLanguage") String preferredLanguage,
 			@Parameter(description = "근로계약서 PDF 또는 이미지 파일", required = true)
 			@RequestPart("files") List<MultipartFile> files) {
-		ContractAnalysisJobResponse job = jobService.start(sessionId, text, files);
+		ContractAnalysisJobResponse job = jobService.start(
+			sessionId,
+			text,
+			PreferredLanguage.fromCode(preferredLanguage),
+			files
+		);
 		return ResponseEntity.status(HttpStatus.ACCEPTED).body(ApiResponse.success(job));
 	}
 

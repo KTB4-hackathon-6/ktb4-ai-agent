@@ -1,5 +1,6 @@
 package com.ktb4.aiagent.contract.service;
 
+import com.ktb4.aiagent.analysis.PreferredLanguage;
 import com.ktb4.aiagent.common.exception.ApplicationException;
 import com.ktb4.aiagent.common.exception.ErrorCode;
 import com.ktb4.aiagent.contract.dto.ContractAnalysisJobResponse;
@@ -78,6 +79,7 @@ public class ContractAnalysisJobService {
 	public ContractAnalysisJobResponse start(
 			String sessionId,
 			String text,
+			PreferredLanguage preferredLanguage,
 			List<MultipartFile> files) {
 		messageService.validateUserMessage(sessionId, text);
 		List<MultipartFile> bufferedFiles = bufferFiles(files);
@@ -89,7 +91,13 @@ public class ContractAnalysisJobService {
 			jobTtl
 		);
 		try {
-			executor.execute(() -> runAnalysis(analysisId, sessionId, text, bufferedFiles));
+			executor.execute(() -> runAnalysis(
+				analysisId,
+				sessionId,
+				text,
+				preferredLanguage,
+				bufferedFiles
+			));
 		}
 		catch (TaskRejectedException exception) {
 			store.remove(analysisId);
@@ -125,6 +133,7 @@ public class ContractAnalysisJobService {
 			String analysisId,
 			String sessionId,
 			String text,
+			PreferredLanguage preferredLanguage,
 			List<MultipartFile> files) {
 		ContractAnalysisProgressListener listener = new ContractAnalysisProgressListener() {
 			@Override
@@ -143,7 +152,13 @@ public class ContractAnalysisJobService {
 			}
 		};
 		try {
-			ContractAnalysisResponse result = analysisService.analyze(sessionId, text, files, listener);
+			ContractAnalysisResponse result = analysisService.analyze(
+				sessionId,
+				text,
+				preferredLanguage,
+				files,
+				listener
+			);
 			store.complete(analysisId, result);
 		}
 		catch (ApplicationException exception) {

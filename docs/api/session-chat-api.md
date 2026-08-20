@@ -29,11 +29,13 @@
 
 ```json
 {
-  "content": "계약서의 관리비를 회사가 공제해도 돼?"
+  "content": "계약서의 관리비를 회사가 공제해도 돼?",
+  "preferredLanguage": "vi"
 }
 ```
 
-`content`는 공백이 아닌 문자열이어야 하며 최대 4,000자다. 요청에 `role`을 포함해도 역할 결정에는 사용하지 않는다.
+`content`는 공백이 아닌 문자열이어야 하며 최대 4,000자다. `preferredLanguage`는 필수이며
+`vi`, `en`, `th`, `id`, `mn`, `km` 중 하나다. 요청에 `role`을 포함해도 역할 결정에는 사용하지 않는다.
 
 성공하면 `201 Created`와 공통 응답 봉투를 반환한다.
 
@@ -76,6 +78,7 @@ Spring은 현재 FastAPI 계약에 맞춰 첫 단계 요청을 `POST /review`로
 {
   "requestId": "0a14ac7b-ec61-4fc4-a913-4f8caee41ed7",
   "sessionId": "f805a616-34d8-4328-853a-ff029cf88d8b",
+  "preferredLanguage": "vi",
   "input": {
     "text": "계약서의 관리비를 회사가 공제해도 돼?",
     "documentIds": []
@@ -112,6 +115,7 @@ FastAPI의 `/review` 응답 `result.analysis`가 존재하면 Spring은 문제 �
 | `sessionId` | Spring | 클라이언트 경로, Spring 메시지 저장소, FastAPI 요청에서 동일한 값을 사용한다. FastAPI가 세션 메모리를 구현할 때 이 값을 대화 스레드 키로 사용해야 한다. |
 | `requestId` | Spring | AI 호출마다 새 UUID를 생성한다. FastAPI는 같은 값을 응답해야 하며 Spring은 불일치 응답을 저장하지 않는다. |
 | `content` / `input.text` | 클라이언트 / Spring | Spring에 저장한 USER 메시지 내용과 FastAPI에 보낸 `input.text`가 같아야 한다. 최대 길이는 양쪽 모두 4,000자다. OCR 원문은 `documents` 스키마로 별도 전송한다. |
+| `preferredLanguage` | 클라이언트 / Spring | 프론트에서 선택한 `vi`, `en`, `th`, `id`, `mn`, `km` 중 하나를 모든 FastAPI 요청에 전달한다. |
 | `result.answer` | FastAPI | 공백이 아닌 정상 응답만 Spring이 `AI` 메시지 내용으로 저장한다. |
 | `/review result.analysis` | FastAPI | 문제 요약, 문제 항목과 후속 행동만 Spring 응답에 보존한다. |
 | `/docs result.documentDrafts` | FastAPI | 문서 필드, 값의 출처와 누락 질문을 문서 작성 단계에서만 반환한다. |

@@ -2,6 +2,7 @@ package com.ktb4.aiagent.session;
 
 import com.ktb4.aiagent.analysis.AnalysisClient;
 import com.ktb4.aiagent.analysis.AnalysisOutcome;
+import com.ktb4.aiagent.analysis.PreferredLanguage;
 import io.swagger.v3.oas.annotations.media.Schema;
 import java.util.Objects;
 import java.util.UUID;
@@ -43,10 +44,19 @@ public class SessionChatService {
 		);
 	}
 
-	public ChatExchange chat(String sessionId, String content) {
+	public ChatExchange chat(
+		String sessionId,
+		String content,
+		PreferredLanguage preferredLanguage
+	) {
 		SessionMessage userMessage = messageService.addUserMessage(sessionId, content);
 		String requestId = requestIdSupplier.get();
-		AnalysisOutcome outcome = analysisClient.review(requestId, sessionId, content);
+		AnalysisOutcome outcome = analysisClient.review(
+			requestId,
+			sessionId,
+			preferredLanguage,
+			content
+		);
 		SessionMessage aiMessage = messageService.addAiMessage(sessionId, outcome.answer());
 		return new ChatExchange(requestId, outcome.analysis(), userMessage, aiMessage);
 	}

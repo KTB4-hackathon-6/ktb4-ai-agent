@@ -3,6 +3,7 @@ package com.ktb4.aiagent.contract.service;
 import com.ktb4.aiagent.analysis.AnalysisClient;
 import com.ktb4.aiagent.analysis.AnalysisOutcome;
 import com.ktb4.aiagent.analysis.DocumentAnalysisRequest;
+import com.ktb4.aiagent.analysis.PreferredLanguage;
 import com.ktb4.aiagent.contract.dto.ContractAnalysisResponse;
 import com.ktb4.aiagent.contract.dto.ContractDiagnosis;
 import com.ktb4.aiagent.contract.dto.RuleViolation;
@@ -48,13 +49,21 @@ public class ContractAnalysisService {
 	public ContractAnalysisResponse analyze(
 			String sessionId,
 			String text,
+			PreferredLanguage preferredLanguage,
 			List<MultipartFile> files) {
-		return analyze(sessionId, text, files, ContractAnalysisProgressListener.none());
+		return analyze(
+			sessionId,
+			text,
+			preferredLanguage,
+			files,
+			ContractAnalysisProgressListener.none()
+		);
 	}
 
 	public ContractAnalysisResponse analyze(
 			String sessionId,
 			String text,
+			PreferredLanguage preferredLanguage,
 			List<MultipartFile> files,
 			ContractAnalysisProgressListener progressListener) {
 		SessionMessage userMessage = messageService.addUserMessage(sessionId, text);
@@ -64,6 +73,7 @@ public class ContractAnalysisService {
 		DocumentAnalysisRequest request = new DocumentAnalysisRequest(
 			requestId,
 			sessionId,
+			preferredLanguage,
 			text,
 			documents,
 			toLegalChecks(context.diagnosis())

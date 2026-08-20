@@ -37,10 +37,16 @@ public class FastApiAnalysisClient implements AnalysisClient {
 	}
 
 	@Override
-	public AnalysisOutcome review(String requestId, String sessionId, String content) {
+	public AnalysisOutcome review(
+		String requestId,
+		String sessionId,
+		PreferredLanguage preferredLanguage,
+		String content
+	) {
 		ReviewRequest body = new ReviewRequest(
 			requestId,
 			sessionId,
+			preferredLanguage,
 			new ReviewInput(content, List.of()),
 			List.of(),
 			List.of()
@@ -54,6 +60,7 @@ public class FastApiAnalysisClient implements AnalysisClient {
 		ReviewRequest body = new ReviewRequest(
 			request.requestId(),
 			request.sessionId(),
+			request.preferredLanguage(),
 			new ReviewInput(request.text(), request.documentIds()),
 			request.documents(),
 			request.legalChecks()
@@ -71,6 +78,7 @@ public class FastApiAnalysisClient implements AnalysisClient {
 		DocsRequest body = new DocsRequest(
 			request.requestId(),
 			request.sessionId(),
+			request.preferredLanguage(),
 			request.input()
 		);
 		DocsResponse response = requestDocs(body, request.requestId(), request.sessionId());
@@ -82,6 +90,7 @@ public class FastApiAnalysisClient implements AnalysisClient {
 		GuideRequest body = new GuideRequest(
 			request.requestId(),
 			request.sessionId(),
+			request.preferredLanguage(),
 			request.input()
 		);
 		GuideResponse response = requestGuide(body, request.requestId(), request.sessionId());
@@ -211,6 +220,7 @@ public class FastApiAnalysisClient implements AnalysisClient {
 	private record ReviewRequest(
 		String requestId,
 		String sessionId,
+		PreferredLanguage preferredLanguage,
 		ReviewInput input,
 		List<?> documents,
 		List<?> legalChecks
@@ -229,6 +239,7 @@ public class FastApiAnalysisClient implements AnalysisClient {
 	private record DocsRequest(
 		String requestId,
 		String sessionId,
+		PreferredLanguage preferredLanguage,
 		DocumentPreparationRequest.Input input
 	) {
 	}
@@ -236,6 +247,7 @@ public class FastApiAnalysisClient implements AnalysisClient {
 	private record GuideRequest(
 		String requestId,
 		String sessionId,
+		PreferredLanguage preferredLanguage,
 		GuidanceRequest.Input input
 	) {
 	}

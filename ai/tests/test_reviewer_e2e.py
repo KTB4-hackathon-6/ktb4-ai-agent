@@ -39,6 +39,7 @@ def test_reviewer_e2e(case: dict) -> None:
 
         for issue_type, links in case["expected"]["links"].items():
             finding = by_type[issue_type]
+            assert set(links["checkIds"]) <= set(finding["relatedCheckIds"])
             assert set(links["documentIds"]) <= set(finding["relatedDocumentIds"])
 
         observed_issue_types.append(issue_types)

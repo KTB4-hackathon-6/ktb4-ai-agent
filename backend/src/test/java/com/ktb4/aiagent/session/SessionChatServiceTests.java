@@ -5,6 +5,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import com.ktb4.aiagent.analysis.AnalysisClient;
 import com.ktb4.aiagent.analysis.AnalysisOutcome;
+import com.ktb4.aiagent.analysis.PreferredLanguage;
 import com.ktb4.aiagent.common.exception.ApplicationException;
 import com.ktb4.aiagent.common.exception.ErrorCode;
 import java.time.Duration;
@@ -35,9 +36,10 @@ class SessionChatServiceTests {
 
 	@Test
 	void storesUserMessageCallsAiAndStoresAnswer() {
-		AnalysisClient analysisClient = (requestId, sessionId, content) -> {
+		AnalysisClient analysisClient = (requestId, sessionId, preferredLanguage, content) -> {
 			assertEquals("request-001", requestId);
 			assertEquals("session-001", sessionId);
+			assertEquals(PreferredLanguage.VI, preferredLanguage);
 			assertEquals("계약서를 확인해줘", content);
 			clock.advance(Duration.ofSeconds(1));
 			return new AnalysisOutcome("확인이 필요합니다.", null);
@@ -50,7 +52,8 @@ class SessionChatServiceTests {
 
 		SessionChatService.ChatExchange exchange = service.chat(
 			"session-001",
-			"계약서를 확인해줘"
+			"계약서를 확인해줘",
+			PreferredLanguage.VI
 		);
 
 		assertEquals("request-001", exchange.requestId());
@@ -67,7 +70,7 @@ class SessionChatServiceTests {
 
 	@Test
 	void keepsUserMessageWhenAiRequestFails() {
-		AnalysisClient analysisClient = (requestId, sessionId, content) -> {
+		AnalysisClient analysisClient = (requestId, sessionId, preferredLanguage, content) -> {
 			throw new ApplicationException(ErrorCode.AI_REQUEST_FAILED);
 		};
 		SessionChatService service = new SessionChatService(
@@ -78,7 +81,7 @@ class SessionChatServiceTests {
 
 		ApplicationException exception = assertThrows(
 			ApplicationException.class,
-			() -> service.chat("session-001", "응답 실패 질문")
+			() -> service.chat("session-001", "응답 실패 질문", PreferredLanguage.VI)
 		);
 
 		assertEquals(ErrorCode.AI_REQUEST_FAILED, exception.errorCode());

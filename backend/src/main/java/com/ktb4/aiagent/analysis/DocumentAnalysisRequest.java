@@ -5,11 +5,15 @@ import java.util.List;
 public record DocumentAnalysisRequest(
 	String requestId,
 	String sessionId,
+	PreferredLanguage preferredLanguage,
 	String text,
 	List<Document> documents,
 	List<LegalCheck> legalChecks
 ) {
 	public DocumentAnalysisRequest {
+		if (preferredLanguage == null) {
+			throw new IllegalArgumentException("Preferred language must not be null");
+		}
 		if (text == null || text.isBlank() || text.length() > 4_000) {
 			throw new IllegalArgumentException("Review text must be between 1 and 4000 characters");
 		}

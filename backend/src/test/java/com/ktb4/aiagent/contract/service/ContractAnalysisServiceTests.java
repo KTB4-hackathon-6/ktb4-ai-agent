@@ -9,6 +9,7 @@ import static org.mockito.Mockito.when;
 import com.ktb4.aiagent.analysis.AnalysisClient;
 import com.ktb4.aiagent.analysis.AnalysisOutcome;
 import com.ktb4.aiagent.analysis.DocumentAnalysisRequest;
+import com.ktb4.aiagent.analysis.PreferredLanguage;
 import com.ktb4.aiagent.contract.dto.ContractDiagnosis;
 import com.ktb4.aiagent.contract.dto.ContractFacts;
 import com.ktb4.aiagent.contract.dto.IndustryCategory;
@@ -64,13 +65,19 @@ class ContractAnalysisServiceTests {
 			() -> "request-001"
 		);
 
-		var result = service.analyze("session-001", "계약서 문제를 설명해줘", files);
+		var result = service.analyze(
+			"session-001",
+			"계약서 문제를 설명해줘",
+			PreferredLanguage.VI,
+			files
+		);
 
 		ArgumentCaptor<DocumentAnalysisRequest> requestCaptor = ArgumentCaptor.forClass(
 			DocumentAnalysisRequest.class
 		);
 		verify(analysisClient).reviewDocuments(requestCaptor.capture());
 		DocumentAnalysisRequest request = requestCaptor.getValue();
+		assertThat(request.preferredLanguage()).isEqualTo(PreferredLanguage.VI);
 		assertThat(request.documentIds())
 			.containsExactly("request-001-document-1", "request-001-document-2");
 		assertThat(request.documents())
@@ -114,6 +121,7 @@ class ContractAnalysisServiceTests {
 			0,
 			8,
 			30,
+			true,
 			1,
 			1_600_000,
 			9_000,

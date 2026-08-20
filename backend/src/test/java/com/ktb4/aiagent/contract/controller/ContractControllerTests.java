@@ -2,12 +2,14 @@ package com.ktb4.aiagent.contract.controller;
 
 import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.ktb4.aiagent.analysis.AnalysisOutcome;
+import com.ktb4.aiagent.analysis.PreferredLanguage;
 import com.ktb4.aiagent.contract.dto.ContractAnalysisResponse;
 import com.ktb4.aiagent.contract.dto.ContractDiagnosis;
 import com.ktb4.aiagent.contract.dto.ContractFacts;
@@ -64,7 +66,12 @@ class ContractControllerTests {
 
 	@Test
 	void returnsDiagnosisAndAiDocumentReviewForActiveSession() throws Exception {
-		when(analysisService.analyze(anyString(), anyString(), anyList()))
+		when(analysisService.analyze(
+			anyString(),
+			anyString(),
+			eq(PreferredLanguage.VI),
+			anyList()
+		))
 			.thenReturn(analysisResponse());
 		MockMultipartFile front = new MockMultipartFile(
 			"files",
@@ -76,7 +83,8 @@ class ContractControllerTests {
 		mvc.perform(multipart("/api/contracts/analyze")
 				.file(front)
 				.param("sessionId", "session-001")
-				.param("text", "계약서 문제를 설명해줘"))
+				.param("text", "계약서 문제를 설명해줘")
+				.param("preferredLanguage", "vi"))
 			.andExpect(status().isOk())
 			.andExpect(jsonPath("$.data.requestId").value("request-001"))
 			.andExpect(jsonPath("$.data.diagnosis.facts.monthly_wage").value(2_300_000))
@@ -90,7 +98,8 @@ class ContractControllerTests {
 	void returnsBadRequestWhenContractFilesAreMissing() throws Exception {
 		mvc.perform(multipart("/api/contracts/analyze")
 				.param("sessionId", "session-001")
-				.param("text", "계약서 문제를 설명해줘"))
+				.param("text", "계약서 문제를 설명해줘")
+				.param("preferredLanguage", "vi"))
 			.andExpect(status().isBadRequest())
 			.andExpect(jsonPath("$.code").value("INVALID_REQUEST"));
 	}
@@ -101,6 +110,7 @@ class ContractControllerTests {
 			45,
 			8,
 			60,
+			true,
 			1,
 			2_300_000,
 			11_005,

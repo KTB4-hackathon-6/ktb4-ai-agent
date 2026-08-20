@@ -99,6 +99,18 @@ public class ContractRuleEngine {
 	private List<RuleViolation> checkRestTime(ContractFacts facts) {
 		int requiredMinutes = facts.dailyWorkingHours() >= 8 ? 60
 			: facts.dailyWorkingHours() >= 4 ? 30 : 0;
+		if (requiredMinutes == 0) {
+			return List.of();
+		}
+		if (!facts.restTimeSpecified()) {
+			return List.of(new RuleViolation(
+				"rest_time_needs_review",
+				"근로기준법",
+				"제54조",
+				"휴게시간이 계약서에 명시되어 있는지 확인되지 않아 법정 휴게시간 충족 여부를 판정할 수 없습니다.",
+				Severity.REVIEW
+			));
+		}
 		if (facts.restMinutesPerWorkday() >= requiredMinutes) {
 			return List.of();
 		}
@@ -185,7 +197,8 @@ public class ContractRuleEngine {
 	private static Map<String, Set<String>> dependentRuleIds() {
 		Map<String, Set<String>> mapping = new HashMap<>();
 		mapping.put("monthly_wage", Set.of("below_minimum_wage"));
-		mapping.put("rest_minutes_per_workday", Set.of("rest_time_insufficient"));
+		mapping.put("rest_minutes_per_workday", Set.of("rest_time_insufficient", "rest_time_needs_review"));
+		mapping.put("rest_time_specified", Set.of("rest_time_needs_review"));
 		mapping.put("weekly_paid_holidays", Set.of("weekly_holiday_missing"));
 		mapping.put("contract_period_months", Set.of("contract_period_exceeded", "contract_period_review"));
 		mapping.put("accommodation_deduction_krw", Set.of("accommodation_deduction_high"));

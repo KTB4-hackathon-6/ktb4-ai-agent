@@ -3,6 +3,7 @@ export type ContractFacts = {
   weekly_working_hours: number
   daily_working_hours: number
   rest_minutes_per_workday: number
+  rest_time_specified: boolean
   weekly_paid_holidays: number
   monthly_wage: number
   hourly_wage: number
@@ -186,6 +187,7 @@ export class ContractApiError extends Error {
 export async function analyzeContract(
   files: File[],
   text: string,
+  preferredLanguage: PreferredLanguage,
   onProgress: (job: ContractAnalysisJob) => void,
   signal?: AbortSignal,
 ): Promise<ContractAnalysisResponse> {
@@ -193,6 +195,7 @@ export async function analyzeContract(
   const formData = new FormData()
   files.forEach((file) => formData.append('files', file))
   formData.append('text', text)
+  formData.append('preferredLanguage', preferredLanguage)
 
   let job = await request<ContractAnalysisJob>(
     `/api/sessions/${session.sessionId}/contract-analyses`, {
@@ -297,3 +300,4 @@ function wait(milliseconds: number, signal?: AbortSignal): Promise<void> {
     signal?.addEventListener('abort', handleAbort, { once: true })
   })
 }
+import type { PreferredLanguage } from '../types/chatbot'

@@ -45,6 +45,7 @@ class FastApiAnalysisClientTests {
 				{
 				  "requestId": "request-001",
 				  "sessionId": "session-001",
+				  "preferredLanguage": "vi",
 				  "input": {
 				    "text": "계약서를 확인해줘",
 				    "documentIds": []
@@ -66,7 +67,12 @@ class FastApiAnalysisClientTests {
 				}
 				""", MediaType.APPLICATION_JSON));
 
-		AnalysisOutcome outcome = client.review("request-001", "session-001", "계약서를 확인해줘");
+		AnalysisOutcome outcome = client.review(
+			"request-001",
+			"session-001",
+			PreferredLanguage.VI,
+			"계약서를 확인해줘"
+		);
 
 		assertEquals("확인이 필요합니다.", outcome.answer());
 		assertEquals(null, outcome.analysis());
@@ -77,7 +83,7 @@ class FastApiAnalysisClientTests {
 	void rejectsReviewWithoutInputText() {
 		assertThrows(
 			IllegalArgumentException.class,
-			() -> client.review("request-001", "session-001", " ")
+			() -> client.review("request-001", "session-001", PreferredLanguage.VI, " ")
 		);
 	}
 
@@ -88,6 +94,7 @@ class FastApiAnalysisClientTests {
 			() -> new DocumentPreparationRequest(
 				"docs-001",
 				"session-001",
+				PreferredLanguage.VI,
 				new DocumentPreparationRequest.Input(" ")
 			)
 		);
@@ -101,6 +108,7 @@ class FastApiAnalysisClientTests {
 				{
 				  "requestId": "request-002",
 				  "sessionId": "session-001",
+				  "preferredLanguage": "vi",
 				  "input": {
 				    "text": "계약서 문제를 설명해줘",
 				    "documentIds": ["document-1"]
@@ -141,6 +149,7 @@ class FastApiAnalysisClientTests {
 		DocumentAnalysisRequest request = new DocumentAnalysisRequest(
 			"request-002",
 			"session-001",
+			PreferredLanguage.VI,
 			"계약서 문제를 설명해줘",
 			List.of(new DocumentAnalysisRequest.Document(
 				"document-1",
@@ -169,6 +178,7 @@ class FastApiAnalysisClientTests {
 				{
 				  "requestId": "docs-001",
 				  "sessionId": "session-001",
+				  "preferredLanguage": "vi",
 				  "input": {"text": "진정서 작성을 시작해줘"}
 				}
 				"""))
@@ -177,6 +187,7 @@ class FastApiAnalysisClientTests {
 		DocumentPreparationOutcome outcome = client.prepareDocuments(new DocumentPreparationRequest(
 			"docs-001",
 			"session-001",
+			PreferredLanguage.VI,
 			new DocumentPreparationRequest.Input("진정서 작성을 시작해줘")
 		));
 
@@ -195,6 +206,7 @@ class FastApiAnalysisClientTests {
 				{
 				  "requestId": "guide-001",
 				  "sessionId": "session-001",
+				  "preferredLanguage": "vi",
 				  "input": {"text": "완성한 진정서를 어디에 제출해야 해?"}
 				}
 				"""))
@@ -226,6 +238,7 @@ class FastApiAnalysisClientTests {
 		GuidanceOutcome outcome = client.guide(new GuidanceRequest(
 			"guide-001",
 			"session-001",
+			PreferredLanguage.VI,
 			new GuidanceRequest.Input("완성한 진정서를 어디에 제출해야 해?")
 		));
 
@@ -252,7 +265,7 @@ class FastApiAnalysisClientTests {
 
 		ApplicationException exception = assertThrows(
 			ApplicationException.class,
-			() -> client.review("request-001", "session-001", "질문")
+			() -> client.review("request-001", "session-001", PreferredLanguage.VI, "질문")
 		);
 
 		assertEquals(ErrorCode.AI_REQUEST_FAILED, exception.errorCode());
@@ -278,7 +291,7 @@ class FastApiAnalysisClientTests {
 
 		ApplicationException exception = assertThrows(
 			ApplicationException.class,
-			() -> client.review("request-001", "session-001", "질문")
+			() -> client.review("request-001", "session-001", PreferredLanguage.VI, "질문")
 		);
 
 		assertEquals(ErrorCode.AI_REQUEST_FAILED, exception.errorCode());

@@ -29,6 +29,7 @@
 | 배열 | 필드를 생략하거나 `null`로 보내지 않고, 값이 없으면 `[]` |
 | 알 수 없는 필드 | 요청 모델에서 거부 (`extra="forbid"`) |
 | 문자열 공백 | 식별자와 필수 문자열은 앞뒤 공백 제거 후 빈 문자열이면 거부 |
+| 선호 언어 | 모든 요청의 `preferredLanguage`에 `vi`, `en`, `th`, `id`, `mn`, `km` 중 하나를 전달 |
 
 ```text
 파일 + 요청 텍스트 → /review → 문제 검토 완료
@@ -60,6 +61,7 @@ Spring 세션 TTL은 현재 세션 생성 시점부터 30분이며 연장되지 
 {
   "requestId": "review-001",
   "sessionId": "session-001",
+  "preferredLanguage": "vi",
   "input": {
     "text": "계약서에서 잘못된 부분과 대응 방법을 알려줘",
     "documentIds": ["doc-001"]
@@ -83,6 +85,7 @@ Spring 세션 TTL은 현재 세션 생성 시점부터 30분이며 연장되지 
 |---|---|---|
 | `requestId` | `string` | 필수, 공백 불가, 요청 추적 식별자 |
 | `sessionId` | `string` | 필수, 공백 불가, AI 검토 문맥 키 |
+| `preferredLanguage` | `enum` | 필수. AI 답변에 사용할 사용자 선호 언어 코드 |
 | `input.text` | `string` | 필수, 공백 불가, 최대 4,000자 |
 | `input.documentIds` | `string[]` | 필수. 중복 없이 `documents[].documentId` 집합과 정확히 일치 |
 | `documents` | `Document[]` | 필수. OCR 문서 목록, 없으면 `[]` |
@@ -181,6 +184,7 @@ Spring 세션 TTL은 현재 세션 생성 시점부터 30분이며 연장되지 
 {
   "requestId": "docs-001",
   "sessionId": "session-001",
+  "preferredLanguage": "vi",
   "input": {
     "text": "진정서 작성을 시작해줘"
   }
@@ -191,6 +195,7 @@ Spring 세션 TTL은 현재 세션 생성 시점부터 30분이며 연장되지 
 |---|---|---|
 | `requestId` | `string` | 필수, 공백 불가, `/docs` 호출마다 새로 생성 |
 | `sessionId` | `string` | 필수, 선행 `/review`와 동일한 세션 |
+| `preferredLanguage` | `enum` | 필수, 선행 요청과 같은 사용자 선호 언어 코드 |
 | `input.text` | `string` | 필수, 공백 불가, 최대 4,000자 |
 
 추가 입력을 받은 후에도 동일한 `/docs`를 호출한다. AI는 현재 세션에서 질문한 필드 하나와
@@ -200,6 +205,7 @@ Spring 세션 TTL은 현재 세션 생성 시점부터 30분이며 연장되지 
 {
   "requestId": "docs-002",
   "sessionId": "session-001",
+  "preferredLanguage": "vi",
   "input": {
     "text": "경기도 안산시 단원구 테스트로 10"
   }
@@ -326,6 +332,7 @@ AI가 질문하는 항목은 문서 생성에 필요한 필수값이며 `missing
 {
   "requestId": "guide-001",
   "sessionId": "session-001",
+  "preferredLanguage": "vi",
   "input": {
     "text": "완성한 진정서를 어디에 어떻게 제출해야 해?"
   }
@@ -336,6 +343,7 @@ AI가 질문하는 항목은 문서 생성에 필요한 필수값이며 `missing
 |---|---|---|
 | `requestId` | `string` | 필수, 공백 불가, 요청 추적 식별자 |
 | `sessionId` | `string` | 필수, 문서 작성과 동일한 세션 |
+| `preferredLanguage` | `enum` | 필수, 문서 작성과 같은 사용자 선호 언어 코드 |
 | `input.text` | `string` | 필수, 공백 불가, 최대 4,000자 |
 
 ### 응답
@@ -412,6 +420,7 @@ AI가 임의의 기관 URL을 생성하지 않도록 Spring은 `agencyCode`에 �
 | 문서 작성 대상 | 명확한 선택 모델 없음 | 진정서 하나로 고정하고 `/docs input.text`로 작성 의사 전달 |
 | 문서 작성 요청 | 검토 정보와 원문을 재전송 | `sessionId` 문맥과 `input.text`만 사용 |
 | 요청 텍스트 | `/analyze input.text` | `/review`, `/docs` 모두 `input.text` 필수 |
+| 선호 언어 | 명시적 필드 없음 | 모든 요청에 `preferredLanguage` 필수 |
 | 검토 연결 ID | `requestId`만 존재 | `/docs`에 `reviewRequestId` 없음 |
 | 누락값 수집 | 여러 필드를 한 번에 받을 수 있음 | 질문 하나와 답변 하나를 반복 |
 | 문서 템플릿 | 템플릿 식별 정보가 계약에 노출될 수 있음 | 진정서 하나로 고정하고 템플릿 ID·버전을 Spring 내부에서 관리 |
@@ -499,6 +508,7 @@ class ContractModel(BaseModel):
 | 영역 | 현재 상태 | 계약 충족을 위해 필요한 작업 |
 |---|---|---|
 | Spring | `/review`, `/docs`, `/guide` 클라이언트와 Java record 변경 중 | 최종 계약 테스트와 필드 validator 정합성 확인 |
+| 선호 언어 전달 | Frontend와 Spring에서 `preferredLanguage` 전달 | Python이 응답 생성에 적용하는 작업은 후속 구현 |
 | Python 라우트 | `POST /analyze`만 등록 | 세 라우트 추가 후 `/analyze` 제거 시점 합의 |
 | Python 요청 모델 | 구 `LegalCheck`와 `CheckResult` 사용 | 새 enum과 단순화된 검사 모델로 교체 |
 | Python 응답 모델 | 문서 초안과 제출 안내 없음 | 세 응답 모델 추가 |

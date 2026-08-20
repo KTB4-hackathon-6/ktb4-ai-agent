@@ -39,7 +39,7 @@ class SessionChatControllerTests {
 			clock,
 			messageIds::removeFirst
 		);
-		AnalysisClient analysisClient = (requestId, sessionId, content) -> {
+		AnalysisClient analysisClient = (requestId, sessionId, preferredLanguage, content) -> {
 			clock.advance(Duration.ofSeconds(1));
 			return new AnalysisOutcome("확인이 필요합니다.", null);
 		};
@@ -68,7 +68,8 @@ class SessionChatControllerTests {
 				.content("""
 					{
 					  "role": "AI",
-					  "content": "계약서를 확인해줘"
+					  "content": "계약서를 확인해줘",
+					  "preferredLanguage": "vi"
 					}
 					"""))
 			.andExpect(status().isCreated())
@@ -93,7 +94,7 @@ class SessionChatControllerTests {
 
 	@Test
 	void returnsBadGatewayAndKeepsUserMessageWhenAiFails() throws Exception {
-		mockMvc = createMockMvc((requestId, sessionId, content) -> {
+		mockMvc = createMockMvc((requestId, sessionId, preferredLanguage, content) -> {
 			throw new ApplicationException(ErrorCode.AI_REQUEST_FAILED);
 		});
 
@@ -101,7 +102,8 @@ class SessionChatControllerTests {
 				.contentType(MediaType.APPLICATION_JSON)
 				.content("""
 					{
-					  "content": "응답 실패 질문"
+					  "content": "응답 실패 질문",
+					  "preferredLanguage": "vi"
 					}
 					"""))
 			.andExpect(status().isBadGateway())
@@ -121,7 +123,8 @@ class SessionChatControllerTests {
 				.contentType(MediaType.APPLICATION_JSON)
 				.content("""
 					{
-					  "content": "   "
+					  "content": "   ",
+					  "preferredLanguage": "vi"
 					}
 					"""))
 			.andExpect(status().isBadRequest())
@@ -135,7 +138,8 @@ class SessionChatControllerTests {
 				.contentType(MediaType.APPLICATION_JSON)
 				.content("""
 					{
-					  "content": "저장하면 안 되는 메시지"
+					  "content": "저장하면 안 되는 메시지",
+					  "preferredLanguage": "vi"
 					}
 					"""))
 			.andExpect(status().isNotFound())

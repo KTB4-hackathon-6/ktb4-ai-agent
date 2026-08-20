@@ -5,11 +5,16 @@ import java.util.Objects;
 public record GuidanceRequest(
 	String requestId,
 	String sessionId,
+	PreferredLanguage preferredLanguage,
 	Input input
 ) {
 	public GuidanceRequest {
 		requestId = requireText(requestId, "Request ID must not be blank");
 		sessionId = requireText(sessionId, "Session ID must not be blank");
+		preferredLanguage = Objects.requireNonNull(
+			preferredLanguage,
+			"Preferred language must not be null"
+		);
 		input = Objects.requireNonNull(input, "Input must not be null");
 	}
 

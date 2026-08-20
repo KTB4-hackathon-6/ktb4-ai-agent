@@ -53,6 +53,7 @@ class Finding(BaseModel):
     title: str
     description: str
     severity: Literal["INFO", "LOW", "MEDIUM", "HIGH"]
+    relatedCheckIds: list[str]
     relatedDocumentIds: list[str]
 
 
