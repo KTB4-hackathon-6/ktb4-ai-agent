@@ -1,5 +1,6 @@
 package com.ktb4.aiagent.session;
 
+import com.ktb4.aiagent.analysis.PreferredLanguage;
 import com.ktb4.aiagent.common.web.ApiResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -33,7 +34,8 @@ public class SessionChatController {
 	) {
 		SessionChatService.ChatExchange exchange = chatService.chat(
 			sessionId,
-			request.content()
+			request.content(),
+			request.preferredLanguage()
 		);
 		return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.success(exchange));
 	}
@@ -41,7 +43,9 @@ public class SessionChatController {
 	@Schema(description = "상담 채팅 요청")
 	public record ChatRequest(
 		@Schema(description = "사용자 메시지", example = "근로계약서를 확인하고 싶어요.", maxLength = 4000)
-		String content
+		String content,
+		@Schema(description = "사용자 선호 언어 코드", example = "vi")
+		PreferredLanguage preferredLanguage
 	) {
 	}
 }

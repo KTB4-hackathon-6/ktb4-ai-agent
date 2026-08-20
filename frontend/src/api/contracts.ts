@@ -33,9 +33,72 @@ export type ContractDiagnosis = {
 export type AnalysisFinding = {
   title: string
   description: string
-  severity: string
-  relatedCheckIds: string[]
+  severity: 'INFO' | 'LOW' | 'MEDIUM' | 'HIGH'
   relatedDocumentIds: string[]
+}
+
+export type LaborComplaintFormData = {
+  complainant: {
+    fullName: string | null
+    residentRegistrationNumber: string | null
+    address: string | null
+    telephone: string | null
+    mobilePhone: string | null
+    email: string | null
+    receiveStatusUpdates: boolean | null
+    notifyViaLaborPortal: boolean | null
+  }
+  respondent: {
+    fullName: string | null
+    contact: string | null
+    address: string | null
+    workplaceType: 'WORKPLACE' | 'CONSTRUCTION_SITE' | null
+    workplaceName: string | null
+    actualWorkplaceAddress: string | null
+    workplaceTelephone: string | null
+    employeeCount: number | null
+  }
+  complaint: {
+    employmentStartDate: string | null
+    employmentEndDate: string | null
+    unpaidWagesTotal: number | null
+    employmentStatus: 'RESIGNED' | 'EMPLOYED' | null
+    unpaidSeverancePay: number | null
+    otherUnpaidAmount: number | null
+    jobDescription: string | null
+    payday: string | null
+    contractMethod: 'WRITTEN' | 'ORAL' | null
+    details: string | null
+    attachmentFileNames: string[]
+  }
+  submission: {
+    recipientLaborOfficeName: string | null
+  }
+}
+
+export type MissingField = {
+  fieldId: string
+  displayName: string
+  required: boolean
+  inputType: 'TEXT' | 'DATE' | 'PHONE' | 'NUMBER' | 'TEXTAREA' | 'BOOLEAN' | 'SELECT' | 'FILE_LIST'
+  question: string
+  reason: string
+  sensitive: boolean
+  validationRules: {
+    pattern: string | null
+    minLength: number | null
+    maxLength: number | null
+    minValue: number | null
+    maxValue: number | null
+    allowedValues: string[]
+  }
+  status: 'MISSING' | 'PROVIDED' | 'CONFIRMED'
+}
+
+export type DocumentDraft = {
+  status: 'READY' | 'NEEDS_INPUT' | 'GENERATED' | 'FAILED'
+  data: LaborComplaintFormData
+  missingFields: MissingField[]
 }
 
 export type ContractAnalysisResponse = {
@@ -43,10 +106,44 @@ export type ContractAnalysisResponse = {
   diagnosis: ContractDiagnosis
   answer: string
   analysis: {
-    summary: string
+    summary: string | null
     findings: AnalysisFinding[]
     nextActions: string[]
   }
+}
+
+export type DocumentPreparationRequest = {
+  input: {
+    text: string
+  }
+}
+
+export type DocumentPreparationResponse = {
+  answer: string
+  documentDrafts: DocumentDraft[]
+}
+
+export type GuidanceRequest = {
+  input: {
+    text: string
+  }
+}
+
+export type GuidanceResponse = {
+  answer: string
+  agencyCode: 'MOEL'
+  agencyName: string
+  jurisdictionOfficeName: string
+  submissionOptions: Array<{
+    channel: 'ONLINE' | 'VISIT' | 'MAIL'
+    label: string
+    url: string | null
+    address: string | null
+    instructions: string
+  }>
+  requiredAttachments: string[]
+  steps: string[]
+  notes: string | null
 }
 
 export type ContractAnalysisStage = 'OCR' | 'STRUCTURING' | 'GENERATING_RESPONSE' | 'COMPLETED'
@@ -90,6 +187,7 @@ export class ContractApiError extends Error {
 export async function analyzeContract(
   files: File[],
   text: string,
+  preferredLanguage: PreferredLanguage,
   onProgress: (job: ContractAnalysisJob) => void,
   signal?: AbortSignal,
 ): Promise<ContractAnalysisResponse> {
@@ -97,6 +195,7 @@ export async function analyzeContract(
   const formData = new FormData()
   files.forEach((file) => formData.append('files', file))
   formData.append('text', text)
+  formData.append('preferredLanguage', preferredLanguage)
 
   let job = await request<ContractAnalysisJob>(
     `/api/sessions/${session.sessionId}/contract-analyses`, {
@@ -201,3 +300,4 @@ function wait(milliseconds: number, signal?: AbortSignal): Promise<void> {
     signal?.addEventListener('abort', handleAbort, { once: true })
   })
 }
+import type { PreferredLanguage } from '../types/chatbot'

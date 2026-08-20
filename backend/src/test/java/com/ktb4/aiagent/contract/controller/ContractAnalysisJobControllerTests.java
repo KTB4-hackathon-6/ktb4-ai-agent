@@ -8,6 +8,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import com.ktb4.aiagent.analysis.PreferredLanguage;
 import com.ktb4.aiagent.contract.dto.ContractAnalysisJobResponse;
 import com.ktb4.aiagent.contract.service.ContractAnalysisJobService;
 import org.junit.jupiter.api.Test;
@@ -28,7 +29,12 @@ class ContractAnalysisJobControllerTests {
 
 	@Test
 	void startsAnalysisJobAndReturnsAccepted() throws Exception {
-		when(jobService.start(eq("session-001"), eq("계약서를 설명해줘"), anyList()))
+		when(jobService.start(
+			eq("session-001"),
+			eq("계약서를 설명해줘"),
+			eq(PreferredLanguage.VI),
+			anyList()
+		))
 			.thenReturn(processing());
 		MockMultipartFile file = new MockMultipartFile(
 			"files", "contract.pdf", "application/pdf", "pdf".getBytes()
@@ -36,7 +42,8 @@ class ContractAnalysisJobControllerTests {
 
 		mvc.perform(multipart("/api/sessions/session-001/contract-analyses")
 				.file(file)
-				.param("text", "계약서를 설명해줘"))
+				.param("text", "계약서를 설명해줘")
+				.param("preferredLanguage", "vi"))
 			.andExpect(status().isAccepted())
 			.andExpect(jsonPath("$.data.analysisId").value("analysis-001"))
 			.andExpect(jsonPath("$.data.status").value("PROCESSING"))

@@ -1,6 +1,7 @@
 # 세션 채팅 API와 AI 연동 계약
 
-이 문서는 Spring 백엔드의 세션 채팅 API와 FastAPI `POST /analyze` 사이에서 동기화해야 하는 값을 정의한다. FastAPI 구현 자체는 이 변경 범위에 포함하지 않는다.
+이 문서는 Spring 백엔드의 세션 채팅 API와 FastAPI `POST /review`, `POST /docs`,
+`POST /guide` 사이에서 동기화해야 하는 값을 정의한다.
 
 ## 1. 처리 흐름
 
@@ -8,10 +9,10 @@
 클라이언트
   → Spring POST /api/sessions/{sessionId}/chat
   → Spring이 USER 메시지 저장
-  → Spring이 FastAPI POST /analyze 호출
-  → FastAPI가 AI 응답 반환
+  → Spring이 FastAPI POST /review 호출
+  → FastAPI가 answer와 문제 검토 결과를 반환
   → Spring이 AI 메시지 저장
-  → Spring이 USER/AI 메시지를 클라이언트에 반환
+  → Spring이 analysis와 USER/AI 메시지를 클라이언트에 반환
 ```
 
 클라이언트는 메시지 역할을 지정하지 않는다. 공개 채팅 API로 들어온 메시지는 Spring이 항상 `USER`로 저장하며, `AI` 메시지는 FastAPI 응답을 받은 Spring 서비스만 저장한다.
@@ -28,11 +29,13 @@
 
 ```json
 {
-  "content": "계약서의 관리비를 회사가 공제해도 돼?"
+  "content": "계약서의 관리비를 회사가 공제해도 돼?",
+  "preferredLanguage": "vi"
 }
 ```
 
-`content`는 공백이 아닌 문자열이어야 하며 최대 4,000자다. 요청에 `role`을 포함해도 역할 결정에는 사용하지 않는다.
+`content`는 공백이 아닌 문자열이어야 하며 최대 4,000자다. `preferredLanguage`는 필수이며
+`vi`, `en`, `th`, `id`, `mn`, `km` 중 하나다. 요청에 `role`을 포함해도 역할 결정에는 사용하지 않는다.
 
 성공하면 `201 Created`와 공통 응답 봉투를 반환한다.
 
@@ -41,6 +44,7 @@
   "code": "SUCCESS",
   "data": {
     "requestId": "0a14ac7b-ec61-4fc4-a913-4f8caee41ed7",
+    "analysis": null,
     "userMessage": {
       "messageId": "6dc5f7b6-a267-44ed-9308-718ad14134e1",
       "role": "USER",
@@ -68,12 +72,13 @@
 
 ## 3. Spring에서 FastAPI로 보내는 값
 
-Spring은 현재 FastAPI 계약에 맞춰 다음 요청을 `POST /analyze`로 보낸다.
+Spring은 현재 FastAPI 계약에 맞춰 첫 단계 요청을 `POST /review`로 보낸다.
 
 ```json
 {
   "requestId": "0a14ac7b-ec61-4fc4-a913-4f8caee41ed7",
   "sessionId": "f805a616-34d8-4328-853a-ff029cf88d8b",
+  "preferredLanguage": "vi",
   "input": {
     "text": "계약서의 관리비를 회사가 공제해도 돼?",
     "documentIds": []
@@ -93,14 +98,28 @@ Frontend는 `POST /api/sessions/{sessionId}/contract-analyses`로 비동기 작�
 `PROCESSING`, `COMPLETED`, `FAILED`이며 처리 단계는 `OCR`, `STRUCTURING`,
 `GENERATING_RESPONSE`, `COMPLETED`로 구분한다.
 
+FastAPI의 `/review` 응답 `result.analysis`가 존재하면 Spring은 문제 요약, 문제 항목,
+후속 행동을 역직렬화해 채팅 응답의 `data.analysis`에 보존한다. 문서 작성 데이터는
+`/review` 응답에 포함하지 않는다. 사용자가 문서 작성을 시작하면 Spring이 별도 `/docs`를
+호출하며, `NEEDS_INPUT`이면 누락 질문을 반환하고 `READY`이면 HWPX 생성 서비스에 전달한다.
+작성 문서는 진정서 하나로 고정한다. `/docs`는
+`input.text`만 받고 `sessionId`에 저장된 최신 검토·문서 작성 문맥을 사용한다. OCR 원문과
+검토 결과는 중복 전송하지 않는다. 누락값은 한 번에 하나씩 질문하고 다음 `/docs` 요청의
+`input.text`를 답변으로 적용한다. 문서가 완성된 뒤 사용자가 제출 방법을 물으면 `/guide`가
+같은 세션 문맥을 사용해 관할 기관, 공식 링크와 제출 절차를 반환한다.
+
 ## 4. 동기화 값과 책임
 
 | 값 | 생성·관리 주체 | 동기화 규칙 |
 |---|---|---|
 | `sessionId` | Spring | 클라이언트 경로, Spring 메시지 저장소, FastAPI 요청에서 동일한 값을 사용한다. FastAPI가 세션 메모리를 구현할 때 이 값을 대화 스레드 키로 사용해야 한다. |
 | `requestId` | Spring | AI 호출마다 새 UUID를 생성한다. FastAPI는 같은 값을 응답해야 하며 Spring은 불일치 응답을 저장하지 않는다. |
-| `content` / `input.text` | 클라이언트 / Spring | Spring에 저장한 USER 메시지 내용과 FastAPI에 보낸 `input.text`가 같아야 한다. 최대 길이는 양쪽 모두 4,000자다. |
+| `content` / `input.text` | 클라이언트 / Spring | Spring에 저장한 USER 메시지 내용과 FastAPI에 보낸 `input.text`가 같아야 한다. 최대 길이는 양쪽 모두 4,000자다. OCR 원문은 `documents` 스키마로 별도 전송한다. |
+| `preferredLanguage` | 클라이언트 / Spring | 프론트에서 선택한 `vi`, `en`, `th`, `id`, `mn`, `km` 중 하나를 모든 FastAPI 요청에 전달한다. |
 | `result.answer` | FastAPI | 공백이 아닌 정상 응답만 Spring이 `AI` 메시지 내용으로 저장한다. |
+| `/review result.analysis` | FastAPI | 문제 요약, 문제 항목과 후속 행동만 Spring 응답에 보존한다. |
+| `/docs result.documentDrafts` | FastAPI | 문서 필드, 값의 출처와 누락 질문을 문서 작성 단계에서만 반환한다. |
+| `/guide result` | FastAPI | 문서 완성 후 관할 기관, 제출 채널, 공식 링크, 준비자료와 절차를 반환한다. |
 | `status` | FastAPI | `COMPLETED`일 때만 AI 메시지를 저장한다. `FAILED` 또는 알 수 없는 값은 업스트림 실패로 처리한다. |
 | 응답 `sessionId` | FastAPI | 요청의 `sessionId`와 같아야 한다. 불일치하면 Spring은 응답을 폐기한다. |
 | 응답 `requestId` | FastAPI | 요청의 `requestId`와 같아야 한다. 불일치하면 Spring은 응답을 폐기한다. |
@@ -151,3 +170,4 @@ AI 요청이 실패하면 사용자가 보낸 사실을 복구할 수 있도록 
 - Spring 메시지 저장소는 인메모리이므로 서버 재시작 시 복구되지 않는다.
 - 같은 세션에서 여러 채팅 요청을 동시에 처리하는 순서 보장은 아직 정의하지 않았다.
 - 규칙 위반의 정확한 원문 페이지 위치는 아직 추적하지 않아 각 `legalCheck`가 요청의 모든 문서 ID를 참조한다.
+- HWPX 공개 다운로드 API는 아직 없으며 생성 서비스와 통합 테스트까지만 구현되어 있다.

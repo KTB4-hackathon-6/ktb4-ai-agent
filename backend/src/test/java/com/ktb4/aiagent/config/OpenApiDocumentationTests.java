@@ -49,7 +49,12 @@ class OpenApiDocumentationTests {
 			.andExpect(jsonPath("$.paths['/api/sessions/{sessionId}/messages'].post").doesNotExist())
 			.andExpect(jsonPath("$.paths['/api/sessions/{sessionId}/chat'].post").exists())
 			.andExpect(jsonPath("$.paths['/api/sessions/{sessionId}/chat'].post.summary")
-				.value("상담 메시지 분석 및 AI 답변 생성"));
+				.value("상담 메시지 분석 및 AI 답변 생성"))
+			.andExpect(jsonPath("$.components.schemas.Analysis.properties.documentDrafts").doesNotExist())
+			.andExpect(jsonPath("$.components.schemas.ChatExchange.properties.analysis['$ref']")
+				.value("#/components/schemas/Analysis"))
+			.andExpect(jsonPath("$.components.schemas.ContractAnalysisResponse.properties.analysis['$ref']")
+				.value("#/components/schemas/Analysis"));
 	}
 
 	@Test

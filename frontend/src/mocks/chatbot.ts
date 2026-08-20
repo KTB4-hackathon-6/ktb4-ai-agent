@@ -1,3 +1,5 @@
+import type { PreferredLanguage } from '../types/chatbot'
+
 export const languages = [
   { code: 'vi', native: 'Tiếng Việt', ko: '베트남어' },
   { code: 'en', native: 'English', ko: '영어' },
@@ -5,7 +7,7 @@ export const languages = [
   { code: 'id', native: 'Bahasa Indonesia', ko: '인도네시아어' },
   { code: 'mn', native: 'Монгол хэл', ko: '몽골어' },
   { code: 'km', native: 'ភាសាខ្មែរ', ko: '캄보디아어' },
-]
+] satisfies ReadonlyArray<{ code: PreferredLanguage; native: string; ko: string }>
 
 export const services = [
   { id: 'contract', label: '📄 근로계약서 분석하기 / Analyze my contract' },
