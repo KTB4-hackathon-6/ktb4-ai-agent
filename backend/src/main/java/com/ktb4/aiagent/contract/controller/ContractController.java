@@ -8,6 +8,7 @@ import com.ktb4.aiagent.contract.service.ContractAnalysisService;
 import com.ktb4.aiagent.contract.service.ContractDiagnosisService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import java.util.List;
 import org.springframework.http.MediaType;
@@ -54,7 +55,12 @@ public class ContractController {
 			@RequestParam("sessionId") String sessionId,
 			@Parameter(description = "계약서에 관해 사용자에게 답할 질문", required = true)
 			@RequestParam("text") String text,
-			@Parameter(description = "사용자 선호 언어 코드", example = "vi", required = true)
+			@Parameter(
+				description = "사용자 선호 언어 코드",
+				example = "vi",
+				required = true,
+				schema = @Schema(allowableValues = {"vi", "en", "th", "id", "mn", "km", "ko"})
+			)
 			@RequestParam("preferredLanguage") String preferredLanguage,
 			@Parameter(description = "앞면·뒷면 등 근로계약서 페이지 파일", required = true)
 			@RequestPart("files") List<MultipartFile> files) {

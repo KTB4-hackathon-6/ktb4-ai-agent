@@ -9,7 +9,8 @@ public enum PreferredLanguage {
 	TH("th"),
 	ID("id"),
 	MN("mn"),
-	KM("km");
+	KM("km"),
+	KO("ko");
 
 	private final String code;
 
