@@ -1,4 +1,5 @@
 import { motion } from 'framer-motion'
+import { useTranslation } from 'react-i18next'
 import { flowStages } from '../../config/chatbot'
 import type { FlowState } from '../../types/chatbot'
 
@@ -18,10 +19,11 @@ type StageBarProps = {
 }
 
 function StageBar({ state }: StageBarProps) {
+  const { t } = useTranslation()
   const current = stageIndexOf[state]
 
   return (
-    <nav className="stage-bar" aria-label="진행 단계 / Progress">
+    <nav className="stage-bar" aria-label={t('stage.aria')}>
       <ol className="stage-list">
         {flowStages.map((stage, index) => {
           const status = index < current ? 'done' : index === current ? 'now' : 'wait'
@@ -29,8 +31,7 @@ function StageBar({ state }: StageBarProps) {
             <motion.li className={`stage-chip ${status}`} key={stage.id} layout aria-current={status === 'now' ? 'step' : undefined}>
               <span className="stage-dot" aria-hidden="true">{status === 'done' ? '✓' : index + 1}</span>
               <span className="stage-label">
-                <strong>{stage.ko}</strong>
-                <small>{stage.en}</small>
+                <strong>{t(`stage.${stage.id}`)}</strong>
               </span>
             </motion.li>
           )

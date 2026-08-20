@@ -1,16 +1,16 @@
 import { AnimatePresence, motion } from 'framer-motion'
+import { useTranslation } from 'react-i18next'
 import type { ContractAnalysisJob, ContractAnalysisStage } from '../../api/contracts'
 import StageMascot from './StageMascot'
 
 /** ILLO_SERVICE_SPEC 4.2 분석 진행 — 문서 읽기, 정보 정리, 대응 방법 만들기 세 단계만 보여준다 */
 const progressSteps: Array<{
   stage: Exclude<ContractAnalysisStage, 'COMPLETED'>
-  ko: string
-  en: string
+  key: string
 }> = [
-  { stage: 'OCR', ko: '문서 글자 읽기', en: 'Reading the documents' },
-  { stage: 'STRUCTURING', ko: '문서 정보 정리', en: 'Organising the details' },
-  { stage: 'GENERATING_RESPONSE', ko: '문제점과 대응 방법 만들기', en: 'Preparing your guidance' },
+  { stage: 'OCR', key: 'ocr' },
+  { stage: 'STRUCTURING', key: 'structuring' },
+  { stage: 'GENERATING_RESPONSE', key: 'generating' },
 ]
 
 type AnalysisProgressProps = {
@@ -24,6 +24,7 @@ const panelMotion = {
 }
 
 function AnalysisProgress({ job }: AnalysisProgressProps) {
+  const { t } = useTranslation()
   const currentStage = job?.stage === 'COMPLETED' ? null : (job?.stage ?? 'OCR')
   const currentIndex = currentStage
     ? progressSteps.findIndex((step) => step.stage === currentStage)
@@ -34,11 +35,8 @@ function AnalysisProgress({ job }: AnalysisProgressProps) {
       <div className="panel-heading-with-mascot">
         <StageMascot variant="analyzing" compact />
         <div>
-          <h2>문서를 확인하고 있습니다</h2>
-          <p className="panel-lead">
-            잠시만 기다려 주세요. 1분 정도 걸릴 수 있습니다.
-            <small>This usually takes about a minute.</small>
-          </p>
+          <h2>{t('analysis.heading')}</h2>
+          <p className="panel-lead">{t('analysis.description')}</p>
         </div>
       </div>
       <ol className="analysis-steps">
@@ -63,10 +61,9 @@ function AnalysisProgress({ job }: AnalysisProgressProps) {
                 </AnimatePresence>
               </span>
               <span>
-                <b>{step.ko}</b>
-                <small>{step.en}</small>
+                <b>{t(`analysis.step.${step.key}`)}</b>
                 {step.stage === 'OCR' && active && job && (
-                  <em>{job.processedFiles}/{job.totalFiles}개 문서 처리 완료</em>
+                  <em>{t('analysis.processedFiles', { processed: job.processedFiles, total: job.totalFiles })}</em>
                 )}
               </span>
             </li>

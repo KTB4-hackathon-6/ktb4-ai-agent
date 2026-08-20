@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
+import { useTranslation } from 'react-i18next'
 import illoLogo from '../../assets/illo-logo.png'
 import { languages } from '../../config/chatbot'
 import type { FlowState, PreferredLanguage } from '../../types/chatbot'
@@ -12,6 +13,7 @@ type ChatHeaderProps = {
 }
 
 function ChatHeader({ language, state, onLanguageChange }: ChatHeaderProps) {
+  const { t } = useTranslation()
   const [open, setOpen] = useState(false)
   const switcherRef = useRef<HTMLDivElement>(null)
   const current = languages.find((item) => item.code === language) ?? languages[0]
@@ -38,8 +40,8 @@ function ChatHeader({ language, state, onLanguageChange }: ChatHeaderProps) {
         <button
           className="compact-brand"
           type="button"
-          aria-label="ILLO 처음 화면으로 돌아가기"
-          title="처음 화면으로 돌아가기"
+          aria-label={t('header.home')}
+          title={t('header.home')}
           onClick={() => window.location.reload()}
         >
           <img src={illoLogo} alt="ILLO" />
@@ -51,7 +53,7 @@ function ChatHeader({ language, state, onLanguageChange }: ChatHeaderProps) {
           type="button"
           aria-haspopup="listbox"
           aria-expanded={open}
-          aria-label={`언어 선택 / Choose language (${current.native})`}
+          aria-label={t('header.language.chooseWithCurrent', { current: current.native })}
           onClick={() => setOpen((value) => !value)}
         >
           <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
@@ -66,7 +68,7 @@ function ChatHeader({ language, state, onLanguageChange }: ChatHeaderProps) {
             <motion.ul
               className="lang-menu"
               role="listbox"
-              aria-label="언어 선택 / Choose language"
+              aria-label={t('header.language.choose')}
               initial={{ opacity: 0, scale: 0.96, y: -4 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.96, y: -4 }}
@@ -85,7 +87,7 @@ function ChatHeader({ language, state, onLanguageChange }: ChatHeaderProps) {
                     }}
                   >
                     <span>{item.native}</span>
-                    <small>{item.ko}</small>
+                    <small>{t(`language.${item.code}`)}</small>
                   </button>
                 </li>
               ))}
@@ -95,7 +97,7 @@ function ChatHeader({ language, state, onLanguageChange }: ChatHeaderProps) {
       </div>
       </div>
 
-      <section className="progress-shell" aria-label="서비스 진행 상황">
+      <section className="progress-shell" aria-label={t('header.progress')}>
         <StageBar state={state} />
       </section>
     </header>

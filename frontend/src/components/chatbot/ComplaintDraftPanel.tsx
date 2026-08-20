@@ -1,4 +1,5 @@
 import { motion } from 'framer-motion'
+import { useTranslation } from 'react-i18next'
 import type { DocumentPreparationResponse } from '../../api/contracts'
 import { complaintPreviewGroups, requiredFieldProgress } from '../../complaint/presentation'
 import type { ComplaintChatMessage } from '../../types/chatbot'
@@ -20,15 +21,6 @@ const panelMotion = {
   transition: { duration: 0.28, ease: 'easeOut' as const },
 }
 
-const optionLabels: Record<string, string> = {
-  WORKPLACE: '사업장',
-  CONSTRUCTION_SITE: '공사현장',
-  RESIGNED: '퇴직',
-  EMPLOYED: '재직 중',
-  WRITTEN: '서면 계약',
-  ORAL: '구두 계약',
-}
-
 function ComplaintDraftPanel({
   preparation,
   messages,
@@ -38,6 +30,7 @@ function ComplaintDraftPanel({
   onReady,
   onBack,
 }: ComplaintDraftPanelProps) {
+  const { t } = useTranslation()
   const draft = preparation?.documentDrafts[0] ?? null
   const missingField = draft?.missingFields[0] ?? null
   const progress = draft ? requiredFieldProgress(draft.data) : null
@@ -51,12 +44,9 @@ function ComplaintDraftPanel({
         <div className="panel-heading-with-mascot">
           <StageMascot variant="drafting" compact />
           <div>
-            <span className="panel-eyebrow">진정서 작성 / Complaint</span>
-            <h2>ILLO와 대화하며 진정서를 작성합니다</h2>
-            <p className="panel-lead">
-              AI가 필요한 항목을 한 번에 하나씩 질문합니다. 아래 입력창에 자연어로 답해주세요.
-              <small>The AI asks for one required item at a time.</small>
-            </p>
+            <span className="panel-eyebrow">{t('complaint.eyebrow')}</span>
+            <h2>{t('complaint.heading')}</h2>
+            <p className="panel-lead">{t('complaint.description')}</p>
           </div>
         </div>
         {progress && (
@@ -69,37 +59,37 @@ function ComplaintDraftPanel({
                 transition={{ duration: 0.3, ease: 'easeOut' }}
               />
             </div>
-            <small>필수 항목 확인 상황</small>
+            <small>{t('complaint.progress')}</small>
           </div>
         )}
       </header>
 
-      <div className="complaint-chat" aria-live="polite" aria-label="진정서 작성 대화">
+      <div className="complaint-chat" aria-live="polite" aria-label={t('complaint.chatAria')}>
         {messages.map((message) => (
           <div className={`complaint-message ${message.role}`} key={message.id}>
-            <span className="complaint-message-role">{message.role === 'assistant' ? 'ILLO AI' : '나'}</span>
+            <span className="complaint-message-role">{message.role === 'assistant' ? 'ILLO AI' : t('complaint.me')}</span>
             <p>{message.content}</p>
           </div>
         ))}
         {preparing && (
           <div className="complaint-message assistant pending">
             <span className="complaint-message-role">ILLO AI</span>
-            <p><span className="step-spinner" aria-hidden="true" /> 답변을 확인하고 있습니다…</p>
+            <p><span className="step-spinner" aria-hidden="true" /> {t('complaint.checking')}</p>
           </div>
         )}
       </div>
 
       {missingField && !preparing && (
         <aside className="current-question-card">
-          <span>현재 확인 항목 · {missingField.displayName}</span>
+          <span>{t('complaint.currentField', { field: missingField.displayName })}</span>
           <strong>{missingField.question}</strong>
           <small>{missingField.reason}</small>
-          {missingField.sensitive && <em>민감정보가 포함될 수 있습니다. 공용 기기에서는 입력 후 화면을 닫아주세요.</em>}
+          {missingField.sensitive && <em>{t('complaint.sensitive')}</em>}
           {quickReplies.length > 0 && (
-            <div className="draft-options" aria-label={`${missingField.displayName} 빠른 답변`}>
+            <div className="draft-options" aria-label={t('complaint.quickReplies', { field: missingField.displayName })}>
               {quickReplies.map((option) => (
                 <button className="chip" type="button" key={option} onClick={() => onReply(option)}>
-                  {optionLabels[option] ?? option}
+                  {t(`complaint.option.${option}`, { defaultValue: option })}
                 </button>
               ))}
             </div>
@@ -109,7 +99,7 @@ function ComplaintDraftPanel({
 
       {draft && (
         <details className="complaint-live-preview">
-          <summary>현재까지 작성된 내용 확인</summary>
+          <summary>{t('complaint.preview')}</summary>
           <div className="draft-preview compact">
             {previewGroups.map((group) => (
               <section className="draft-preview-group" key={group.id}>
@@ -139,13 +129,13 @@ function ComplaintDraftPanel({
             whileHover={{ y: -2 }}
             whileTap={{ scale: 0.97 }}
           >
-            완성된 진정서 확인 / Review complaint
+            {t('complaint.review')}
           </motion.button>
         )}
         <button className="ghost-button" type="button" onClick={onBack} disabled={preparing}>
-          결과로 돌아가기 / Back to review
+          {t('complaint.back')}
         </button>
-        {!completed && !preparing && <span className="panel-note">아래 채팅 입력창에 답변을 입력해주세요.</span>}
+        {!completed && !preparing && <span className="panel-note">{t('complaint.inputNote')}</span>}
       </div>
     </motion.section>
   )

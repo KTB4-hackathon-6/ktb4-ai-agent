@@ -1,4 +1,5 @@
 import pdfWorkerUrl from 'pdfjs-dist/build/pdf.worker.min.mjs?url'
+import i18n from '../i18n'
 import { toPixelBox } from './geometry'
 import type { RedactionPage, RedactionPreparationProgress } from './types'
 
@@ -10,7 +11,7 @@ function canvasToBlob(canvas: HTMLCanvasElement, type = 'image/jpeg', quality = 
   return new Promise<Blob>((resolve, reject) => {
     canvas.toBlob((blob) => {
       if (blob) resolve(blob)
-      else reject(new Error('가공 이미지를 만들지 못했습니다.'))
+      else reject(new Error(i18n.t('redaction.error.image')))
     }, type, quality)
   })
 }
@@ -25,7 +26,7 @@ async function renderImage(file: File) {
     canvas.width = width
     canvas.height = height
     const context = canvas.getContext('2d')
-    if (!context) throw new Error('브라우저에서 문서를 표시할 수 없습니다.')
+    if (!context) throw new Error(i18n.t('redaction.error.display'))
     context.drawImage(bitmap, 0, 0, width, height)
     return { blob: await canvasToBlob(canvas), width, height }
   } finally {
@@ -50,7 +51,7 @@ async function renderPdf(file: File) {
       canvas.width = Math.max(1, Math.floor(viewport.width))
       canvas.height = Math.max(1, Math.floor(viewport.height))
       const context = canvas.getContext('2d')
-      if (!context) throw new Error('브라우저에서 PDF를 표시할 수 없습니다.')
+      if (!context) throw new Error(i18n.t('redaction.error.displayPdf'))
       await page.render({ canvas, canvasContext: context, viewport }).promise
       pages.push({
         blob: await canvasToBlob(canvas),
@@ -101,7 +102,7 @@ export async function prepareRedactionPages(
     throw error
   }
 
-  if (pages.length === 0) throw new Error('확인할 문서 페이지가 없습니다.')
+  if (pages.length === 0) throw new Error(i18n.t('redaction.error.noPages'))
   return pages
 }
 
@@ -120,7 +121,7 @@ export async function exportRedactedFiles(pages: RedactionPage[]) {
       canvas.width = page.width
       canvas.height = page.height
       const context = canvas.getContext('2d')
-      if (!context) throw new Error('가림 이미지를 만들 수 없습니다.')
+      if (!context) throw new Error(i18n.t('redaction.error.maskImage'))
       context.drawImage(bitmap, 0, 0, page.width, page.height)
       context.fillStyle = '#000000'
       page.regions.forEach((region) => {
@@ -136,7 +137,7 @@ export async function exportRedactedFiles(pages: RedactionPage[]) {
       const blob = await canvasToBlob(canvas)
       totalBytes += blob.size
       if (totalBytes > MAX_UPLOAD_BYTES) {
-        throw new Error('가공된 문서가 10MB를 넘습니다. 문서를 나누어 다시 선택해주세요.')
+        throw new Error(i18n.t('redaction.error.tooLarge'))
       }
       files.push(new File([blob], `document-page-${index + 1}.jpg`, {
         type: 'image/jpeg',

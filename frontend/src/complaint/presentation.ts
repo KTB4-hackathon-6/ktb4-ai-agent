@@ -1,4 +1,5 @@
 import type { LaborComplaintFormData } from '../api/contracts'
+import i18n, { normalizeLanguage } from '../i18n'
 
 export type ComplaintPreviewRow = {
   fieldId: string
@@ -34,82 +35,84 @@ function text(value: string | number | null) {
 
 function yesNo(value: boolean | null) {
   if (value === null) return null
-  return value ? '예' : '아니요'
+  return i18n.t(value ? 'complaintPreview.yes' : 'complaintPreview.no')
 }
 
 function workplaceType(value: LaborComplaintFormData['respondent']['workplaceType']) {
-  if (value === 'WORKPLACE') return '사업장'
-  if (value === 'CONSTRUCTION_SITE') return '공사현장'
+  if (value === 'WORKPLACE') return i18n.t('complaintPreview.workplace')
+  if (value === 'CONSTRUCTION_SITE') return i18n.t('complaintPreview.constructionSite')
   return null
 }
 
 function employmentStatus(value: LaborComplaintFormData['complaint']['employmentStatus']) {
-  if (value === 'EMPLOYED') return '재직 중'
-  if (value === 'RESIGNED') return '퇴직'
+  if (value === 'EMPLOYED') return i18n.t('complaintPreview.employed')
+  if (value === 'RESIGNED') return i18n.t('complaintPreview.resigned')
   return null
 }
 
 function contractMethod(value: LaborComplaintFormData['complaint']['contractMethod']) {
-  if (value === 'WRITTEN') return '서면 계약'
-  if (value === 'ORAL') return '구두 계약'
+  if (value === 'WRITTEN') return i18n.t('complaintPreview.written')
+  if (value === 'ORAL') return i18n.t('complaintPreview.oral')
   return null
 }
 
 function amount(value: number | null) {
-  return value === null ? null : `${value.toLocaleString('ko-KR')}원`
+  if (value === null) return null
+  const locale = normalizeLanguage(i18n.resolvedLanguage ?? i18n.language)
+  return i18n.t('complaintPreview.currency', { value: new Intl.NumberFormat(locale).format(value) })
 }
 
 export function complaintPreviewGroups(data: LaborComplaintFormData): ComplaintPreviewGroup[] {
   return [
     {
       id: 'complainant',
-      label: '진정인',
+      label: i18n.t('complaintPreview.group.complainant'),
       rows: [
-        { fieldId: 'complainant.fullName', label: '성명', value: text(data.complainant.fullName) },
-        { fieldId: 'complainant.address', label: '주소', value: text(data.complainant.address) },
-        { fieldId: 'complainant.telephone', label: '일반 전화번호', value: text(data.complainant.telephone) },
-        { fieldId: 'complainant.mobilePhone', label: '휴대전화', value: text(data.complainant.mobilePhone) },
-        { fieldId: 'complainant.email', label: '이메일', value: text(data.complainant.email) },
-        { fieldId: 'complainant.receiveStatusUpdates', label: '처리상황 알림', value: yesNo(data.complainant.receiveStatusUpdates) },
-        { fieldId: 'complainant.notifyViaLaborPortal', label: '전자문서 통지', value: yesNo(data.complainant.notifyViaLaborPortal) },
+        { fieldId: 'complainant.fullName', label: i18n.t('complaintPreview.fullName'), value: text(data.complainant.fullName) },
+        { fieldId: 'complainant.address', label: i18n.t('complaintPreview.address'), value: text(data.complainant.address) },
+        { fieldId: 'complainant.telephone', label: i18n.t('complaintPreview.telephone'), value: text(data.complainant.telephone) },
+        { fieldId: 'complainant.mobilePhone', label: i18n.t('complaintPreview.mobilePhone'), value: text(data.complainant.mobilePhone) },
+        { fieldId: 'complainant.email', label: i18n.t('complaintPreview.email'), value: text(data.complainant.email) },
+        { fieldId: 'complainant.receiveStatusUpdates', label: i18n.t('complaintPreview.receiveStatusUpdates'), value: yesNo(data.complainant.receiveStatusUpdates) },
+        { fieldId: 'complainant.notifyViaLaborPortal', label: i18n.t('complaintPreview.notifyViaLaborPortal'), value: yesNo(data.complainant.notifyViaLaborPortal) },
       ],
     },
     {
       id: 'respondent',
-      label: '피진정인·사업장',
+      label: i18n.t('complaintPreview.group.respondent'),
       rows: [
-        { fieldId: 'respondent.fullName', label: '피진정인 성명', value: text(data.respondent.fullName) },
-        { fieldId: 'respondent.contact', label: '피진정인 연락처', value: text(data.respondent.contact) },
-        { fieldId: 'respondent.address', label: '피진정인 주소', value: text(data.respondent.address) },
-        { fieldId: 'respondent.workplaceType', label: '사업체 구분', value: workplaceType(data.respondent.workplaceType) },
-        { fieldId: 'respondent.workplaceName', label: '회사명', value: text(data.respondent.workplaceName) },
-        { fieldId: 'respondent.actualWorkplaceAddress', label: '실제 근무장소', value: text(data.respondent.actualWorkplaceAddress) },
-        { fieldId: 'respondent.workplaceTelephone', label: '회사 전화번호', value: text(data.respondent.workplaceTelephone) },
-        { fieldId: 'respondent.employeeCount', label: '근로자 수', value: text(data.respondent.employeeCount) },
+        { fieldId: 'respondent.fullName', label: i18n.t('complaintPreview.respondentName'), value: text(data.respondent.fullName) },
+        { fieldId: 'respondent.contact', label: i18n.t('complaintPreview.respondentContact'), value: text(data.respondent.contact) },
+        { fieldId: 'respondent.address', label: i18n.t('complaintPreview.respondentAddress'), value: text(data.respondent.address) },
+        { fieldId: 'respondent.workplaceType', label: i18n.t('complaintPreview.workplaceType'), value: workplaceType(data.respondent.workplaceType) },
+        { fieldId: 'respondent.workplaceName', label: i18n.t('complaintPreview.workplaceName'), value: text(data.respondent.workplaceName) },
+        { fieldId: 'respondent.actualWorkplaceAddress', label: i18n.t('complaintPreview.actualWorkplaceAddress'), value: text(data.respondent.actualWorkplaceAddress) },
+        { fieldId: 'respondent.workplaceTelephone', label: i18n.t('complaintPreview.workplaceTelephone'), value: text(data.respondent.workplaceTelephone) },
+        { fieldId: 'respondent.employeeCount', label: i18n.t('complaintPreview.employeeCount'), value: text(data.respondent.employeeCount) },
       ],
     },
     {
       id: 'complaint',
-      label: '진정 내용',
+      label: i18n.t('complaintPreview.group.complaint'),
       rows: [
-        { fieldId: 'complaint.employmentStartDate', label: '근무 시작일', value: text(data.complaint.employmentStartDate) },
-        { fieldId: 'complaint.employmentEndDate', label: '근무 종료일', value: text(data.complaint.employmentEndDate) },
-        { fieldId: 'complaint.employmentStatus', label: '재직 상태', value: employmentStatus(data.complaint.employmentStatus) },
-        { fieldId: 'complaint.unpaidWagesTotal', label: '미지급 임금', value: amount(data.complaint.unpaidWagesTotal) },
-        { fieldId: 'complaint.unpaidSeverancePay', label: '미지급 퇴직금', value: amount(data.complaint.unpaidSeverancePay) },
-        { fieldId: 'complaint.otherUnpaidAmount', label: '기타 미지급액', value: amount(data.complaint.otherUnpaidAmount) },
-        { fieldId: 'complaint.jobDescription', label: '업무 내용', value: text(data.complaint.jobDescription) },
-        { fieldId: 'complaint.payday', label: '임금 지급일', value: text(data.complaint.payday) },
-        { fieldId: 'complaint.contractMethod', label: '계약 방식', value: contractMethod(data.complaint.contractMethod) },
-        { fieldId: 'complaint.details', label: '진정 내용', value: text(data.complaint.details) },
-        { fieldId: 'complaint.attachmentFileNames', label: '첨부자료', value: data.complaint.attachmentFileNames.length > 0 ? data.complaint.attachmentFileNames.join(', ') : null },
+        { fieldId: 'complaint.employmentStartDate', label: i18n.t('complaintPreview.employmentStartDate'), value: text(data.complaint.employmentStartDate) },
+        { fieldId: 'complaint.employmentEndDate', label: i18n.t('complaintPreview.employmentEndDate'), value: text(data.complaint.employmentEndDate) },
+        { fieldId: 'complaint.employmentStatus', label: i18n.t('complaintPreview.employmentStatus'), value: employmentStatus(data.complaint.employmentStatus) },
+        { fieldId: 'complaint.unpaidWagesTotal', label: i18n.t('complaintPreview.unpaidWagesTotal'), value: amount(data.complaint.unpaidWagesTotal) },
+        { fieldId: 'complaint.unpaidSeverancePay', label: i18n.t('complaintPreview.unpaidSeverancePay'), value: amount(data.complaint.unpaidSeverancePay) },
+        { fieldId: 'complaint.otherUnpaidAmount', label: i18n.t('complaintPreview.otherUnpaidAmount'), value: amount(data.complaint.otherUnpaidAmount) },
+        { fieldId: 'complaint.jobDescription', label: i18n.t('complaintPreview.jobDescription'), value: text(data.complaint.jobDescription) },
+        { fieldId: 'complaint.payday', label: i18n.t('complaintPreview.payday'), value: text(data.complaint.payday) },
+        { fieldId: 'complaint.contractMethod', label: i18n.t('complaintPreview.contractMethod'), value: contractMethod(data.complaint.contractMethod) },
+        { fieldId: 'complaint.details', label: i18n.t('complaintPreview.details'), value: text(data.complaint.details) },
+        { fieldId: 'complaint.attachmentFileNames', label: i18n.t('complaintPreview.attachments'), value: data.complaint.attachmentFileNames.length > 0 ? data.complaint.attachmentFileNames.join(', ') : null },
       ],
     },
     {
       id: 'submission',
-      label: '제출처',
+      label: i18n.t('complaintPreview.group.submission'),
       rows: [
-        { fieldId: 'submission.recipientLaborOfficeName', label: '관할 노동관서', value: text(data.submission.recipientLaborOfficeName) },
+        { fieldId: 'submission.recipientLaborOfficeName', label: i18n.t('complaintPreview.recipientLaborOfficeName'), value: text(data.submission.recipientLaborOfficeName) },
       ],
     },
   ]

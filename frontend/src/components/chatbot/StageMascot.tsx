@@ -1,4 +1,5 @@
 import illoMascot from '../../assets/illo-mascot.png'
+import { useTranslation } from 'react-i18next'
 
 export type StageMascotVariant =
   | 'upload'
@@ -9,14 +10,14 @@ export type StageMascotVariant =
   | 'agency'
   | 'completed'
 
-const moods: Record<StageMascotVariant, { icon: string; label: string }> = {
-  upload: { icon: '+', label: '문서를 기다리고 있어요' },
-  analyzing: { icon: '⌕', label: '꼼꼼히 읽고 있어요' },
-  review: { icon: '?', label: '함께 확인해볼게요' },
-  drafting: { icon: '✎', label: '내용을 정리하고 있어요' },
-  ready: { icon: '✓', label: '초안을 확인해주세요' },
-  agency: { icon: '⌖', label: '도움받을 곳을 찾았어요' },
-  completed: { icon: '★', label: '수고하셨어요!' },
+const moods: Record<StageMascotVariant, { icon: string }> = {
+  upload: { icon: '+' },
+  analyzing: { icon: '⌕' },
+  review: { icon: '?' },
+  drafting: { icon: '✎' },
+  ready: { icon: '✓' },
+  agency: { icon: '⌖' },
+  completed: { icon: '★' },
 }
 
 type StageMascotProps = {
@@ -26,12 +27,14 @@ type StageMascotProps = {
 }
 
 function StageMascot({ variant, compact = false, large = false }: StageMascotProps) {
+  const { t } = useTranslation()
   const mood = moods[variant]
+  const label = t(`mascot.${variant}`)
 
   return (
     <div
       className={`stage-mascot-card ${variant}${compact ? ' compact' : ''}${large ? ' large' : ''}`}
-      aria-label={`ILLO 도우미: ${mood.label}`}
+      aria-label={t('mascot.aria', { mood: label })}
     >
       <span className="stage-mascot-avatar" aria-hidden="true">
         <img src={illoMascot} alt="" />
@@ -39,8 +42,8 @@ function StageMascot({ variant, compact = false, large = false }: StageMascotPro
       </span>
       {!compact && (
         <span className="stage-mascot-copy">
-          <small>ILLO 도우미</small>
-          <strong>{mood.label}</strong>
+          <small>{t('mascot.helper')}</small>
+          <strong>{label}</strong>
         </span>
       )}
     </div>
