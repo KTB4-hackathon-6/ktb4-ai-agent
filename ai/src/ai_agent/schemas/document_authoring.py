@@ -98,7 +98,6 @@ class LaborComplaintFormData(ContractModel):
             "complaint.jobDescription": self.complaint.jobDescription,
             "complaint.contractMethod": self.complaint.contractMethod,
             "complaint.details": self.complaint.details,
-            "submission.recipientLaborOfficeName": self.submission.recipientLaborOfficeName,
         }
         return [field_id for field_id, value in required.items() if value is None or value == ""]
 

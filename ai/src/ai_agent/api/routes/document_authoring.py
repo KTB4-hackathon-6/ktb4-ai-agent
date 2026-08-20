@@ -31,6 +31,16 @@ READY_MESSAGES = {
     "ko": "진정서가 준비되었습니다. 제출 전에 내용을 확인해 주세요.",
 }
 
+FIELD_REQUEST_MESSAGES = {
+    "vi": "Vui lòng cung cấp: {field}.",
+    "en": "Please provide: {field}.",
+    "th": "กรุณาระบุ: {field}",
+    "id": "Harap berikan: {field}.",
+    "mn": "Дараах мэдээллийг оруулна уу: {field}.",
+    "km": "សូមផ្តល់ព័ត៌មាន៖ {field}",
+    "ko": "다음 정보를 알려주세요: {field}.",
+}
+
 FIELD_SPECS = {
     "complainant.fullName": ("성명", MissingFieldInputType.TEXT, True, 100, []),
     "complainant.address": ("주소", MissingFieldInputType.TEXT, True, 300, []),
@@ -74,13 +84,6 @@ FIELD_SPECS = {
         ["WRITTEN", "ORAL"],
     ),
     "complaint.details": ("진정 내용", MissingFieldInputType.TEXTAREA, False, 4000, []),
-    "submission.recipientLaborOfficeName": (
-        "관할 고용노동관서",
-        MissingFieldInputType.TEXT,
-        False,
-        100,
-        [],
-    ),
 }
 
 
@@ -109,8 +112,14 @@ def build_missing_field(field_id: str, question: str) -> MissingField:
         sensitive=sensitive,
         validationRules=MissingFieldValidationRules(
             pattern=None,
-            minLength=1 if input_type in {MissingFieldInputType.TEXT, MissingFieldInputType.PHONE,
-                                          MissingFieldInputType.TEXTAREA} else None,
+            minLength=1
+            if input_type
+            in {
+                MissingFieldInputType.TEXT,
+                MissingFieldInputType.PHONE,
+                MissingFieldInputType.TEXTAREA,
+            }
+            else None,
             maxLength=max_length,
             minValue=None,
             maxValue=None,
@@ -132,9 +141,7 @@ async def document_authoring(
     request: DocumentAuthoringRequest,
 ) -> DocumentAuthoringResponse | JSONResponse:
     if not request.input.text:
-        return error_response(
-            request, 400, "TEXT_INPUT_REQUIRED", "input.text를 입력해야 합니다."
-        )
+        return error_response(request, 400, "TEXT_INPUT_REQUIRED", "input.text를 입력해야 합니다.")
     try:
         state = await run_document_authoring(
             request.input.text,
@@ -161,15 +168,14 @@ async def document_authoring(
             message="AI 모델 요청에 실패했습니다.",
         )
 
-    data = LaborComplaintFormData(
-        **(state.get("form_drafts") or {}).get("LABOR_COMPLAINT_001", {})
-    )
+    data = LaborComplaintFormData(**(state.get("form_drafts") or {}).get("LABOR_COMPLAINT_001", {}))
     missing_ids = data.required_missing_field_ids()
     if missing_ids:
         field_id = missing_ids[0]
         display_name = FIELD_SPECS[field_id][0]
         progress_answer = (state.get("field_questions") or {}).get(
-            field_id, f"Please provide {display_name}."
+            field_id,
+            FIELD_REQUEST_MESSAGES[request.preferredLanguage].format(field=display_name),
         )
         missing_fields = [build_missing_field(field_id, progress_answer)]
     else:

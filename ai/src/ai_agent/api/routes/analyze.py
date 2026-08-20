@@ -74,6 +74,8 @@ async def analyze(request: AnalyzeRequest) -> AnalyzeResponse | JSONResponse:
                 review_result=review.model_dump(mode="json"),
                 issues=[issue.model_dump(mode="json") for issue in review.issues],
                 preferred_language=request.preferredLanguage.value,
+                user_message=question,
+                assistant_message=review.answer,
             )
     except Exception:
         # 로그가 없으면 502만 남고 원인(모델 오류·타임아웃·검색 실패)이 사라진다.
