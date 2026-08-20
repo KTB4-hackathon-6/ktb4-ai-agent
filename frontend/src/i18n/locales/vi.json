@@ -211,6 +211,7 @@
   "api.error.network": "Không thể kết nối với máy chủ. Vui lòng thử lại sau.",
   "api.error.invalidResponse": "Không thể xác nhận phản hồi của máy chủ. Vui lòng thử lại sau.",
   "api.error.contractAnalysisFailed": "Hợp đồng không thể được phân tích. Vui lòng thử lại.",
+  "api.error.unrelatedDocument": "Hình ảnh này không phải là hợp đồng lao động hoặc phiếu lương. Vui lòng tải lên đúng tài liệu.",
   "api.error.missingAnalysisResult": "Kết quả phân tích không thể được xác nhận.",
   "api.error.ocrFailed": "Tài liệu này không được công nhận. Vui lòng thử lại."
 }

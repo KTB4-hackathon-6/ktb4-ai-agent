@@ -211,6 +211,7 @@
   "api.error.network": "Unable to connect to server. Please try again later.",
   "api.error.invalidResponse": "The server response could not be confirmed. Please try again later.",
   "api.error.contractAnalysisFailed": "The contract could not be analyzed. Please try again.",
+  "api.error.unrelatedDocument": "This image is not an employment contract or payslip. Please upload the correct document.",
   "api.error.missingAnalysisResult": "Analysis results cannot be confirmed.",
   "api.error.ocrFailed": "The document was not recognized. Please try again."
 }

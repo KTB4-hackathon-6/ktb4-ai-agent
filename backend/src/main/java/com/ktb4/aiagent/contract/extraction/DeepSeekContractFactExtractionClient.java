@@ -26,6 +26,9 @@ public class DeepSeekContractFactExtractionClient implements ContractFactExtract
 	private static final Logger log = LoggerFactory.getLogger(DeepSeekContractFactExtractionClient.class);
 	private static final String SYSTEM_PROMPT = """
 		너는 대한민국 표준근로계약서 OCR 결과에서 정해진 필드를 그대로 읽어 JSON으로 구조화하는 도구다.
+		document_type은 사용자 설명이 아니라 OCR 원문만 보고 판정한다.
+		사용자와 고용주의 근로계약이며 임금, 근로시간, 계약기간 중 하나 이상의 근거가 있으면 employment_contract,
+		그 외 문서나 일반 이미지이면 other로 반환한다. 불확실하면 other로 반환한다.
 		법 위반 여부는 절대 판단하지 않는다. 계약서에 없는 항목은 관련 *_specified를 false, 수치를 0으로 둔다.
 		monthly_wage는 계산하지 말고 계약서에 적힌 월급을 그대로 읽는다.
 		휴게시간이 명시되었으면 rest_time_specified를 true로 하고, 시와 분으로 나뉘면 합산해 분 단위로 반환한다.
@@ -33,13 +36,15 @@ public class DeepSeekContractFactExtractionClient implements ContractFactExtract
 		payment_method_in_person은 통장 입금이 아니라 현금 직접 지급에 체크된 경우에만 true다.
 		employee_name은 근로자 성명을 그대로 읽고, contract_start_date와 contract_end_date는 YYYY-MM-DD 형식으로 반환한다. 확인할 수 없으면 빈 문자열이다.
 		반드시 아래 키만 가진 유효한 json 객체를 반환한다.
-		{"industry":"manufacturing|agriculture_livestock_fishery|other","weekly_working_hours":0,
+		{"document_type":"employment_contract|other","industry":"manufacturing|agriculture_livestock_fishery|other",
+		"weekly_working_hours":0,
 		"daily_working_hours":0,"rest_minutes_per_workday":0,"rest_time_specified":false,"weekly_paid_holidays":0,
 		"monthly_wage":0,"wage_specified":false,"working_hours_specified":false,
 		"holiday_specified":false,"contract_period_months":0,"payment_date_specified":false,
 		"payment_method_in_person":false,"accommodation_deduction_krw":0,"employee_name":"","contract_start_date":"","contract_end_date":""}
 		""";
 	private static final Set<String> REQUIRED_FIELDS = Set.of(
+		"document_type",
 		"industry",
 		"weekly_working_hours",
 		"daily_working_hours",
@@ -104,8 +109,14 @@ public class DeepSeekContractFactExtractionClient implements ContractFactExtract
 				throw new IllegalArgumentException("DeepSeek response is missing required fields");
 			}
 			ExtractedContractFacts facts = objectMapper.convertValue(fields, ExtractedContractFacts.class);
+			if (!"employment_contract".equals(facts.documentType())) {
+				throw new ApplicationException(ErrorCode.UNRELATED_DOCUMENT);
+			}
 			validate(facts);
 			return facts;
+		}
+		catch (ApplicationException exception) {
+			throw exception;
 		}
 		catch (RestClientException exception) {
 			log.warn("DeepSeek contract extraction request failed", exception);

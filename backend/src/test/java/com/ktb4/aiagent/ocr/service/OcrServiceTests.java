@@ -15,6 +15,9 @@ import com.ktb4.aiagent.ocr.dto.clova.ClovaOcrField;
 import com.ktb4.aiagent.ocr.dto.clova.ClovaOcrImageResult;
 import com.ktb4.aiagent.ocr.dto.clova.ClovaOcrResponse;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -33,6 +36,33 @@ class OcrServiceTests {
 	@BeforeEach
 	void setUp() {
 		ocrService = new OcrService(new OcrRequestValidator(), clovaOcrClient);
+	}
+
+	@Test
+	void analyzesMultipleImagesConcurrentlyAndPreservesInputOrder() throws Exception {
+		MockMultipartFile first = new MockMultipartFile(
+			"images", "first.jpg", "image/jpeg", "first".getBytes());
+		MockMultipartFile second = new MockMultipartFile(
+			"images", "second.jpg", "image/jpeg", "second".getBytes());
+		CountDownLatch requestsStarted = new CountDownLatch(2);
+		CountDownLatch releaseRequests = new CountDownLatch(1);
+		when(clovaOcrClient.recognize(any(), any(), any(), any())).thenAnswer(invocation -> {
+			requestsStarted.countDown();
+			if (!releaseRequests.await(2, TimeUnit.SECONDS)) {
+				throw new AssertionError("OCR requests did not run concurrently");
+			}
+			String text = new String(invocation.getArgument(0, byte[].class));
+			return responseWithText(text);
+		});
+
+		CompletableFuture<List<OcrAnalysisResponse>> result = CompletableFuture.supplyAsync(
+			() -> ocrService.analyzeAll(List.of(first, second)));
+
+		assertThat(requestsStarted.await(1, TimeUnit.SECONDS)).isTrue();
+		releaseRequests.countDown();
+		assertThat(result.get(2, TimeUnit.SECONDS))
+			.extracting(OcrAnalysisResponse::fullText)
+			.containsExactly("first", "second");
 	}
 
 	@Test
@@ -70,5 +100,11 @@ class OcrServiceTests {
 		ApplicationException exception = assertThrows(ApplicationException.class,
 			() -> ocrService.analyze(file));
 		assertThat(exception.errorCode()).isEqualTo(ErrorCode.OCR_PROVIDER_REQUEST_ERROR);
+	}
+
+	private ClovaOcrResponse responseWithText(String text) {
+		return new ClovaOcrResponse(List.of(
+			new ClovaOcrImageResult("SUCCESS", null, List.of(new ClovaOcrField(text, true)))
+		));
 	}
 }

@@ -211,6 +211,7 @@
   "api.error.network": "Tidak dapat terhubung ke server. Silakan coba lagi nanti.",
   "api.error.invalidResponse": "Respons server tidak dapat dikonfirmasi. Silakan coba lagi nanti.",
   "api.error.contractAnalysisFailed": "Kontrak tidak dapat dianalisis. Silakan coba lagi.",
+  "api.error.unrelatedDocument": "Gambar ini bukan kontrak kerja atau slip gaji. Silakan unggah dokumen yang benar.",
   "api.error.missingAnalysisResult": "Hasil analisis tidak dapat dikonfirmasi.",
   "api.error.ocrFailed": "Dokumen itu tidak dikenali. Silakan coba lagi."
 }

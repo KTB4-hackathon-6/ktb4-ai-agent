@@ -248,9 +248,10 @@ export async function analyzeContract(
   }
 
   if (job.status === 'FAILED') {
+    const errorCode = job.error?.code ?? 'ANALYSIS_FAILED'
     throw new ContractApiError(
-      job.error?.message ?? i18n.t('api.error.contractAnalysisFailed'),
-      job.error?.code ?? 'ANALYSIS_FAILED',
+      localizedAnalysisError(errorCode, job.error?.message),
+      errorCode,
       200,
     )
   }
@@ -330,13 +331,18 @@ async function request<T>(path: string, init: RequestInit): Promise<T> {
   if (!response.ok || envelope.code !== 'SUCCESS') {
     const errorData = envelope.data as ErrorData
     throw new ContractApiError(
-      errorData.message ?? i18n.t('api.error.contractAnalysisFailed'),
+      localizedAnalysisError(envelope.code, errorData.message),
       envelope.code,
       response.status,
     )
   }
 
   return envelope.data as T
+}
+
+function localizedAnalysisError(code: string, fallback?: string): string {
+  if (code === 'UNRELATED_DOCUMENT') return i18n.t('api.error.unrelatedDocument')
+  return fallback ?? i18n.t('api.error.contractAnalysisFailed')
 }
 
 async function readEnvelope<T>(response: Response): Promise<ApiEnvelope<T>> {

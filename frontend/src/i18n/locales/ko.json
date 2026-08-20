@@ -211,6 +211,7 @@
   "api.error.network": "서버에 연결할 수 없습니다. 잠시 후 다시 시도해주세요.",
   "api.error.invalidResponse": "서버 응답을 확인할 수 없습니다. 잠시 후 다시 시도해주세요.",
   "api.error.contractAnalysisFailed": "계약서를 분석하지 못했습니다. 다시 시도해주세요.",
+  "api.error.unrelatedDocument": "근로계약서 또는 급여명세서 이미지가 아닙니다. 올바른 문서를 업로드해주세요.",
   "api.error.missingAnalysisResult": "분석 결과를 확인할 수 없습니다.",
   "api.error.ocrFailed": "문서를 인식하지 못했습니다. 다시 시도해주세요."
 }

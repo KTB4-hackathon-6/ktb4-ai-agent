@@ -1,6 +1,8 @@
 package com.ktb4.aiagent.contract.service;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -11,8 +13,9 @@ import com.ktb4.aiagent.contract.dto.IndustryCategory;
 import com.ktb4.aiagent.ocr.dto.OcrAnalysisResponse;
 import com.ktb4.aiagent.ocr.service.OcrService;
 import java.time.Instant;
-import java.util.List;
 import java.util.ArrayList;
+import java.util.List;
+import java.util.function.IntConsumer;
 import org.junit.jupiter.api.Test;
 import org.springframework.mock.web.MockMultipartFile;
 
@@ -24,10 +27,15 @@ class ContractDiagnosisServiceTests {
 		ContractFactExtractor extractor = mock(ContractFactExtractor.class);
 		MockMultipartFile front = file("front.jpg");
 		MockMultipartFile back = file("back.jpg");
-		when(ocrService.analyze(front))
-			.thenReturn(new OcrAnalysisResponse(Instant.EPOCH, "앞면 OCR"));
-		when(ocrService.analyze(back))
-			.thenReturn(new OcrAnalysisResponse(Instant.EPOCH, "뒷면 OCR"));
+		when(ocrService.analyzeAll(eq(List.of(front, back)), any())).thenAnswer(invocation -> {
+			IntConsumer progressListener = invocation.getArgument(1);
+			progressListener.accept(1);
+			progressListener.accept(2);
+			return List.of(
+				new OcrAnalysisResponse(Instant.EPOCH, "앞면 OCR"),
+				new OcrAnalysisResponse(Instant.EPOCH, "뒷면 OCR")
+			);
+		});
 		when(extractor.extract("앞면 OCR\n\n뒷면 OCR"))
 			.thenReturn(new ContractExtraction(violatingFacts(), List.of("monthly_wage")));
 		ContractDiagnosisService service = new ContractDiagnosisService(
