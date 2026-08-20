@@ -33,7 +33,14 @@ function StageBar({ state }: StageBarProps) {
       </span>
       <div className="stage-track-wrap" style={{ '--stage-count': stageCount } as CSSProperties}>
         <div className="stage-track" aria-hidden="true">
-          <div className="stage-track-fill" style={{ width: `${fillPercent}%` }} />
+          <motion.div
+            className="stage-track-fill"
+            initial={false}
+            animate={{ width: `${fillPercent}%` }}
+            transition={{ type: 'spring', stiffness: 180, damping: 24, mass: 0.55 }}
+          >
+            <span className="stage-track-shine" />
+          </motion.div>
         </div>
         <ol className="stage-list">
           {flowStages.map((stage, index) => {
@@ -41,7 +48,14 @@ function StageBar({ state }: StageBarProps) {
             const label = t(`stage.${stage.id}`)
             return (
               <motion.li className={`stage-chip ${status}`} key={stage.id} layout aria-current={status === 'now' ? 'step' : undefined}>
-                <span className="stage-dot" aria-hidden="true">{status === 'done' ? '✓' : index + 1}</span>
+                <motion.span
+                  className="stage-dot"
+                  aria-hidden="true"
+                  animate={status === 'now' ? { scale: [1, 1.1, 1] } : { scale: 1 }}
+                  transition={status === 'now' ? { duration: 1.2, repeat: Infinity, ease: 'easeInOut' } : undefined}
+                >
+                  {status === 'done' ? '✓' : index + 1}
+                </motion.span>
                 <span className="stage-label">
                   <strong title={label}>{label}</strong>
                 </span>
