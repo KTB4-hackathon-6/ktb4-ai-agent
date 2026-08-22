@@ -374,7 +374,7 @@ Spring과 FastAPI 사이의 내부 계약은 [`docs/api/analysis-api.md`](docs/a
 
 | <img src="https://avatars.githubusercontent.com/u/72534252?v=4" width="110" /> | <img src="https://avatars.githubusercontent.com/u/102720552?v=4" width="110" /> | <img src="https://avatars.githubusercontent.com/u/229857160?v=4" width="110" /> | <img src="https://avatars.githubusercontent.com/u/59200605?v=4" width="110" /> | <img src="https://avatars.githubusercontent.com/u/143773581?v=4" width="110" /> | <img src="https://avatars.githubusercontent.com/u/99706010?v=4" width="110" /> |
 | :---: | :---: | :---: | :---: | :---: | :---: |
-| 👑 **팀장 · 기획총괄**<br/>AI | Frontend · Backend | Cloud · Frontend | Backend | Backend · AI | AI |
+| 👑 팀장 · 기획총괄<br/>AI | Frontend · Backend | Cloud · Frontend | Backend | Backend · AI | AI |
 | [@kkkk2058](https://github.com/kkkk2058) | [@yh112](https://github.com/yh112) | [@mnz3o](https://github.com/mnz3o) | [@dlawnsdnjs](https://github.com/dlawnsdnjs) | [@SeoSeungMin1](https://github.com/SeoSeungMin1) | [@SungjinWi99](https://github.com/SungjinWi99) |
 
 </div>
