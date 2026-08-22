@@ -193,32 +193,13 @@ ILLO는 **내 문서를 읽고 → 문제를 찾아 → 서류까지 만들어 �
 
 ### 서비스 구조
 
-```text
-                    ┌──────────────┐  ┌──────────┐  ┌──────────┐  ┌──────────────┐
-                    │  CLOVA OCR   │  │ DeepSeek │  │ Upstage  │  │ 국가법령정보   │
-                    └──────┬───────┘  └────┬─────┘  └────┬─────┘  └──────┬───────┘
-┌ Docker Compose ──────────┼───────────────┼─────────────┼───────────────┼────────┐
-│                          │               │             │               │        │
-│  사용자 ─ Caddy 2 ─ Frontend ─── /api ── Backend API ───┼───────────────┼───     │
-│           (TLS)     React 19          Spring Boot 4.1   │               │        │
-│                     Nginx 1.27        ├ 세션 · 비동기 작업│               │        │
-│                                       ├ OCR 호출         │               │        │
-│                                       ├ 규칙 기반 검사    │               │        │
-│                                       └ HWPX 생성        │               │        │
-│                                            │                            │        │
-│                                    /review │ /docs · /guide             │        │
-│                                            ▼                            │        │
-│                                       AI Service ───────────────────────┘        │
-│                                       FastAPI · LangGraph                        │
-│                                       ├ 문서 검토 에이전트                          │
-│                                       ├ 서류 작성 워크플로우                        │
-│                                       └ 법령 Retrieval Tool                       │
-│                                            │                                     │
-│         ┌──────────────┬───────────────────┼──────────────────┐                  │
-│    In-memory        HWPX              SQLite               ChromaDB              │
-│   세션 · Job      Template · Output   LangGraph 체크포인트    법령 Vector Store     │
-└──────────────────────────────────────────────────────────────────────────────────┘
-```
+<div align="center">
+<img src="docs/images/architecture.png" width="960" alt="ILLO 서비스 구조" />
+</div>
+
+Caddy 2가 TLS를 종료하고 Nginx로 정적 번들을, Spring Boot로 `/api`를 넘깁니다.
+Spring은 세션·비동기 작업·OCR 호출·규칙 검사·HWPX 생성을 맡고,
+법적 해석이 필요한 요청만 FastAPI AI 서비스로 위임합니다.
 
 Spring의 공개 API는 성공과 실패 모두 다음 봉투 형식을 사용합니다.
 
@@ -392,10 +373,10 @@ Spring과 FastAPI 사이의 내부 계약은 [`docs/api/analysis-api.md`](docs/a
 
 <div align="center">
 
-| <img src="https://avatars.githubusercontent.com/u/102720552?v=4" width="110" /> | <img src="https://avatars.githubusercontent.com/u/229857160?v=4" width="110" /> | <img src="https://avatars.githubusercontent.com/u/59200605?v=4" width="110" /> | <img src="https://avatars.githubusercontent.com/u/143773581?v=4" width="110" /> | <img src="https://avatars.githubusercontent.com/u/99706010?v=4" width="110" /> | <img src="https://avatars.githubusercontent.com/u/72534252?v=4" width="110" /> |
+| <img src="https://avatars.githubusercontent.com/u/72534252?v=4" width="110" /> | <img src="https://avatars.githubusercontent.com/u/102720552?v=4" width="110" /> | <img src="https://avatars.githubusercontent.com/u/229857160?v=4" width="110" /> | <img src="https://avatars.githubusercontent.com/u/59200605?v=4" width="110" /> | <img src="https://avatars.githubusercontent.com/u/143773581?v=4" width="110" /> | <img src="https://avatars.githubusercontent.com/u/99706010?v=4" width="110" /> |
 | :---: | :---: | :---: | :---: | :---: | :---: |
-| Frontend · Backend | Frontend | Backend | Backend · AI | AI | AI |
-| [@yh112](https://github.com/yh112) | [@mnz3o](https://github.com/mnz3o) | [@dlawnsdnjs](https://github.com/dlawnsdnjs) | [@SeoSeungMin1](https://github.com/SeoSeungMin1) | [@SungjinWi99](https://github.com/SungjinWi99) | [@kkkk2058](https://github.com/kkkk2058) |
+| 👑 **팀장 · 기획총괄**<br/>AI | Frontend · Backend | Cloud · Frontend | Backend | Backend · AI | AI |
+| [@kkkk2058](https://github.com/kkkk2058) | [@yh112](https://github.com/yh112) | [@mnz3o](https://github.com/mnz3o) | [@dlawnsdnjs](https://github.com/dlawnsdnjs) | [@SeoSeungMin1](https://github.com/SeoSeungMin1) | [@SungjinWi99](https://github.com/SungjinWi99) |
 
 </div>
 
