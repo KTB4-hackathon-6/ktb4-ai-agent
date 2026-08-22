@@ -2,6 +2,7 @@ package com.ktb4.aiagent.contract.dto;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.v3.oas.annotations.media.Schema;
+import java.util.Map;
 
 @Schema(description = "법정 기준과 비교해 발견한 위반 또는 확인 필요 항목")
 public record RuleViolation(
@@ -9,6 +10,16 @@ public record RuleViolation(
 	@JsonProperty("law_name") String lawName,
 	String article,
 	String message,
-	Severity severity
+	Severity severity,
+	@Schema(description = "message에 사용된 수치. 클라이언트가 자국어 문구로 다시 조립할 때 사용한다.")
+	Map<String, Object> params
 ) {
+
+	public RuleViolation {
+		params = params == null ? Map.of() : Map.copyOf(params);
+	}
+
+	public RuleViolation(String ruleId, String lawName, String article, String message, Severity severity) {
+		this(ruleId, lawName, article, message, severity, Map.of());
+	}
 }

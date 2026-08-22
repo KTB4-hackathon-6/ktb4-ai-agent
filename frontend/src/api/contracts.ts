@@ -25,6 +25,8 @@ export type RuleViolation = {
   article: string
   message: string
   severity: 'warning' | 'review'
+  /** message에 사용된 수치. 자국어 문구를 다시 조립할 때 사용한다. */
+  params?: Record<string, number | string>
 }
 
 export type ContractDiagnosis = {
