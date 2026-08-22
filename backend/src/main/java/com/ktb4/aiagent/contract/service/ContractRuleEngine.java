@@ -92,7 +92,8 @@ public class ContractRuleEngine {
 			"제6조",
 			"시급 %,d원은 2026년 최저임금 %,d원에 미달합니다."
 				.formatted(facts.hourlyWage(), MINIMUM_HOURLY_WAGE),
-			Severity.WARNING
+			Severity.WARNING,
+			Map.of("hourlyWage", facts.hourlyWage(), "minimumWage", MINIMUM_HOURLY_WAGE)
 		));
 	}
 
@@ -120,7 +121,12 @@ public class ContractRuleEngine {
 			"제54조",
 			"1일 근로시간 %s시간 기준 휴게시간은 최소 %d분이 필요하지만 %d분으로 명시되어 있습니다."
 				.formatted(facts.dailyWorkingHours(), requiredMinutes, facts.restMinutesPerWorkday()),
-			Severity.WARNING
+			Severity.WARNING,
+			Map.of(
+				"dailyHours", facts.dailyWorkingHours(),
+				"requiredMinutes", requiredMinutes,
+				"actualMinutes", facts.restMinutesPerWorkday()
+			)
 		));
 	}
 
@@ -149,7 +155,8 @@ public class ContractRuleEngine {
 				("근로계약기간 %d개월은 기본 취업활동 기간 36개월(3년)을 초과합니다. "
 					+ "취업활동 기간 연장허가(최대 1년 10개월 추가)를 받았는지 확인이 필요합니다.")
 					.formatted(facts.contractPeriodMonths()),
-				Severity.REVIEW
+				Severity.REVIEW,
+				Map.of("months", facts.contractPeriodMonths())
 			));
 		}
 		return List.of(new RuleViolation(
@@ -158,7 +165,8 @@ public class ContractRuleEngine {
 			"제18조",
 			"근로계약기간 %d개월은 연장허가를 받아도 넘을 수 없는 상한 58개월(4년 10개월)을 초과합니다."
 				.formatted(facts.contractPeriodMonths()),
-			Severity.WARNING
+			Severity.WARNING,
+			Map.of("months", facts.contractPeriodMonths())
 		));
 	}
 
@@ -190,7 +198,11 @@ public class ContractRuleEngine {
 			"숙식비 공제지침",
 			"숙박비 공제 %,d원은 월급의 %.0f%%로, 고용노동부 숙식비 공제 한도 대비 과다하지 않은지 확인이 필요합니다."
 				.formatted(facts.accommodationDeductionKrw(), ratio * 100),
-			Severity.REVIEW
+			Severity.REVIEW,
+			Map.of(
+				"amount", facts.accommodationDeductionKrw(),
+				"percent", Math.round(ratio * 100)
+			)
 		));
 	}
 

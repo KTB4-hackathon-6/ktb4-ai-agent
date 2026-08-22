@@ -1,5 +1,6 @@
-import type { ContractAnalysisResponse } from '../api/contracts'
+import type { ContractAnalysisResponse, RuleViolation } from '../api/contracts'
 import type { ReviewStatus } from '../types/chatbot'
+import i18n from '../i18n'
 
 export type ReviewIssue = 'wage' | 'condition'
 
@@ -21,6 +22,33 @@ function findingStatus(severity: ContractAnalysisResponse['analysis']['findings'
   return 'check'
 }
 
+/**
+ * 규칙 엔진 문구는 백엔드에서 한국어로 생성된다. 화면에서는 rule_id로 번역을 찾고,
+ * 번역이 없는 규칙만 백엔드 원문을 그대로 보여준다.
+ */
+function ruleTitle(violation: RuleViolation): string {
+  const key = `rule.title.${violation.rule_id}`
+  return i18n.exists(key) ? i18n.t(key) : `${violation.law_name} ${violation.article}`
+}
+
+function ruleMessage(violation: RuleViolation): string {
+  const key = `rule.message.${violation.rule_id}`
+  if (!i18n.exists(key)) return violation.message
+
+  const locale = i18n.resolvedLanguage ?? i18n.language
+  const values = Object.fromEntries(
+    Object.entries(violation.params ?? {}).map(([name, value]) => [
+      name,
+      typeof value === 'number' ? value.toLocaleString(locale) : value,
+    ]),
+  )
+  const text = i18n.t(key, values)
+
+  // params를 보내지 않는 구버전 백엔드와 붙으면 치환되지 않은 {name}이 남는다.
+  // 자리표시자가 노출되느니 백엔드 원문을 그대로 보여준다.
+  return /\{[A-Za-z]/.test(text) ? violation.message : text
+}
+
 export function reviewCards(result: ContractAnalysisResponse): ReviewCard[] {
   const findings = result.analysis.findings.map<ReviewCard>((finding, index) => ({
     id: `finding-${index}`,
@@ -32,15 +60,18 @@ export function reviewCards(result: ContractAnalysisResponse): ReviewCard[] {
     legalBasis: null,
   }))
 
-  const rules = result.diagnosis.violations.map<ReviewCard>((violation) => ({
-    id: `rule-${violation.rule_id}`,
-    status: violation.severity === 'warning' ? 'warn' : 'check',
-    title: `${violation.law_name} ${violation.article}`,
-    description: violation.message,
-    source: 'rule',
-    relatedDocuments: [],
-    legalBasis: `${violation.law_name} ${violation.article}`,
-  }))
+  const rules = result.diagnosis.violations.map<ReviewCard>((violation) => {
+    const title = ruleTitle(violation)
+    return {
+      id: `rule-${violation.rule_id}`,
+      status: violation.severity === 'warning' ? 'warn' : 'check',
+      title,
+      description: ruleMessage(violation),
+      source: 'rule',
+      relatedDocuments: [],
+      legalBasis: title,
+    }
+  })
 
   return [...findings, ...rules]
 }
